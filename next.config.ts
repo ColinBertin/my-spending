@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // If you have any custom webpack config here, temporarily comment it out
+  // to see if the issue resolves.
 };
 
-export default nextConfig;
+module.exports = nextConfig;
