@@ -1,8 +1,8 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { auth } from "../lib/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../lib/firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 import { emailRegex } from "@/helpers";
@@ -37,12 +37,22 @@ export default function Signup() {
   async function handleSignup(data: SignupInput) {
     // if (!auth) return setError("Firebase Auth not initialized yet");
 
+    console.log("Signup data:", data);
+
     try {
-      await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+      await updateProfile(userCredential.user, {
+        displayName: data.username,
+        // photoURL: "https://example.com/jane-q-user/profile.jpg",
+      });
+
       router.push("/dashboard");
     } catch (err: unknown) {
       console.error("Signup error:", err);
-      // setError(err.message);
     }
   }
 
@@ -59,46 +69,6 @@ export default function Signup() {
     }
   }
 
-  // const onSubmit: SubmitHandler<SignupInput> = async (data) => {
-  //   setIsFetching(true);
-  //   const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_URL}/signup/`, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       username: data.username,
-  //       email: data.email,
-  //       password: data.password,
-  //     }),
-  //   });
-
-  //   if (res.ok) {
-  //     await signIn("credentials", {
-  //       redirect: false,
-  //       username: data.username,
-  //       password: data.password,
-  //     });
-  //     startTransition(() => {
-  //       setIsFetching(false);
-  //       router.push("/");
-  //       showSuccessNotification("Signed up successfully.");
-  //     });
-  //   } else {
-  //     const error = await res.json();
-  //     startTransition(() => {
-  //       setIsFetching(false);
-  //       showErrorNotification(error.detail);
-  //     });
-  //   }
-  // };
-
-  // if (isMutating) {
-  //   return (
-  //     <div className="flex flex-col h-full w-full justify-center items-center">
-  //       <Spinner />
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="">
       <form
@@ -108,7 +78,19 @@ export default function Signup() {
         <h1 className="text-3xl font-semibold text-center text-red mb-10">
           Signup
         </h1>
-
+        <div className="relative flex flex-col justify-around mb-8">
+          <input
+            type="username"
+            placeholder="Username"
+            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium focus:border-purple-300"
+            {...register("username", { required: "Username is required" })}
+          />
+          {errors.username && (
+            <small className="absolute top-11 left-2 text-red-300">
+              {errors.username.message}
+            </small>
+          )}
+        </div>
         <div className="relative flex flex-col justify-around mb-8">
           <input
             type="email"
@@ -178,7 +160,12 @@ export default function Signup() {
           </button>
         </div>
       </form>
-      <button className="bg-purple-500 hover:bg-purple-300 text-white font-semibold py-2 px-4 rounded-3xl self-center mt-4 mb-2 sm:mb-0" onClick={handleGoogleSignIn}>Sign Up / Login with Google</button>
+      <button
+        className="bg-purple-500 hover:bg-purple-300 text-white font-semibold py-2 px-4 rounded-3xl self-center mt-4 mb-2 sm:mb-0"
+        onClick={handleGoogleSignIn}
+      >
+        Sign Up / Login with Google
+      </button>
     </div>
   );
 }

@@ -1,29 +1,44 @@
-// components/ProtectedRoute.tsx
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { auth } from "../app/lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import Loading from "@/app/loading";
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
 }
 
-export default function ProtectedRoute({ children, fallback = <p>Loading...</p> }: Props) {
-  const [user, setUser] = useState<any | null>(null);
+export default function ProtectedRoute({ children, fallback }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
 
+  // React Firebase Hook for auth state
+  const [user, userLoading, userError] = useAuthState(auth);
+
+  // Redirect if not logged in (except signup/login routes)
   useEffect(() => {
-    if (!auth) return;
+    if (!user && !userLoading && pathname !== "/signup" && pathname !== "/login") {
+      router.push("/login");
+    }
+  }, [user, userLoading, pathname, router]);
 
-    const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
-    return () => unsubscribe();
-  }, []);
+  // Handle loading state
+  if (userLoading) return <Loading />;
 
-  if (user === null) return fallback;
-  if (!user) {
-    window.location.href = "/signup";
-    return null;
+  // Optional: Handle errors
+  if (userError) {
+    console.error("Auth error:", userError);
+    return <div>Error loading user session.</div>;
   }
 
+  // If no user and not loading, show fallback (e.g., null or redirect page)
+  if (!user && !userLoading) {
+    return fallback ?? null;
+  }
+
+  // If user exists, render protected content
   return <>{children}</>;
 }
