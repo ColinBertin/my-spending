@@ -1,4 +1,5 @@
 import Navbar from "@/components/layout/Navbar";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { ReactNode } from "react";
 
 export const metadata = {
@@ -7,12 +8,11 @@ export const metadata = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="h-full w-full">
-      {/* <nav className="bg-white shadow-md p-4 mb-8">
-      <h2 className="text-2xl font-bold">My Spending</h2>
-    </nav> */}
-      <Navbar />
-      {children}
-    </div>
+    <ProtectedRoute>
+      <div className="h-full w-full">
+        <Navbar />
+        {children}
+      </div>
+    </ProtectedRoute>
   );
 }
