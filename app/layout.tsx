@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata = {
-  title: "My Spending App",
+  title: "My Spending",
   description: "Track your spending with Firebase Auth",
 };
 
