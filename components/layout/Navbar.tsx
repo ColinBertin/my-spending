@@ -8,10 +8,11 @@ import { IoCloseOutline } from "react-icons/io5";
 import Menu from "../Menu";
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
+import Link from "next/link";
 
 export default function NavBar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const [navbar, setNavbar] = useState(false);
 
   const handleNavbar = useCallback(() => {
@@ -45,7 +46,9 @@ export default function NavBar() {
     <>
       <nav className="w-full fixed top-0 left-0 bg-gray-800 flex justify-between px-6 py-2 z-50">
         {/* LOGO */}
-        <h2 className="text-white text-2xl font-bold">My Spending</h2>
+        <Link href="/dashboard" className="flex items-center space-x-2">
+          <h2 className="text-white text-2xl font-bold">My Spending</h2>
+        </Link>
         {/* HAMBURGER BUTTON */}
         <button
           className="text-white rounded-md outline-none hover:text-gold-500 transition ease-in duration-100 cursor-pointer"
@@ -69,14 +72,14 @@ export default function NavBar() {
         leaveTo="transform opacity-0 scale-95"
       >
         <div
-              ref={dropdownRef}
-              className={clsx(
-                navbar
-                  ? "fixed md:top-10 md:right-5 h-screen w-screen md:w-52 md:h-80"
-                  : "hidden",
-                "flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-gray-800 md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded"
-              )}
-            >
+          ref={dropdownRef}
+          className={clsx(
+            navbar
+              ? "fixed md:top-10 md:right-5 h-screen w-screen md:w-52 md:h-80"
+              : "hidden",
+            "flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-gray-800 md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded"
+          )}
+        >
           <Menu />
         </div>
       </Transition>

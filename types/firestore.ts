@@ -1,13 +1,11 @@
-// ENUMS
-export enum AccountType {
-  SINGLE = "single",
-  SHARED = "shared",
-}
+import { Timestamp } from "firebase/firestore";
 
-export enum TransactionType {
-  EXPENSE = "expense",
-  INCOME = "income",
-}
+// ENUMS
+export type AccountType = "single" | "shared";
+
+export type Currency = "JPY" | "EUR" | "USD";
+
+export type TransactionType = "expense" | "income";
 
 // INTERFACES
 export interface User {
@@ -19,17 +17,18 @@ export interface User {
 }
 
 export interface Account {
-  id: string;
+  id?: string;
   name: string;
   type: AccountType;
   members: string[];
   currency: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  createdAt: Date | Timestamp;
+  updatedAt?: Date | Timestamp;
 }
 
 export interface Transaction {
   id: string;
+  title: string;
   accountId: string;
   type: TransactionType;
   categoryId: string;
