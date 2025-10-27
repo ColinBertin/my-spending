@@ -37,8 +37,6 @@ export default function Signup() {
   async function handleSignup(data: SignupInput) {
     // if (!auth) return setError("Firebase Auth not initialized yet");
 
-    console.log("Signup data:", data);
-
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,

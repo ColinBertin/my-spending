@@ -23,8 +23,8 @@ export default function Menu() {
 
   const sections = [
     { title: "Dashboard", href: "/dashboard" },
-    { title: "Add Accounts", href: "/accounts/create" },
-    // { title: "Transactions", href: "/transactions" },
+    { title: "Add an Accounts", href: "/accounts/create" },
+    { title: "Add a Category", href: "/categories/create" },
     // { title: "Settings", href: "/settings" },
   ]
 

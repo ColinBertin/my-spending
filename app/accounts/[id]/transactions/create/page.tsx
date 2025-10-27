@@ -8,6 +8,6 @@ export default async function CreateTransactions({
   const { id } = await params;
 
   return (
-    <CreateTransaction id={id} />
+    <CreateTransaction accountId={id} />
   );
 }

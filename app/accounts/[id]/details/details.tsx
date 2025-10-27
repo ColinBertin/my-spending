@@ -13,12 +13,11 @@ export default function AccountDetails({ id }: { id: string }) {
   useEffect(() => {
     getAccountById(id).then((account) => {
       setAccount(account);
-      console.log(account);
     });
 
     getTransactions(id).then((transactions) => {
-      setTransactions(transactions);
-      console.log(transactions);
+      const sortedTransactions = transactions.sort((a, b) => a.date.getTime() - b.date.getTime());
+      setTransactions(sortedTransactions);
     });
   }, [id]);
 
@@ -29,9 +28,20 @@ export default function AccountDetails({ id }: { id: string }) {
       </h1>
       <ul>
         {transactions &&
-          transactions?.map((transaction) => <li key={transaction.id}>{transaction.id}</li>)}
+          transactions.map((transaction) => (
+            <li key={transaction.id}>
+              {(transaction.date instanceof Date
+                ? transaction.date
+                : new Date(transaction.date)
+              ).toLocaleDateString()}{" "}
+              - {transaction.categoryName}: ¥{transaction.amount}
+            </li>
+          ))}
       </ul>
-      <Link href={`/accounts/${id}/transactions/create`} className="bg-gray-700 hover:bg-gray-500 text-white font-semibold mt-4 py-2 px-4 rounded-3xl self-center">
+      <Link
+        href={`/accounts/${id}/transactions/create`}
+        className="bg-gray-700 hover:bg-gray-500 text-white font-semibold mt-4 py-2 px-4 rounded-3xl self-center"
+      >
         Add Transaction
       </Link>
     </div>

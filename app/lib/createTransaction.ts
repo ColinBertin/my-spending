@@ -2,8 +2,29 @@ import { collection, addDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { Transaction } from "@/types/firestore";
 
-export async function createTransaction({ title, type, currency, amount, note, date, userId, accountId, categoryId }: Transaction & { userId: string }){
-  if (!title || !type || !currency || !amount || !date || !accountId || !userId || !categoryId) {
+export async function createTransaction({
+  title,
+  type,
+  currency,
+  amount,
+  note,
+  date,
+  userId,
+  accountId,
+  categoryId,
+  categoryName,
+}: Transaction & { userId: string }) {
+  if (
+    !title ||
+    !type ||
+    !currency ||
+    !amount ||
+    !date ||
+    !accountId ||
+    !userId ||
+    !categoryId ||
+    !categoryName
+  ) {
     throw new Error("Missing required fields: title, currency, or type.");
   }
 
@@ -11,23 +32,13 @@ export async function createTransaction({ title, type, currency, amount, note, d
     throw new Error('Invalid type. Must be "expense" or "income".');
   }
 
-  console.log({categoryId,
-    title,
-    type,
-    currency,
-    amount,
-    note,
-    date,
-    accountId,
-    createdBy: userId,
-    createdAt: new Date(),});
-
   const docRef = await addDoc(collection(db, "transactions"), {
     categoryId,
+    categoryName,
     title,
     type,
     currency,
-    amount,
+    amount: parseInt(amount as unknown as string, 10),
     note,
     date,
     accountId,

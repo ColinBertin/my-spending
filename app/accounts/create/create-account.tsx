@@ -33,8 +33,6 @@ export default function CreateAccount() {
       createdAt: new Date(),
     };
 
-    console.log("Creating account with data:", newAccount);
-
     try {
       const newAccountId = await createAccount(newAccount);
       console.log("Account created with ID:", newAccountId);
@@ -70,10 +68,9 @@ export default function CreateAccount() {
           <Select
             defaultValue={"Single"}
             options={[
-              { id: 1, name: "Single" },
-              { id: 2, name: "Shared" },
+              { id: "1", name: "Single" },
+              { id: "2", name: "Shared" },
             ]}
-            handleChange={(e) => console.log("Selected type:", e.target.value)}
             {...register("type", { required: "Type is required" })}
           />
         </div>
@@ -81,11 +78,10 @@ export default function CreateAccount() {
           <Select
             defaultValue={"JPY"}
             options={[
-              { id: 1, name: "JPY" },
-              { id: 2, name: "EUR" },
-              { id: 3, name: "USD" },
+              { id: "1", name: "JPY" },
+              { id: "2", name: "EUR" },
+              { id: "3", name: "USD" },
             ]}
-            handleChange={(e) => console.log("Selected type:", e.target.value)}
             {...register("currency", { required: "Currency is required" })}
           />
         </div>

@@ -9,10 +9,16 @@ import { Controller, useForm } from "react-hook-form";
 import Loading from "./loading";
 import Calendar from "@/components/Calendar";
 import { createTransaction } from "@/app/lib/createTransaction";
+import { useEffect, useState } from "react";
+import { getCategories } from "@/app/lib/getCategories";
 
-export default function CreateTransaction({ id }: { id: string }) {
+export default function CreateTransaction({ accountId }: { accountId: string }) {
   const router = useRouter();
   const [user] = useAuthState(auth);
+
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    []
+  );
 
   const {
     register,
@@ -21,34 +27,43 @@ export default function CreateTransaction({ id }: { id: string }) {
     formState: { errors },
   } = useForm<Transaction>({ mode: "onChange" });
 
-  if (!user) {
-    return <Loading />;
-  }
-
   async function handleCreateAccount(data: Transaction) {
-    console.log(data);
+    const id = data.categoryId;
+    const category = categories.find((cat) => cat.id === id);
+
     const nextTransaction = {
       ...data,
+      categoryName: category?.name || "",
       type: data.type.toLowerCase() as TransactionType,
       currency: data.currency.toLowerCase(),
       userId: user?.uid as string,
-      accountId: id,
+      accountId,
     };
 
-    console.log("Creating account with data:", nextTransaction);
-
     try {
-      const newAccountId = await createTransaction(nextTransaction);
-      console.log("Account created with ID:", newAccountId);
-      router.push("/dashboard");
+      const newTransaction = await createTransaction(nextTransaction);
+      console.log("Transaction created with ID:", newTransaction);
+      router.push(`/accounts/${accountId}/details`);
     } catch (err: unknown) {
       console.error(err);
     }
   }
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    getCategories().then((categories) => {
+      const formatted = categories.map((category) => ({
+        id: category.id,
+        name: category.name,
+      }));
+      setCategories(formatted);
+    });
+  }, []);
+
+  if (!user) return <Loading />;
+
   return (
     <div className="flex flex-col justify-center items-center pt-20 pb-10">
-      <h2>{id}</h2>
       <form
         className="flex flex-col justify-center"
         onSubmit={handleSubmit(handleCreateAccount)}
@@ -70,13 +85,23 @@ export default function CreateTransaction({ id }: { id: string }) {
           )}
         </div>
         <div className="relative flex flex-col justify-around mb-8">
+          {categories && (
+            <Select
+              defaultValue={categories[0]?.name}
+              options={categories}
+              {...register("categoryId", {
+                required: "Category is required",
+              })}
+            />
+          )}
+        </div>
+        <div className="relative flex flex-col justify-around mb-8">
           <Select
             defaultValue={"Expense"}
             options={[
-              { id: 1, name: "Expense" },
-              { id: 2, name: "Income" },
+              { id: "expense", name: "Expense" },
+              { id: "income", name: "Income" },
             ]}
-            handleChange={(e) => console.log("Selected type:", e.target.value)}
             {...register("type", { required: "Type is required" })}
           />
         </div>
@@ -84,11 +109,10 @@ export default function CreateTransaction({ id }: { id: string }) {
           <Select
             defaultValue={"JPY"}
             options={[
-              { id: 1, name: "JPY" },
-              { id: 2, name: "EUR" },
-              { id: 3, name: "USD" },
+              { id: "JPY", name: "JPY" },
+              { id: "EUR", name: "EUR" },
+              { id: "USD", name: "USD" },
             ]}
-            handleChange={(e) => console.log("Selected type:", e.target.value)}
             {...register("currency", { required: "Currency is required" })}
           />
         </div>
@@ -105,7 +129,6 @@ export default function CreateTransaction({ id }: { id: string }) {
             </small>
           )}
         </div>
-
         <div className="relative flex flex-col justify-around mb-8 w-full">
           <textarea
             placeholder="note"
@@ -119,7 +142,6 @@ export default function CreateTransaction({ id }: { id: string }) {
             </small>
           )}
         </div>
-
         <Controller
           control={control}
           name="date"
