@@ -9,9 +9,12 @@ import { useEffect, useState } from "react";
 import { getAccounts } from "../lib/getAccounts";
 import { Account } from "@/types/firestore";
 import TransactionContainer from "@/components/TransactionContainer";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
   const [user] = useAuthState(auth);
+  const router = useRouter();
+
   const [myAccounts, setMyAccounts] = useState<Account[]>([]);
   // const [mySharedAccounts, setMySharedAccounts] = useState<Account[]>([]);
 
@@ -33,11 +36,11 @@ export default function Dashboard() {
   if (!user) return <Loading />;
 
   return (
-    <div className="pt-20 pb-20 flex flex-col justify-center items-center">
+    <div className="pt-20 pb-20 flex flex-col justify-center items-center gap-10">
       <h2 className="text-3xl font-bold">
         Welcome{user.displayName && `, ${user.displayName}!`}
       </h2>
-      <div className="flex justify-between w-2/3 mt-10">
+      <div className="">
         {/* Single Accounts */}
         {myAccounts && <TransactionContainer account={myAccounts[0]} />}
         {/* Shared Accounts */}
@@ -45,6 +48,12 @@ export default function Dashboard() {
           <TransactionContainer account={mySharedAccounts[0]} />
         )} */}
       </div>
+      <button
+        className="bg-blue-dark hover:bg-blue-light text-white font-semibold py-2 px-4 rounded-3xl self-center mb-2 sm:mb-0 cursor-pointer"
+        onClick={() => router.push(`/accounts/${myAccounts[0]?.id}/transactions/create`)}
+      >
+        Add Transaction
+      </button>
     </div>
   );
 }

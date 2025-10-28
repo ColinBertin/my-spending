@@ -44,14 +44,14 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="w-full fixed top-0 left-0 bg-gray-800 flex justify-between px-6 py-2 z-50">
+      <nav className="w-full fixed top-0 left-0 bg-blue-dark flex justify-between px-6 py-2 z-50">
         {/* LOGO */}
         <Link href="/dashboard" className="flex items-center space-x-2">
           <h2 className="text-white text-2xl font-bold">My Spending</h2>
         </Link>
         {/* HAMBURGER BUTTON */}
         <button
-          className="text-white rounded-md outline-none hover:text-orange-500 transition ease-in duration-100 cursor-pointer"
+          className="text-white rounded-md outline-none hover:text-orange-light transition ease-in duration-100 cursor-pointer"
           onClick={handleNavbar}
         >
           {navbar ? (
@@ -77,7 +77,7 @@ export default function NavBar() {
             navbar
               ? "fixed md:top-6 md:right-2 h-screen w-screen md:w-52 md:h-auto"
               : "hidden",
-            "flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-gray-800 md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded"
+            "flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-blue-dark md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded"
           )}
         >
           <Menu />

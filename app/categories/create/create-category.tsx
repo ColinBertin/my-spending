@@ -36,19 +36,19 @@ export default function CreateCategory() {
   if (!user) return <Loading />;
 
   return (
-    <div className="flex flex-col justify-center items-center pt-20 pb-10">
+    <div className="flex flex-col justify-center items-center h-full">
       <form
         className="flex flex-col justify-center"
         onSubmit={handleSubmit(handleCreateCategory)}
       >
         <h1 className="text-3xl font-semibold text-center text-red mb-10">
-          Add Transaction
+          Add a New Category
         </h1>
         <div className="relative flex flex-col justify-around mb-8">
           <input
             type="text"
             placeholder="Name"
-            className="border border-gray-500 rounded-xl p-2 text-gray-700 font-medium focus:border-purple-300"
+            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium focus:border-purple-300"
             {...register("name", { required: "Name is required" })}
           />
           {errors.name && (
@@ -61,7 +61,7 @@ export default function CreateCategory() {
           <input
             type="text"
             placeholder="Color"
-            className="border border-gray-500 rounded-xl w-full p-2 text-gray-700 font-medium focus:border-purple-300"
+            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium focus:border-purple-300"
             {...register("color", { required: "Color is required" })}
           />
           {errors.color && (
@@ -70,7 +70,7 @@ export default function CreateCategory() {
             </small>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row justify-between mt-4">
+        <div className="flex flex-col sm:flex-row justify-between">
           <button
             className="bg-red-500 hover:bg-red-300 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 mb-2 sm:mb-0 cursor-pointer"
             onClick={() => router.back()}
@@ -78,7 +78,7 @@ export default function CreateCategory() {
             Cancel
           </button>
           <button
-            className="bg-gray-700 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 cursor-pointer"
+            className="bg-blue-dark hover:bg-blue-light text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 cursor-pointer"
             type="submit"
           >
             Add

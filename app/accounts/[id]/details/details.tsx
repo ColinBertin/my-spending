@@ -40,7 +40,7 @@ export default function AccountDetails({ id }: { id: string }) {
       </ul>
       <Link
         href={`/accounts/${id}/transactions/create`}
-        className="bg-gray-700 hover:bg-gray-500 text-white font-semibold mt-4 py-2 px-4 rounded-3xl self-center"
+        className="bg-blue-dark hover:bg-blue-light text-white font-semibold mt-4 py-2 px-4 rounded-3xl self-center"
       >
         Add Transaction
       </Link>

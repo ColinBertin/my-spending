@@ -40,9 +40,9 @@ export default function Menu() {
             <li
               className={`${
                 isSamePath(section.href)
-                  ? "text-orange-500 border-orange-500"
+                  ? "text-orange-light border-orange-light"
                   : "text-white border-white md:border-gray-200"
-              } text-xl md:text-base py-5 md:py-3 border-b-2 md:border-b hover:text-orange-500 hover:border-orange-500 cursor-pointer`}
+              } text-xl md:text-base py-5 md:py-3 border-b-2 md:border-b hover:text-orange-light hover:border-orange-light cursor-pointer`}
             >
               {section.title}
             </li>
@@ -50,7 +50,7 @@ export default function Menu() {
         ))}
       </ul>
       <button
-        className="text-center md:text-start text-white border-white md:border-gray-200 text-xl md:text-base py-5 md:py-3 border-b-2 md:border-b hover:text-orange-500 hover:border-orange-500 cursor-pointer"
+        className="text-center md:text-start text-white border-white md:border-gray-200 text-xl md:text-base py-5 md:py-3 border-b-2 md:border-b hover:text-orange-light hover:border-orange-light cursor-pointer"
         onClick={handleLogout}
       >
         Logout

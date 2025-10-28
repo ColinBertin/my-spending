@@ -93,7 +93,7 @@ export default function CreateAccount() {
             Cancel
           </button>
           <button
-            className="bg-gray-700 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 cursor-pointer"
+            className="bg-blue-dark hover:bg-blue-light text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 cursor-pointer"
             type="submit"
           >
             Add
