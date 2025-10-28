@@ -1,5 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@theme {
+  --color-orange-dark: #F17720;
+  --color-orange-light: #FFA630;
+  --color-white-custom: #EBEBEB;
+  --color-blue-light: #00A7E1;
+  --color-blue-dark: #0474BA;
+}
 
 @custom-variant dark (&:is(.dark *));
 
