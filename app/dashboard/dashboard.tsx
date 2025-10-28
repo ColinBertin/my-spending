@@ -16,7 +16,7 @@ export default function Dashboard() {
   const router = useRouter();
 
   const [myAccounts, setMyAccounts] = useState<Account[]>([]);
-  // const [mySharedAccounts, setMySharedAccounts] = useState<Account[]>([]);
+  const [mySharedAccounts, setMySharedAccounts] = useState<Account[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -24,11 +24,11 @@ export default function Dashboard() {
         const singleAccounts = accounts.filter(
           (account) => account.type === "single"
         );
-        // const sharedAccounts = accounts.filter(
-        //   (account) => account.type === "shared"
-        // );
+        const sharedAccounts = accounts.filter(
+          (account) => account.type === "shared"
+        );
         setMyAccounts(singleAccounts);
-        // setMySharedAccounts(sharedAccounts);
+        setMySharedAccounts(sharedAccounts);
       });
     }
   }, [user]);
@@ -44,9 +44,9 @@ export default function Dashboard() {
         {/* Single Accounts */}
         {myAccounts && <TransactionContainer account={myAccounts[0]} />}
         {/* Shared Accounts */}
-        {/* {mySharedAccounts && (
+        {mySharedAccounts && (
           <TransactionContainer account={mySharedAccounts[0]} />
-        )} */}
+        )}
       </div>
       <button
         className="bg-blue-dark hover:bg-blue-light text-white font-semibold py-2 px-4 rounded-3xl self-center mb-2 sm:mb-0 cursor-pointer"
