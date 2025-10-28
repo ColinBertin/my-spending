@@ -68,8 +68,8 @@ export default function CreateAccount() {
           <Select
             defaultValue={"Single"}
             options={[
-              { id: "1", name: "Single" },
-              { id: "2", name: "Shared" },
+              { id: "single", name: "Single" },
+              { id: "shared", name: "Shared" },
             ]}
             {...register("type", { required: "Type is required" })}
           />
@@ -78,9 +78,9 @@ export default function CreateAccount() {
           <Select
             defaultValue={"JPY"}
             options={[
-              { id: "1", name: "JPY" },
-              { id: "2", name: "EUR" },
-              { id: "3", name: "USD" },
+              { id: "JPY", name: "JPY" },
+              { id: "EUR", name: "EUR" },
+              { id: "USD", name: "USD" },
             ]}
             {...register("currency", { required: "Currency is required" })}
           />
