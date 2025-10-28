@@ -32,7 +32,6 @@ export default function Menu() {
     <>
       <ul
         className={clsx(
-          // menuState && "-mt-16 md:mt-0",
           "text-center md:text-start"
         )}
       >
@@ -41,9 +40,9 @@ export default function Menu() {
             <li
               className={`${
                 isSamePath(section.href)
-                  ? "text-gold-500 border-gold-500"
+                  ? "text-orange-500 border-orange-500"
                   : "text-white border-white md:border-gray-200"
-              } text-xl md:text-base py-5 md:py-3 border-b-2 md:border-b hover:text-gold-500 hover:border-gold-500 cursor-pointer`}
+              } text-xl md:text-base py-5 md:py-3 border-b-2 md:border-b hover:text-orange-500 hover:border-orange-500 cursor-pointer`}
             >
               {section.title}
             </li>
@@ -51,7 +50,7 @@ export default function Menu() {
         ))}
       </ul>
       <button
-        className="bg-gray-700 hover:bg-gray-500 text-white text-center font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36"
+        className="text-center md:text-start text-white border-white md:border-gray-200 text-xl md:text-base py-5 md:py-3 border-b-2 md:border-b hover:text-orange-500 hover:border-orange-500 cursor-pointer"
         onClick={handleLogout}
       >
         Logout

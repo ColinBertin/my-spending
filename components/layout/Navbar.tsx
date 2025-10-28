@@ -51,7 +51,7 @@ export default function NavBar() {
         </Link>
         {/* HAMBURGER BUTTON */}
         <button
-          className="text-white rounded-md outline-none hover:text-gold-500 transition ease-in duration-100 cursor-pointer"
+          className="text-white rounded-md outline-none hover:text-orange-500 transition ease-in duration-100 cursor-pointer"
           onClick={handleNavbar}
         >
           {navbar ? (
@@ -75,7 +75,7 @@ export default function NavBar() {
           ref={dropdownRef}
           className={clsx(
             navbar
-              ? "fixed md:top-10 md:right-5 h-screen w-screen md:w-52 md:h-80"
+              ? "fixed md:top-6 md:right-2 h-screen w-screen md:w-52 md:h-auto"
               : "hidden",
             "flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-gray-800 md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded"
           )}
