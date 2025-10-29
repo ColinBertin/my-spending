@@ -31,8 +31,6 @@ export default function Dashboard() {
     }
   }, [user]);
 
-  const x = 1;
-
   if (!user) return <Loading />;
 
   return (
@@ -47,7 +45,6 @@ export default function Dashboard() {
         {mySharedAccounts && (
           <TransactionContainer account={mySharedAccounts[0]} />
         )}
-        test
       </div>
     </div>
   );
