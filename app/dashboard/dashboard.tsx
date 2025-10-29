@@ -45,7 +45,7 @@ export default function Dashboard() {
         {mySharedAccounts && (
           <TransactionContainer account={mySharedAccounts[0]} />
         )}
-    test
+  test
       </div>
     </div>
   );
