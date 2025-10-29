@@ -42,7 +42,7 @@ export default function CreateCategory() {
         onSubmit={handleSubmit(handleCreateCategory)}
       >
         <h1 className="text-3xl font-semibold text-center text-red mb-10">
-          Add a New Category
+          New Category
         </h1>
         <div className="relative flex flex-col justify-around mb-8">
           <input

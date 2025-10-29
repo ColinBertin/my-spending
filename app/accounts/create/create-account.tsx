@@ -19,7 +19,7 @@ export default function CreateAccount() {
     formState: { errors },
   } = useForm<Account>({ mode: "onChange" });
 
-  if(!user) {
+  if (!user) {
     return <Loading />;
   }
 
@@ -49,7 +49,7 @@ export default function CreateAccount() {
         onSubmit={handleSubmit(handleCreateAccount)}
       >
         <h1 className="text-3xl font-semibold text-center text-red mb-10">
-          Account
+          New Account
         </h1>
         <div className="relative flex flex-col justify-around mb-8">
           <input

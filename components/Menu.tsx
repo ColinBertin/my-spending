@@ -23,18 +23,13 @@ export default function Menu() {
 
   const sections = [
     { title: "Dashboard", href: "/dashboard" },
-    { title: "Add an Account", href: "/accounts/create" },
-    { title: "Add a Category", href: "/categories/create" },
-    // { title: "Settings", href: "/settings" },
-  ]
+    { title: "New Account", href: "/accounts/create" },
+    { title: "New Category", href: "/categories/create" },
+  ];
 
   return (
     <>
-      <ul
-        className={clsx(
-          "text-center md:text-start"
-        )}
-      >
+      <ul className={clsx("text-center md:text-start")}>
         {sections.map((section) => (
           <Link key={section.title} href={section.href}>
             <li
