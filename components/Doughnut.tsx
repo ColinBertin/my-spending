@@ -38,7 +38,7 @@ const DoughnutChart = ({labelSet, dataSet}: {labelSet: string[], dataSet: number
   };
 
   return (
-    <div style={{ width: "250px", height: "250px" }}>
+    <div style={{ width: "350px", height: "350px" }}>
       <Doughnut data={data} />
     </div>
   );

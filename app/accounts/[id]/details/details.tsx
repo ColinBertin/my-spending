@@ -16,7 +16,7 @@ export default function AccountDetails({ id }: { id: string }) {
     });
 
     getTransactions(id).then((transactions) => {
-      const sortedTransactions = transactions.sort((a, b) => a.date.getTime() - b.date.getTime());
+      const sortedTransactions = transactions.length > 1 ? transactions.sort((a, b) => a.date.getTime() - b.date.getTime()) : transactions;
       setTransactions(sortedTransactions);
     });
   }, [id]);

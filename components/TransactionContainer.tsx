@@ -7,18 +7,20 @@ import { getTransactions } from "@/app/lib/getTransactions";
 import { auth } from "@/app/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Loading from "@/app/loading";
+import { useRouter } from "next/navigation";
 
 export default function TransactionContainer({
   account,
 }: {
   account: Account;
 }) {
+  const router = useRouter();
   const [user, loading] = useAuthState(auth);
 
   const [spending, setSpending] = useState<number[]>();
   const [categories, setCategories] = useState<string[]>();
 
-  const { id, name, type } = account ? account : {};
+  const { id, name } = account ? account : {};
 
   useEffect(() => {
     if (user && id) {
@@ -51,10 +53,17 @@ export default function TransactionContainer({
   return (
     <ul>
       {account && (
-        <li key={name}>
-          <a href={`/accounts/${id}/details`}>Name: {name}</a>
-          <p>Type: {type}</p>
+        <li key={name} className="flex flex-col items-center gap-4">
+          <a className="text-xl" href={`/accounts/${id}/details`}>{name}</a>
           <DoughnutChart labelSet={categories || []} dataSet={spending || []} />
+          <button
+            className="bg-blue-dark hover:bg-blue-light text-white font-semibold py-2 px-4 rounded-3xl self-center mb-2 sm:mb-0 cursor-pointer"
+            onClick={() =>
+              router.push(`/accounts/${account.id}/transactions/create`)
+            }
+          >
+            Add Transaction
+          </button>
         </li>
       )}
     </ul>
