@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-// import Link from "next/link";
-// import Image from "next/image";
 import Image from "next/image";
 import logo from "../../public/images/yen-icon.png";
 import { RxHamburgerMenu } from "react-icons/rx";
@@ -51,7 +49,7 @@ export default function NavBar() {
         <Link href="/dashboard" className="flex items-center space-x-2">
           <h2 className="flex items-center gap-2 text-white text-2xl font-bold">
             <Image className="w-7 h-7" src={logo} alt="some text" />
-            My Spending
+            <span className="hidden sm:block">My Finances</span>
           </h2>
         </Link>
         {/* HAMBURGER BUTTON */}

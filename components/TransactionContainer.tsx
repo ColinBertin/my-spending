@@ -9,6 +9,8 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
 import { formatCurrencyIntoYen } from "@/helpers";
+// import BarChart from "./BarChart";
+// import LineChart from "./Chart";
 
 export default function TransactionContainer({
   account,
@@ -37,7 +39,7 @@ export default function TransactionContainer({
         });
 
         const sortedEntries = Object.entries(categoryTotals).sort(([a], [b]) =>
-          a.localeCompare(b)
+          a.localeCompare(b),
         );
 
         const sortedCategories = sortedEntries.map(([category]) => category);
@@ -61,6 +63,8 @@ export default function TransactionContainer({
             {name}
           </a>
           <DoughnutChart labelSet={categories || []} dataSet={spending || []} />
+          {/* <BarChart labelSet={categories || []} dataSet={spending || []} /> */}
+          {/* <LineChart labelSet={categories || []} dataSet={spending || []} /> */}
           <p className="text-lg">
             Total Spending: {formatCurrencyIntoYen(totalSpending)}
           </p>
