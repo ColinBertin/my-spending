@@ -16,6 +16,19 @@ export default function Dashboard() {
   const [myAccounts, setMyAccounts] = useState<Account[]>([]);
   const [mySharedAccounts, setMySharedAccounts] = useState<Account[]>([]);
 
+  function getTimeOfDayGreeting() {
+    const currentTime = new Date();
+    const currentHour = currentTime.getHours(); // Gets the hour (0-23)
+
+    if (currentHour >= 5 && currentHour < 12) {
+      return "Good morning, ";
+    } else if (currentHour >= 12 && currentHour < 18) {
+      return "Good afternoon, ";
+    } else {
+      return "Good evening, ";
+    }
+  }
+
   useEffect(() => {
     if (user) {
       getAccounts().then((accounts) => {
@@ -36,7 +49,8 @@ export default function Dashboard() {
   return (
     <div className="pt-20 pb-20 flex flex-col justify-center items-center gap-10">
       <h2 className="text-3xl font-bold">
-        Welcome{user.displayName && `, ${user.displayName}!`}
+        {getTimeOfDayGreeting()}
+        {user.displayName && user.displayName}!
       </h2>
       <div className="flex justify-around w-full sm:w-2/3 flex-wrap gap-18">
         {/* Single Accounts */}
