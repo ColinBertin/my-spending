@@ -8,6 +8,7 @@ import { auth } from "@/app/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
+import { formatCurrencyIntoYen } from "@/helpers";
 
 export default function TransactionContainer({
   account,
@@ -19,6 +20,7 @@ export default function TransactionContainer({
 
   const [spending, setSpending] = useState<number[]>();
   const [categories, setCategories] = useState<string[]>();
+  const [totalSpending, setTotalSpending] = useState<number>(0);
 
   const { id, name } = account ? account : {};
 
@@ -44,6 +46,7 @@ export default function TransactionContainer({
 
         setCategories(sortedCategories);
         setSpending(sortedSpending);
+        setTotalSpending(sortedSpending.reduce((acc, val) => acc + val, 0));
       });
     }
   }, [id, user]);
@@ -54,8 +57,13 @@ export default function TransactionContainer({
     <ul>
       {account && (
         <li key={name} className="flex flex-col items-center gap-4">
-          <a className="text-xl" href={`/accounts/${id}/details`}>{name}</a>
+          <a className="text-xl" href={`/accounts/${id}/details`}>
+            {name}
+          </a>
           <DoughnutChart labelSet={categories || []} dataSet={spending || []} />
+          <p className="text-lg">
+            Total Spending: {formatCurrencyIntoYen(totalSpending)}
+          </p>
           <button
             className="bg-blue-dark hover:bg-blue-light text-white font-semibold py-2 px-4 rounded-3xl self-center mb-2 sm:mb-0 cursor-pointer"
             onClick={() =>

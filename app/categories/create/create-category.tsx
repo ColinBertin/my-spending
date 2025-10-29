@@ -36,7 +36,7 @@ export default function CreateCategory() {
   if (!user) return <Loading />;
 
   return (
-    <div className="flex flex-col justify-center items-center h-full">
+    <div className="flex flex-col justify-center items-center h-full w-full">
       <form
         className="flex flex-col justify-center"
         onSubmit={handleSubmit(handleCreateCategory)}
@@ -48,7 +48,7 @@ export default function CreateCategory() {
           <input
             type="text"
             placeholder="Name"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium focus:border-purple-300"
+            className="border border-gray-500 rounded-xl w-full sm:w-80 p-2 text-gray-700 font-medium focus:border-purple-300"
             {...register("name", { required: "Name is required" })}
           />
           {errors.name && (
@@ -61,7 +61,7 @@ export default function CreateCategory() {
           <input
             type="text"
             placeholder="Color"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium focus:border-purple-300"
+            className="border border-gray-500 rounded-xl w-full sm:w-80 p-2 text-gray-700 font-medium focus:border-purple-300"
             {...register("color", { required: "Color is required" })}
           />
           {errors.color && (

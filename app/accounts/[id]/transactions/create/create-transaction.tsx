@@ -69,7 +69,7 @@ export default function CreateTransaction({ accountId }: { accountId: string }) 
         onSubmit={handleSubmit(handleCreateAccount)}
       >
         <h1 className="text-3xl font-semibold text-center text-red mb-10">
-          Add Transaction
+          New Transaction
         </h1>
         <div className="relative flex flex-col justify-around mb-8">
           <input

@@ -2,6 +2,7 @@
 
 import { getAccountById } from "@/app/lib/getAccount";
 import { getTransactions } from "@/app/lib/getTransactions";
+import { formatCurrencyIntoYen } from "@/helpers";
 import { Account, Transaction } from "@/types/firestore";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -34,7 +35,7 @@ export default function AccountDetails({ id }: { id: string }) {
                 ? transaction.date
                 : new Date(transaction.date)
               ).toLocaleDateString()}{" "}
-              - {transaction.categoryName}: ¥{transaction.amount}
+              - {transaction.categoryName}: {formatCurrencyIntoYen(transaction.amount)}
             </li>
           ))}
       </ul>
