@@ -44,7 +44,7 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="w-full fixed top-0 left-0 bg-blue-dark flex justify-between px-6 py-2 z-50">
+      <nav className="w-full fixed top-0 left-0 bg-blue-dark flex justify-between px-6 py-4 z-50">
         {/* LOGO */}
         <Link href="/dashboard" className="flex items-center space-x-2">
           <h2 className="flex items-center gap-2 text-white text-2xl font-bold">

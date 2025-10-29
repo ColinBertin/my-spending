@@ -47,7 +47,7 @@ export default function Dashboard() {
   if (!user) return <Loading />;
 
   return (
-    <div className="pt-20 pb-20 flex flex-col justify-center items-center gap-10">
+    <div className="pt-24 sm:pt-30 pb-20 flex flex-col justify-center items-center gap-10">
       <h2 className="text-3xl font-bold">
         {getTimeOfDayGreeting()}
         {user.displayName && user.displayName}!

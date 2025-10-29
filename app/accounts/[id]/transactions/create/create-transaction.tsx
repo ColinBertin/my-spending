@@ -12,12 +12,16 @@ import { createTransaction } from "@/app/lib/createTransaction";
 import { useEffect, useState } from "react";
 import { getCategories } from "@/app/lib/getCategories";
 
-export default function CreateTransaction({ accountId }: { accountId: string }) {
+export default function CreateTransaction({
+  accountId,
+}: {
+  accountId: string;
+}) {
   const router = useRouter();
   const [user] = useAuthState(auth);
 
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
 
   const {
@@ -63,7 +67,7 @@ export default function CreateTransaction({ accountId }: { accountId: string }) 
   if (!user) return <Loading />;
 
   return (
-    <div className="flex flex-col justify-center items-center pt-20 pb-10">
+    <div className="flex flex-col justify-center items-center pt-24 sm:pt-30 pb-20">
       <form
         className="flex flex-col justify-center"
         onSubmit={handleSubmit(handleCreateAccount)}
