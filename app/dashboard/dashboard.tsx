@@ -20,10 +20,10 @@ export default function Dashboard() {
     if (user) {
       getAccounts().then((accounts) => {
         const singleAccounts = accounts.filter(
-          (account) => account.type === "single"
+          (account) => account.type === "single",
         );
         const sharedAccounts = accounts.filter(
-          (account) => account.type === "shared"
+          (account) => account.type === "shared",
         );
         setMyAccounts(singleAccounts);
         setMySharedAccounts(sharedAccounts);
@@ -31,7 +31,7 @@ export default function Dashboard() {
     }
   }, [user]);
 
-  const    x = 1
+  const x = 1;
 
   if (!user) return <Loading />;
 
@@ -47,7 +47,7 @@ export default function Dashboard() {
         {mySharedAccounts && (
           <TransactionContainer account={mySharedAccounts[0]} />
         )}
-    test
+        test
       </div>
     </div>
   );
