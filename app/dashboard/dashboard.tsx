@@ -31,6 +31,8 @@ export default function Dashboard() {
     }
   }, [user]);
 
+  const    x = 1
+
   if (!user) return <Loading />;
 
   return (
