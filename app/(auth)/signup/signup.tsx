@@ -4,8 +4,10 @@ import { useForm } from "react-hook-form";
 import { auth } from "../../lib/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { FcGoogle } from "react-icons/fc";
 
 import { emailRegex } from "@/helpers";
+import Button from "@/components/Button";
 // import { useState } from "react";
 // import Spinner from "@/components/ui/Spinner";
 
@@ -41,7 +43,7 @@ export default function Signup() {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.email,
-        data.password
+        data.password,
       );
       await updateProfile(userCredential.user, {
         displayName: data.username,
@@ -141,28 +143,23 @@ export default function Signup() {
           )}
         </div>
         <div className="flex flex-col sm:flex-row justify-between">
-          <button
-            className="bg-purple-500 hover:bg-purple-300 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 mb-2 sm:mb-0"
-            type="submit"
-          >
-            Sign up
-          </button>
-          <button
-            className="bg-gray-700 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36"
-            onClick={(e) => {
+          <Button color="primary" type="submit" text="Sign up" />
+          <Button
+            color="secondary"
+            type="button"
+            text="Log in"
+            handleChange={(e) => {
               e.preventDefault();
               router.push("/login");
             }}
-          >
-            Log in
-          </button>
+          />
         </div>
       </form>
       <button
-        className="bg-purple-500 hover:bg-purple-300 text-white font-semibold py-2 px-4 rounded-3xl self-center mt-4 mb-2 sm:mb-0"
+        className="cursor-pointer py-2 px-4 rounded-3xl self-center mt-4 mb-2 sm:mb-0"
         onClick={handleGoogleSignIn}
       >
-        Sign Up / Login with Google
+        <FcGoogle size={40} />
       </button>
     </div>
   );

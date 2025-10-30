@@ -6,6 +6,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 import { emailRegex } from "@/helpers";
+import Button from "@/components/Button";
 // import { useState } from "react";
 // import Spinner from "@/components/ui/Spinner";
 
@@ -35,14 +36,14 @@ export default function Login() {
   } = useForm<SignupInput>({ mode: "onChange" });
 
   async function handleLogin(data: SignupInput) {
-      try {
-        await signInWithEmailAndPassword(auth, data.email, data.password);
-        router.push("/dashboard");
-      } catch (err: unknown) {
-        console.error("Login error:", err);
-        // setError(err.message);
-      }
+    try {
+      await signInWithEmailAndPassword(auth, data.email, data.password);
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      console.error("Login error:", err);
+      // setError(err.message);
     }
+  }
 
   // const onSubmit: SubmitHandler<SignupInput> = async (data) => {
   //   setIsFetching(true);
@@ -126,21 +127,16 @@ export default function Login() {
           )}
         </div>
         <div className="flex flex-col sm:flex-row justify-between">
-          <button
-            className="bg-purple-500 hover:bg-purple-300 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 mb-2 sm:mb-0"
-            type="submit"
-          >
-            Log in
-          </button>
-          <button
-            className="bg-gray-700 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36"
-            onClick={(e) => {
+          <Button color="primary" type="submit" text="Log in" />
+          <Button
+            color="secondary"
+            type="button"
+            text="Sign up"
+            handleChange={(e) => {
               e.preventDefault();
               router.push("/signup");
             }}
-          >
-            Sign up
-          </button>
+          />
         </div>
       </form>
       {/* <button onClick={handleGoogleSignIn}>Sign Up / Login with Google</button> */}

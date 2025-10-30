@@ -8,6 +8,7 @@ import { Account, AccountType } from "@/types/firestore";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Loading from "../loading";
+import Button from "@/components/Button";
 
 export default function CreateAccount() {
   const router = useRouter();
@@ -86,18 +87,12 @@ export default function CreateAccount() {
           />
         </div>
         <div className="flex flex-col sm:flex-row justify-between">
-          <button
-            className="bg-red-500 hover:bg-red-300 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 mb-2 sm:mb-0 cursor-pointer"
-            onClick={() => router.back()}
-          >
-            Cancel
-          </button>
-          <button
-            className="bg-blue-dark hover:bg-blue-light text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 cursor-pointer"
-            type="submit"
-          >
-            Add
-          </button>
+          <Button
+            type="button"
+            handleChange={() => router.back()}
+            text={"Cancel"}
+          />
+          <Button type="submit" color="primary" text="Add" />
         </div>
       </form>
     </div>

@@ -11,6 +11,7 @@ import Calendar from "@/components/Calendar";
 import { createTransaction } from "@/app/lib/createTransaction";
 import { useEffect, useState } from "react";
 import { getCategories } from "@/app/lib/getCategories";
+import Button from "@/components/Button";
 
 export default function CreateTransaction({
   accountId,
@@ -158,18 +159,12 @@ export default function CreateTransaction({
           <small className="text-red-500 text-sm">{errors.date.message}</small>
         )}
         <div className="flex flex-col sm:flex-row justify-between mt-4">
-          <button
-            className="bg-red-500 hover:bg-red-300 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 mb-2 sm:mb-0 cursor-pointer"
-            onClick={() => router.back()}
-          >
-            Cancel
-          </button>
-          <button
-            className="bg-gray-700 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-36 cursor-pointer"
-            type="submit"
-          >
-            Add
-          </button>
+          <Button
+            type="button"
+            handleChange={() => router.back()}
+            text="Cancel"
+          />
+          <Button type="submit" color="primary" text="Add" />
         </div>
       </form>
     </div>

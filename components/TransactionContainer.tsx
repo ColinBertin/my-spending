@@ -10,6 +10,7 @@ import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
 import { formatCurrencyIntoYen } from "@/helpers";
 import MonthlyTransactions from "./MonthlyTransactions";
+import Button from "./Button";
 // import BarChart from "./BarChart";
 // import LineChart from "./Chart";
 
@@ -70,14 +71,14 @@ export default function TransactionContainer({
             Total Spending: {formatCurrencyIntoYen(totalSpending)}
           </p>
           <MonthlyTransactions accountId={id as string} />
-          <button
-            className="bg-blue-dark hover:bg-blue-light text-white font-semibold py-2 px-4 rounded-3xl self-center mb-2 sm:mb-0 cursor-pointer"
-            onClick={() =>
+          <Button
+            type="button"
+            handleChange={() =>
               router.push(`/accounts/${account.id}/transactions/create`)
             }
-          >
-            Add Transaction
-          </button>
+            text="Add Transaction"
+            color="primary"
+          />
         </li>
       )}
     </ul>
