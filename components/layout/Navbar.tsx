@@ -78,7 +78,7 @@ export default function NavBar() {
           ref={dropdownRef}
           className={clsx(
             navbar
-              ? "fixed md:top-6 md:right-2 h-screen w-screen md:w-52 md:h-auto"
+              ? "fixed md:top-10 md:right-2 h-screen w-screen md:w-52 md:h-auto"
               : "hidden",
             "flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-blue-dark md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded",
           )}

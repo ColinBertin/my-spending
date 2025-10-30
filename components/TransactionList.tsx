@@ -1,5 +1,7 @@
-import { formatCurrencyIntoYen } from "@/helpers";
+// import { formatCurrencyIntoYen } from "@/helpers";
 import { Transaction } from "@/types/firestore";
+// import { FinanceIcon } from "./FinanceIcon";
+import TransactionCard from "./TransactionCard";
 
 type TransactionListProps = {
   transactions: Transaction[];
@@ -9,16 +11,10 @@ export default function TransactionList({
   transactions,
 }: TransactionListProps) {
   return (
-    <ul>
+    <ul className="divide-y border border-gray-200 rounded p-2 h-96 overflow-y-auto">
       {transactions &&
         transactions.map((transaction) => (
-          <li key={transaction.id}>
-            {(transaction.date instanceof Date
-              ? transaction.date
-              : new Date(transaction.date)
-            ).toLocaleString()}{" "}
-            - {transaction.title}: {formatCurrencyIntoYen(transaction.amount)}
-          </li>
+          <TransactionCard key={transaction.id} transaction={transaction} />
         ))}
     </ul>
   );

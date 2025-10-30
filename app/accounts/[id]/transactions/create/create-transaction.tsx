@@ -21,9 +21,9 @@ export default function CreateTransaction({
   const router = useRouter();
   const [user] = useAuthState(auth);
 
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    [],
-  );
+  const [categories, setCategories] = useState<
+    { id: string; name: string; icon: string }[]
+  >([]);
 
   const {
     register,
@@ -39,6 +39,7 @@ export default function CreateTransaction({
     const nextTransaction = {
       ...data,
       categoryName: category?.name || "",
+      categoryIcon: category?.icon || "",
       type: data.type.toLowerCase() as TransactionType,
       currency: data.currency.toLowerCase(),
       userId: user?.uid as string,
@@ -60,6 +61,7 @@ export default function CreateTransaction({
       const formatted = categories.map((category) => ({
         id: category.id,
         name: category.name,
+        icon: category.icon || "",
       }));
       setCategories(formatted);
     });

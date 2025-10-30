@@ -33,6 +33,7 @@ export interface Transaction {
   type: TransactionType;
   categoryId: string;
   categoryName: string;
+  categoryIcon?: string;
   amount: number;
   currency: string;
   date: Date;

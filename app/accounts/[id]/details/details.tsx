@@ -61,7 +61,7 @@ export default function AccountDetails({ id }: { id: string }) {
   }, [id, selectedMonth, selectedYear]);
 
   return (
-    <div className="flex flex-col justify-center items-center h-full">
+    <div className="flex flex-col justify-center items-center h-full mt-12">
       <h1 className="text-3xl font-semibold text-center text-red mb-10">
         {account?.name}
       </h1>

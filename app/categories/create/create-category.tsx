@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import Loading from "./loading";
 import { createCategory } from "@/app/lib/createCategory";
 import Button from "@/components/Button";
+import { FinanceIconPicker } from "@/components/FinanceIconPicker";
 
 export default function CreateCategory() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function CreateCategory() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<Category>({ mode: "onChange" });
 
@@ -37,7 +39,7 @@ export default function CreateCategory() {
   if (!user) return <Loading />;
 
   return (
-    <div className="flex flex-col justify-center items-center h-full w-full">
+    <div className="flex flex-col justify-center items-center h-full w-full mt-32">
       <form
         className="flex flex-col justify-center"
         onSubmit={handleSubmit(handleCreateCategory)}
@@ -70,6 +72,12 @@ export default function CreateCategory() {
               {errors.color.message}
             </small>
           )}
+        </div>
+        <div>
+          <FinanceIconPicker
+            onSelect={(icon) => setValue("icon", icon)}
+            {...register("icon", { required: "Icon is required" })}
+          />
         </div>
         <div className="flex flex-col sm:flex-row justify-between">
           <Button

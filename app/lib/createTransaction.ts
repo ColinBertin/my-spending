@@ -13,6 +13,7 @@ export async function createTransaction({
   accountId,
   categoryId,
   categoryName,
+  categoryIcon,
 }: Transaction & { userId: string }) {
   if (
     !title ||
@@ -44,6 +45,7 @@ export async function createTransaction({
     accountId,
     createdBy: userId,
     createdAt: new Date(),
+    categoryIcon,
   });
 
   return docRef.id;
