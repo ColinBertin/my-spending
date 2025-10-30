@@ -21,3 +21,18 @@ export function getCurrentMonthRange() {
   );
   return { startOfMonth, endOfMonth };
 }
+
+export function getMonthRange(monthNumber: number, year?: number) {
+  const targetYear = year ?? new Date().getFullYear();
+
+  const monthIndex = monthNumber - 1;
+
+  if (monthIndex < 0 || monthIndex > 11) {
+    throw new Error("Invalid month number. Must be between 1 and 12.");
+  }
+
+  const startOfMonth = new Date(targetYear, monthIndex, 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(targetYear, monthIndex + 1, 0, 23, 59, 59, 999);
+
+  return { startOfMonth, endOfMonth };
+}
