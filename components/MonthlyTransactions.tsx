@@ -1,7 +1,7 @@
 import { getThisMonthTransactions } from "@/app/lib/getThisMonthTransactions";
-import { formatCurrencyIntoYen } from "@/helpers";
 import { Transaction } from "@/types/firestore";
 import { useEffect, useState } from "react";
+import TransactionList from "./TransactionList";
 
 export default function MonthlyTransactions({
   accountId,
@@ -18,18 +18,8 @@ export default function MonthlyTransactions({
   }, [accountId]);
 
   return (
-    <ul>
-      {currentMonthTransactions &&
-        currentMonthTransactions.map((transaction) => (
-          <li key={transaction.id}>
-            {(transaction.date instanceof Date
-              ? transaction.date
-              : new Date(transaction.date)
-            ).toLocaleDateString()}{" "}
-            - {transaction.categoryName}:{" "}
-            {formatCurrencyIntoYen(transaction.amount)}
-          </li>
-        ))}
-    </ul>
+    currentMonthTransactions && (
+      <TransactionList transactions={currentMonthTransactions} />
+    )
   );
 }

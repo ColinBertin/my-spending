@@ -3,7 +3,7 @@
 import { getAccountById } from "@/app/lib/getAccount";
 import { getTransactions } from "@/app/lib/getTransactions";
 import Button from "@/components/Button";
-import { formatCurrencyIntoYen } from "@/helpers";
+import TransactionList from "@/components/TransactionList";
 import { Account, Transaction } from "@/types/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -33,19 +33,9 @@ export default function AccountDetails({ id }: { id: string }) {
       <h1 className="text-3xl font-semibold text-center text-red mb-10">
         {account?.name}
       </h1>
-      <ul className="mb-4">
-        {transactions &&
-          transactions.map((transaction) => (
-            <li key={transaction.id}>
-              {(transaction.date instanceof Date
-                ? transaction.date
-                : new Date(transaction.date)
-              ).toLocaleDateString()}{" "}
-              - {transaction.categoryName}:{" "}
-              {formatCurrencyIntoYen(transaction.amount)}
-            </li>
-          ))}
-      </ul>
+      <div className="mb-6">
+        {transactions && <TransactionList transactions={transactions} />}
+      </div>
       <Button
         type="button"
         handleChange={() => router.push(`/accounts/${id}/transactions/create`)}
