@@ -84,4 +84,8 @@ export const financeIcons = [
   "HiCompass",
   "HiSunrise",
   "HiCloud",
+  "HiLightBulb",
+  "HiDeviceMobile",
+  "HiCurrencyYen",
+  "HiFilm",
 ];
