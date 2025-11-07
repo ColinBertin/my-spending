@@ -18,8 +18,12 @@ export default function MonthlyTransactions({
   }, [accountId]);
 
   return (
-    currentMonthTransactions && (
-      <TransactionList transactions={currentMonthTransactions} />
-    )
+    <>
+      {currentMonthTransactions && currentMonthTransactions.length > 0 ? (
+        <TransactionList transactions={currentMonthTransactions} />
+      ) : (
+        <p className="font-bold">No transactions found.</p>
+      )}
+    </>
   );
 }
