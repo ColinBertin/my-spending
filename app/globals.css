@@ -1,18 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @theme {
-  --color-orange-dark: #F17720;
-  --color-orange-light: #FFA630;
-  --color-white-custom: #EBEBEB;
-  --color-blue-light: #00A7E1;
-  --color-blue-dark: #0474BA;
+  --color-orange-dark: #f17720;
+  --color-orange-light: #ffa630;
+  --color-white-custom: #ebebeb;
+  --color-blue-light: #00a7e1;
+  --color-blue-dark: #0474ba;
 }
 
 @custom-variant dark (&:is(.dark *));
-
-body {
-  box-sizing: border-box;
-}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

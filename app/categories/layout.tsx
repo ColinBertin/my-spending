@@ -9,7 +9,7 @@ export const metadata = {
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <ProtectedRoute>
-      <div className="h-full w-full">
+      <div>
         <Navbar />
         {children}
       </div>

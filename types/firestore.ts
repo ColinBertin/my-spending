@@ -34,6 +34,7 @@ export interface Transaction {
   categoryId: string;
   categoryName: string;
   categoryIcon?: string;
+  categoryIconPack?: string;
   amount: number;
   currency: string;
   date: Date;
@@ -50,4 +51,5 @@ export interface Category {
   color: string;
   createdAt: Date;
   icon?: string;
+  iconPack?: string;
 }

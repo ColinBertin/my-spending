@@ -39,9 +39,9 @@ export default function CreateCategory() {
   if (!user) return <Loading />;
 
   return (
-    <div className="flex flex-col justify-center items-center h-full w-full mt-32">
+    <div className="flex flex-col justify-center items-center h-full w-full mt-24">
       <form
-        className="flex flex-col justify-center"
+        className="flex flex-col justify-center items-center md:w-1/2"
         onSubmit={handleSubmit(handleCreateCategory)}
       >
         <h1 className="text-3xl font-semibold text-center text-red mb-10">
@@ -60,7 +60,7 @@ export default function CreateCategory() {
             </small>
           )}
         </div>
-        <div className="relative flex flex-col justify-around mb-8 w-full">
+        <div className="relative flex flex-col justify-around mb-8">
           <input
             type="text"
             placeholder="Color"
@@ -75,7 +75,10 @@ export default function CreateCategory() {
         </div>
         <div>
           <FinanceIconPicker
-            onSelect={(icon) => setValue("icon", icon)}
+            onSelect={(icon) => {
+              setValue("icon", icon.name);
+              setValue("iconPack", icon.pack);
+            }}
             {...register("icon", { required: "Icon is required" })}
           />
         </div>

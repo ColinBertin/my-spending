@@ -11,7 +11,7 @@ export default function TransactionList({
   transactions,
 }: TransactionListProps) {
   return (
-    <ul className="divide-y border border-gray-200 bg-white rounded p-2 h-96 overflow-y-auto">
+    <ul className="">
       {transactions &&
         transactions.map((transaction) => (
           <TransactionCard key={transaction.id} transaction={transaction} />
