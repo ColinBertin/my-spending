@@ -5,6 +5,7 @@ import { getMonthlyRangeTransactions } from "@/app/lib/getMonthlyRangeTransactio
 import Button from "@/components/Button";
 import Select from "@/components/Select";
 import TransactionList from "@/components/TransactionList";
+import { months } from "@/helpers";
 import { Account, Transaction } from "@/types/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -19,21 +20,6 @@ export default function AccountDetails({ id }: { id: string }) {
   const [transactions, setTransactions] = useState<Transaction[]>();
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   const [selectedYear, setSelectedYear] = useState<string>(currentYear);
-
-  const months = [
-    { id: "1", name: "January" },
-    { id: "2", name: "February" },
-    { id: "3", name: "March" },
-    { id: "4", name: "April" },
-    { id: "5", name: "May" },
-    { id: "6", name: "June" },
-    { id: "7", name: "July" },
-    { id: "8", name: "August" },
-    { id: "9", name: "September" },
-    { id: "10", name: "October" },
-    { id: "11", name: "November" },
-    { id: "12", name: "December" },
-  ];
 
   const years = Array.from(
     { length: 8 },

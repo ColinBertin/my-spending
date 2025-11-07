@@ -37,107 +37,191 @@ export function getMonthRange(monthNumber: number, year?: number) {
   return { startOfMonth, endOfMonth };
 }
 
+export const months = [
+  { id: "1", name: "January" },
+  { id: "2", name: "February" },
+  { id: "3", name: "March" },
+  { id: "4", name: "April" },
+  { id: "5", name: "May" },
+  { id: "6", name: "June" },
+  { id: "7", name: "July" },
+  { id: "8", name: "August" },
+  { id: "9", name: "September" },
+  { id: "10", name: "October" },
+  { id: "11", name: "November" },
+  { id: "12", name: "December" },
+];
+
 export const financeIcons = {
   hi: [
-    "HiHome",
-    "HiOfficeBuilding",
+    // Essentials / everyday
     "HiShoppingBag",
-    "HiKey",
     "HiBolt",
     "HiSun",
     "HiPhone",
     "HiWifi",
-    "HiDesktopComputer",
     "HiShoppingCart",
     "HiCake",
     "HiUserGroup",
     "HiCoffee",
     "HiEmojiHappy",
-    "HiCar",
-    "HiBus",
-    "HiAcademicCap",
-    "HiTrain",
-    "HiPaperAirplane",
     "HiHeart",
-    "HiPill",
-    "HiClipboardCheck",
-    "HiBandage",
-    "HiPaw",
-    "HiFilm",
+    "HiSparkles",
+    "HiLightBulb",
+
+    // Travel / outdoors
+    "HiMap",
+    "HiCompass",
+    "HiGlobeAlt",
+    "HiSunrise",
+    "HiCloud",
+    "HiDeviceMobile",
+    "HiPaperAirplane",
+    "HiCamera",
+
+    // Leisure / fun
     "HiMusicNote",
     "HiDeviceGamepad",
-    "HiCamera",
     "HiBookOpen",
     "HiTicket",
+    "HiGift",
+
+    // Work / learning / productivity
+    "HiAcademicCap",
+    "HiClipboardCheck",
+    "HiChartBar",
+    "HiChartPie",
+
+    // Finance
     "HiCurrencyDollar",
     "HiCreditCard",
     "HiBanknotes",
-    "HiChartBar",
-    "HiChartPie",
-    "HiGift",
     "HiTag",
-    "HiClock",
-    "HiGlasses",
-    "HiScissors",
-    "HiSparkles",
-    "HiGlobeAlt",
-    "HiMap",
-    "HiCompass",
-    "HiSunrise",
-    "HiCloud",
-    "HiLightBulb",
-    "HiDeviceMobile",
-    "HiCurrencyYen",
+
+    // Health & wellness
+    "HiPill",
+    "HiPaw",
+
+    // New lifestyle additions
+    "HiFire", // energy / fitness
+    "HiBeaker", // science / self-improvement
+    "HiGlobe", // travel
+    "HiChatAlt2", // communication
+
+    "HiHome",
+    "HiOfficeBuilding",
+    "HiBuildingLibrary",
   ],
+
   fa: [
-    "FaHome",
-    "FaBuilding",
-    "FaShoppingBag",
-    "FaKey",
-    "FaBolt",
-    "FaSun",
-    "FaPhone",
-    "FaWifi",
-    "FaDesktop",
-    "FaShoppingCart",
-    "FaBirthdayCake",
-    "FaUsers",
+    // Everyday / communication
     "FaCoffee",
     "FaSmile",
+    "FaHeart",
+    "FaPhone",
+    "FaSun",
+    "FaWifi",
+    "FaPaperPlane",
+
+    // Travel / leisure
     "FaCar",
     "FaBus",
-    "FaGraduationCap",
-    "FaTrain",
-    "FaPaperPlane",
-    "FaHeart",
+    "FaPlane",
+    "FaBicycle",
+    "FaCamera",
+    "FaMapMarkedAlt",
+    "FaUmbrellaBeach",
+
+    // Fitness / lifestyle
+    "FaRunning",
+    "FaDumbbell",
+    "FaSwimmer",
+
+    // Food / drink
+    "FaAppleAlt",
+    "FaPizzaSlice",
+    "FaGlassCheers",
+    "FaBeer",
+
+    // Entertainment / hobbies
+    "FaMusic",
+    "FaFilm",
+    "FaGamepad",
+    "FaBook",
+    "FaGift",
+
+    // Finance
+    "FaChartPie",
+    "FaCreditCard",
+    "FaMoneyBillWave",
   ],
+
   md: [
+    // Wellness / nature
     "MdHealthAndSafety",
     "MdOutlineLocalPharmacy",
     "MdOutlinePets",
+    "MdOutlineSpa",
+    "MdOutlineEmojiNature",
+    "MdOutlineSelfImprovement",
+
+    // Fitness
+    "MdOutlineSportsSoccer",
+    "MdOutlineFitnessCenter",
+
+    // Food & drink
+    "MdRestaurantMenu",
+    "MdFastfood",
+    "MdLocalDrink",
+    "MdLocalDining",
+
+    // Entertainment / leisure
     "MdOutlineMovie",
     "MdMusicNote",
     "MdSportsEsports",
     "MdOutlineCameraAlt",
     "MdMenuBook",
+    "MdOutlineLibraryBooks",
     "MdConfirmationNumber",
+    "MdCardGiftcard",
+
+    // Travel / exploration
+    "MdExplore",
+    "MdOutlineMap",
+    "MdWbSunny",
+    "MdCloud",
+    "MdFlightTakeoff",
+    "MdFlight",
+    "MdOutlineBeachAccess",
+
+    // Finance / productivity
     "MdAttachMoney",
     "MdCreditCard",
     "MdAccountBalance",
     "MdBarChart",
     "MdPieChart",
-    "MdCardGiftcard",
     "MdLabel",
     "MdAccessTime",
-    "MdOutlineWatch",
-    "MdOutlineMap",
-    "MdExplore",
-    "MdWbSunny",
-    "MdCloud",
     "MdLightbulb",
     "MdPhoneIphone",
-    "MdCurrencyYen",
-    "MdOutlineSportsSoccer",
+
+    // Housing / essentials
+    "MdElectricBolt",
+    "MdWaterDrop",
+    "MdOutlineHome",
+    "MdOutlineBusiness",
+    "MdOutlineApartment",
   ],
-  bi: ["BiDumbbell"],
+
+  bi: [
+    "BiDumbbell", // fitness
+    "BiDrink", // beverage / relax
+    "BiSpa", // relaxation / self-care
+    "BiMusic", // music
+    "BiCamera", // photography
+    "BiCycling", // sports / outdoor
+    "BiMoviePlay", // entertainment
+    "BiPlanet", // travel / nature
+    "BiHeartCircle", // wellness
+  ],
 };

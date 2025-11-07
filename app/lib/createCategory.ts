@@ -7,15 +7,17 @@ export async function createCategory({
   color,
   userId,
   icon,
+  iconPack,
 }: Category & { userId: string }) {
-  if (!name || !color || !icon) {
-    throw new Error("Missing required fields: name, currency, or type.");
+  if (!name || !color || !icon || !iconPack) {
+    throw new Error("Missing required fields: name, color, icon, or iconPack.");
   }
 
   const docRef = await addDoc(collection(db, "categories"), {
     name,
     color,
     icon,
+    iconPack,
     userId,
     createdAt: new Date(),
   });

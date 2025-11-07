@@ -14,6 +14,7 @@ export async function createTransaction({
   categoryId,
   categoryName,
   categoryIcon,
+  categoryIconPack,
 }: Transaction & { userId: string }) {
   if (
     !title ||
@@ -24,9 +25,12 @@ export async function createTransaction({
     !accountId ||
     !userId ||
     !categoryId ||
-    !categoryName
+    !categoryName ||
+    !categoryIconPack
   ) {
-    throw new Error("Missing required fields: title, currency, or type.");
+    throw new Error(
+      "Missing required fields: title, type, currency, amount, date, accountId, userId, categoryId, categoryName, or categoryIconPack.",
+    );
   }
 
   if (!["expense", "income"].includes(type)) {
@@ -46,6 +50,7 @@ export async function createTransaction({
     createdBy: userId,
     createdAt: new Date(),
     categoryIcon,
+    categoryIconPack,
   });
 
   return docRef.id;
