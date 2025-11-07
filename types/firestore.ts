@@ -35,6 +35,7 @@ export interface Transaction {
   categoryName: string;
   categoryIcon?: string;
   categoryIconPack?: string;
+  categoryColor?: string;
   amount: number;
   currency: string;
   date: Date;

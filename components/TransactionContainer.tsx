@@ -81,7 +81,7 @@ export default function TransactionContainer({
   if (loading) return <Loading />;
 
   return (
-    <ul className="divide-x divide-gray-300">
+    <ul className="">
       {account && (
         <li key={name} className="flex flex-col items-center gap-4">
           <a className="text-2xl font-bold" href={`/accounts/${id}/details`}>

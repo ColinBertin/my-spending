@@ -15,6 +15,7 @@ export async function createTransaction({
   categoryName,
   categoryIcon,
   categoryIconPack,
+  categoryColor,
 }: Transaction & { userId: string }) {
   if (
     !title ||
@@ -26,10 +27,11 @@ export async function createTransaction({
     !userId ||
     !categoryId ||
     !categoryName ||
-    !categoryIconPack
+    !categoryIconPack ||
+    !categoryColor
   ) {
     throw new Error(
-      "Missing required fields: title, type, currency, amount, date, accountId, userId, categoryId, categoryName, or categoryIconPack.",
+      "Missing required fields: title, type, currency, amount, date, accountId, userId, categoryId, categoryName, categoryColor, or categoryIconPack.",
     );
   }
 
@@ -51,6 +53,7 @@ export async function createTransaction({
     createdAt: new Date(),
     categoryIcon,
     categoryIconPack,
+    categoryColor,
   });
 
   return docRef.id;

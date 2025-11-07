@@ -8,7 +8,7 @@ export default function MonthlyTransactions({
   transactions?: Transaction[];
 }) {
   return (
-    <div className="h-80 overflow-scroll">
+    <div className="h-80 w-full px-2 overflow-scroll">
       {transactions && transactions.length > 0 ? (
         <TransactionList transactions={transactions} />
       ) : (

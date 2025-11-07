@@ -3,19 +3,25 @@ import * as FaIcons from "react-icons/fa";
 import * as MdIcons from "react-icons/md";
 import * as BiIcons from "react-icons/bi";
 import type { FC } from "react";
+import { colorCodes } from "@/helpers";
 
 interface FinanceIconProps {
   icon: string;
   iconPack: string;
+  iconColor: string;
   className?: string;
 }
 
 export const FinanceIcon: FC<FinanceIconProps> = ({
   icon,
   iconPack,
+  iconColor,
   className = "w-8 h-8 py-1 border rounded-full text-orange-dark",
 }) => {
-  const iconSets: Record<string, Record<string, FC<{ className?: string }>>> = {
+  const iconSets: Record<
+    string,
+    Record<string, FC<React.SVGProps<SVGSVGElement>>>
+  > = {
     hi: HiIcons,
     fa: FaIcons,
     md: MdIcons,
@@ -27,5 +33,12 @@ export const FinanceIcon: FC<FinanceIconProps> = ({
 
   if (!IconComponent) return null;
 
-  return <IconComponent className={className} />;
+  return (
+    <IconComponent
+      className={className}
+      style={{
+        color: colorCodes[iconColor as keyof typeof colorCodes] ?? "#f97316",
+      }}
+    />
+  );
 };

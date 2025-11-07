@@ -13,6 +13,7 @@ export default function TransactionCard({ transaction }: TransactionCardProps) {
         <FinanceIcon
           icon={transaction.categoryIcon}
           iconPack={transaction.categoryIconPack}
+          iconColor={transaction.categoryColor || ""}
         />
       )}
       <div className="flex flex-col">

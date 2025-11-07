@@ -37,6 +37,38 @@ export function getMonthRange(monthNumber: number, year?: number) {
   return { startOfMonth, endOfMonth };
 }
 
+export const colorCodes = {
+  // Warm tones
+  coral: "#F87171", // soft red-coral
+  salmon: "#FB7185", // gentle pinkish red
+  peach: "#FDBA74", // warm orange-peach
+  amber: "#FACC15", // muted golden yellow
+
+  // Greens
+  mint: "#86EFAC", // soft mint green
+  emerald: "#34D399", // calm emerald
+  sage: "#A3E635", // light green with yellow hint
+  olive: "#A3B18A", // earthy green tone
+
+  // Blues
+  sky: "#7DD3FC", // bright sky blue
+  azure: "#60A5FA", // soft vivid blue
+  denim: "#3B82F6", // calm mid blue
+  teal: "#2DD4BF", // aqua teal, smooth and fresh
+
+  // Purples & violets
+  lavender: "#C4B5FD", // light lavender
+  violet: "#A78BFA", // medium violet
+  orchid: "#D8B4FE", // pastel purple-pink
+  indigo: "#818CF8", // soft indigo blue
+
+  // Neutrals
+  gray: "#9CA3AF", // neutral gray
+  coolGray: "#94A3B8", // slightly bluish gray
+  slate: "#64748B", // deep but soft slate gray
+  warmGray: "#A8A29E", // warmer neutral gray
+};
+
 export const months = [
   { id: "1", name: "January" },
   { id: "2", name: "February" },

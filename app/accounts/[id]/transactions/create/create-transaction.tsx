@@ -22,7 +22,13 @@ export default function CreateTransaction({
   const [user] = useAuthState(auth);
 
   const [categories, setCategories] = useState<
-    { id: string; name: string; icon: string; iconPack: string }[]
+    {
+      id: string;
+      name: string;
+      icon: string;
+      iconPack: string;
+      iconColor: string;
+    }[]
   >([]);
 
   const {
@@ -41,6 +47,7 @@ export default function CreateTransaction({
       categoryName: category?.name || "",
       categoryIcon: category?.icon || "",
       categoryIconPack: category?.iconPack || "",
+      categoryColor: category?.iconColor || "",
       type: data.type.toLowerCase() as TransactionType,
       currency: data.currency.toLowerCase(),
       userId: user?.uid as string,
@@ -64,6 +71,7 @@ export default function CreateTransaction({
         name: category.name,
         icon: category.icon || "",
         iconPack: category.iconPack || "",
+        iconColor: category.color,
       }));
       setCategories(formatted);
     });
