@@ -82,7 +82,7 @@ export default function CreateCategory() {
             </small>
           )}
         </div> */}
-        <div className="relative flex flex-col justify-around items-center mb-4 w-full">
+        <div className="relative flex flex-col justify-around items-center px-2 mb-4 w-full">
           <Label text="Color" htmlFor="color" />
           <Controller
             name="color"

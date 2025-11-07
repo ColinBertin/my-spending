@@ -38,35 +38,113 @@ export function getMonthRange(monthNumber: number, year?: number) {
 }
 
 export const colorCodes = {
-  // Warm tones
-  coral: "#F87171", // soft red-coral
-  salmon: "#FB7185", // gentle pinkish red
-  peach: "#FDBA74", // warm orange-peach
-  amber: "#FACC15", // muted golden yellow
+  // Reds & Warm Pinks
+  rose: "#FEE2E2",
+  coral: "#F87171",
+  salmon: "#FB7185",
+  ruby: "#F43F5E",
+  watermelon: "#FF6B6B",
+  flamingo: "#FCA5A5",
+  blush: "#FDA4AF",
+  hibiscus: "#E11D48",
+  dustyPink: "#F9A8D4",
+  softRed: "#FCA5A5",
+
+  // Oranges & Ambers
+  apricot: "#FED7AA",
+  peach: "#FDBA74",
+  tangerine: "#FB923C",
+  amber: "#FACC15",
+  honey: "#FCD34D",
+  pumpkin: "#F97316",
+  carrot: "#EA580C",
+  clay: "#FCA652",
+  copper: "#D97706",
+  sunset: "#FB923C",
+
+  // Yellows
+  butter: "#FEF3C7",
+  lemon: "#FDE68A",
+  gold: "#FBBF24",
+  sunflower: "#FCD34D",
+  mustard: "#EAB308",
+  straw: "#FACC15",
+  flax: "#EABF9F",
+  vanilla: "#FAE1B9",
+  sand: "#FCE7B2",
+  mellowYellow: "#FFF7AE",
 
   // Greens
-  mint: "#86EFAC", // soft mint green
-  emerald: "#34D399", // calm emerald
-  sage: "#A3E635", // light green with yellow hint
-  olive: "#A3B18A", // earthy green tone
+  mint: "#86EFAC",
+  jade: "#4ADE80",
+  emerald: "#34D399",
+  sage: "#A3E635",
+  olive: "#A3B18A",
+  pistachio: "#93C5FD",
+  lime: "#84CC16",
+  moss: "#65A30D",
+  fern: "#4D7C0F",
+  basil: "#15803D",
 
   // Blues
-  sky: "#7DD3FC", // bright sky blue
-  azure: "#60A5FA", // soft vivid blue
-  denim: "#3B82F6", // calm mid blue
-  teal: "#2DD4BF", // aqua teal, smooth and fresh
+  sky: "#7DD3FC",
+  babyBlue: "#BAE6FD",
+  azure: "#60A5FA",
+  denim: "#3B82F6",
+  ocean: "#2563EB",
+  navy: "#1D4ED8",
+  teal: "#2DD4BF",
+  turquoise: "#22D3EE",
+  cyan: "#06B6D4",
+  powderBlue: "#93C5FD",
 
-  // Purples & violets
-  lavender: "#C4B5FD", // light lavender
-  violet: "#A78BFA", // medium violet
-  orchid: "#D8B4FE", // pastel purple-pink
-  indigo: "#818CF8", // soft indigo blue
+  // Purples & Violets
+  lavender: "#C4B5FD",
+  violet: "#A78BFA",
+  orchid: "#D8B4FE",
+  lilac: "#E9D5FF",
+  indigo: "#818CF8",
+  grape: "#7C3AED",
+  mauve: "#C084FC",
+  amethyst: "#A855F7",
+  iris: "#8B5CF6",
+  periwinkle: "#93A8FB",
 
-  // Neutrals
-  gray: "#9CA3AF", // neutral gray
-  coolGray: "#94A3B8", // slightly bluish gray
-  slate: "#64748B", // deep but soft slate gray
-  warmGray: "#A8A29E", // warmer neutral gray
+  // Browns & Earthy tones
+  beige: "#F5F5DC",
+  sandBrown: "#E4C590",
+  caramel: "#D6A76A",
+  toffee: "#C67C48",
+  mocha: "#B08968",
+  taupe: "#A78B71",
+  coffee: "#8B5E3C",
+  chestnut: "#7F5539",
+  sienna: "#A0522D",
+  terracotta: "#E07A5F",
+
+  // Grays & Cool Neutrals
+  gray: "#9CA3AF",
+  coolGray: "#94A3B8",
+  slate: "#64748B",
+  warmGray: "#A8A29E",
+  ash: "#B0B8C5",
+  stone: "#D6D3D1",
+  cloud: "#E5E7EB",
+  silver: "#D1D5DB",
+  smoke: "#737373",
+  graphite: "#4B5563",
+
+  // Extra Accents
+  seafoam: "#99F6E4",
+  aqua: "#67E8F9",
+  skyMint: "#5EEAD4",
+  blushPink: "#F9A8D4",
+  iceBlue: "#E0F2FE",
+  lavenderBlush: "#F5E1FF",
+  peachCream: "#FFE4C4",
+  // mintCream: "#F0FFF4",
+  // ivory: "#FFFFF0",
+  // alabaster: "#FAFAFA",
 };
 
 export const months = [
