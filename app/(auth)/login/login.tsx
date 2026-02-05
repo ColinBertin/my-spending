@@ -1,12 +1,11 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { auth } from "../../lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 import { emailRegex } from "@/helpers";
 import Button from "@/components/Button";
+import { signInWithPassword } from "@/utils/authClient";
 // import { useState } from "react";
 // import Spinner from "@/components/ui/Spinner";
 
@@ -37,7 +36,11 @@ export default function Login() {
 
   async function handleLogin(data: SignupInput) {
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const { error } = await signInWithPassword(data.email, data.password);
+      if (error) {
+        console.error("Login error:", error);
+        return;
+      }
       router.push("/dashboard");
     } catch (err: unknown) {
       console.error("Login error:", err);

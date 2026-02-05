@@ -1,6 +1,6 @@
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "./firebase";
 import { Transaction } from "@/types/firestore";
+import { createClient } from "@/utils/supabase/client";
+import { createMockTransaction, isMockEnabled } from "@/utils/mockData";
 
 export async function createTransaction({
   title,
@@ -39,22 +39,51 @@ export async function createTransaction({
     throw new Error('Invalid type. Must be "expense" or "income".');
   }
 
-  const docRef = await addDoc(collection(db, "transactions"), {
-    categoryId,
-    categoryName,
-    title,
-    type,
-    currency,
-    amount: parseInt(amount as unknown as string, 10),
-    note,
-    date,
-    accountId,
-    createdBy: userId,
-    createdAt: new Date(),
-    categoryIcon,
-    categoryIconPack,
-    categoryColor,
-  });
+  if (isMockEnabled()) {
+    return createMockTransaction({
+      id: "",
+      title,
+      type,
+      currency,
+      amount: parseInt(amount as unknown as string, 10),
+      note,
+      date,
+      accountId,
+      createdBy: userId,
+      createdAt: new Date(),
+      categoryId,
+      categoryName,
+      categoryIcon,
+      categoryIconPack,
+      categoryColor,
+    });
+  }
 
-  return docRef.id;
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("transactions")
+    .insert({
+      categoryId,
+      categoryName,
+      title,
+      type,
+      currency,
+      amount: parseInt(amount as unknown as string, 10),
+      note,
+      date: date instanceof Date ? date.toISOString() : date,
+      accountId,
+      createdBy: userId,
+      createdAt: new Date().toISOString(),
+      categoryIcon,
+      categoryIconPack,
+      categoryColor,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data?.id as string;
 }

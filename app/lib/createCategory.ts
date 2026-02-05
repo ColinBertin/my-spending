@@ -1,6 +1,6 @@
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "./firebase";
 import { Category } from "@/types/firestore";
+import { createClient } from "@/utils/supabase/client";
+import { createMockCategory, isMockEnabled } from "@/utils/mockData";
 
 export async function createCategory({
   name,
@@ -13,14 +13,35 @@ export async function createCategory({
     throw new Error("Missing required fields: name, color, icon, or iconPack.");
   }
 
-  const docRef = await addDoc(collection(db, "categories"), {
-    name,
-    color,
-    icon,
-    iconPack,
-    userId,
-    createdAt: new Date(),
-  });
+  if (isMockEnabled()) {
+    return createMockCategory({
+      id: "",
+      name,
+      color,
+      icon,
+      iconPack,
+      userId,
+      createdAt: new Date(),
+    });
+  }
 
-  return docRef.id;
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("categories")
+    .insert({
+      name,
+      color,
+      icon,
+      iconPack,
+      userId,
+      createdAt: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data?.id as string;
 }

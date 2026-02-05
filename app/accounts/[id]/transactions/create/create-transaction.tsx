@@ -1,7 +1,5 @@
 "use client";
 
-import { auth } from "@/firebaseConfig";
-import { useAuthState } from "react-firebase-hooks/auth";
 import Select from "@/components/Select";
 import { Transaction, TransactionType } from "@/types/firestore";
 import { useRouter } from "next/navigation";
@@ -12,6 +10,7 @@ import { createTransaction } from "@/app/lib/createTransaction";
 import { useEffect, useState } from "react";
 import { getCategories } from "@/app/lib/getCategories";
 import Button from "@/components/Button";
+import { useAuthUser } from "@/utils/useAuthUser";
 
 export default function CreateTransaction({
   accountId,
@@ -19,7 +18,7 @@ export default function CreateTransaction({
   accountId: string;
 }) {
   const router = useRouter();
-  const [user] = useAuthState(auth);
+  const { user } = useAuthUser();
 
   const [categories, setCategories] = useState<
     {
@@ -50,7 +49,7 @@ export default function CreateTransaction({
       categoryColor: category?.iconColor || "",
       type: data.type.toLowerCase() as TransactionType,
       currency: data.currency.toLowerCase(),
-      userId: user?.uid as string,
+      userId: user?.id as string,
       accountId,
     };
 

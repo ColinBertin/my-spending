@@ -3,8 +3,6 @@
 import { Account, Transaction } from "@/types/firestore";
 import DoughnutChart from "./Doughnut";
 import { useEffect, useState } from "react";
-import { auth } from "@/app/lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
 import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
 import { formatCurrencyIntoYen, months } from "@/helpers";
@@ -12,6 +10,7 @@ import MonthlyTransactions from "./MonthlyTransactions";
 import Button from "./Button";
 import Select from "./Select";
 import { getMonthlyRangeTransactions } from "@/app/lib/getMonthlyRangeTransactions";
+import { useAuthUser } from "@/utils/useAuthUser";
 // import BarChart from "./BarChart";
 // import LineChart from "./Chart";
 
@@ -21,7 +20,7 @@ export default function TransactionContainer({
   account: Account;
 }) {
   const router = useRouter();
-  const [user, loading] = useAuthState(auth);
+  const { user, loading } = useAuthUser();
 
   const currentMonth = (new Date().getMonth() + 1).toString();
   const currentYear = new Date().getFullYear().toString();

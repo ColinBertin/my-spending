@@ -1,21 +1,28 @@
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { db } from "./firebase";
 import { convertCategory } from "./convertCategory";
+import { createClient } from "@/utils/supabase/client";
+import { getAuthUser } from "@/utils/authClient";
+import { getMockCategoriesForUser, isMockEnabled } from "@/utils/mockData";
 
 export async function getCategories() {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const user = await getAuthUser();
 
   if (!user) throw new Error("User not signed in");
 
-  const q = query(
-    collection(db, "categories"),
-    where("userId", "==", user.uid)
-  );
+  if (isMockEnabled()) {
+    return getMockCategoriesForUser(user.id).map((category) =>
+      convertCategory(category),
+    );
+  }
 
-  const snapshot = await getDocs(q);
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("userId", user.id);
 
-  const categories = snapshot.docs.map(doc => convertCategory(doc.data(), doc.id));
-  return categories;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map((row) => convertCategory(row));
 }

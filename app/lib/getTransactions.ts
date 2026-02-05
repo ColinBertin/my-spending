@@ -1,21 +1,28 @@
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { db } from "./firebase";
 import { convertTransaction } from "./convertTransaction";
+import { createClient } from "@/utils/supabase/client";
+import { getAuthUser } from "@/utils/authClient";
+import { getMockTransactionsForAccount, isMockEnabled } from "@/utils/mockData";
 
 export async function getTransactions(accountId: string) {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const user = await getAuthUser();
 
   if (!user) throw new Error("User not signed in");
 
-  const q = query(
-    collection(db, "transactions"),
-    where("accountId", "==", accountId)
-  );
+  if (isMockEnabled()) {
+    return getMockTransactionsForAccount(accountId).map((transaction) =>
+      convertTransaction(transaction),
+    );
+  }
 
-  const snapshot = await getDocs(q);
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("*")
+    .eq("accountId", accountId);
 
-  const transactions = snapshot.docs.map(doc => convertTransaction(doc.data(), doc.id));
-  return transactions;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map((row) => convertTransaction(row));
 }

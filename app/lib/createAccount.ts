@@ -1,8 +1,14 @@
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "./firebase";
 import { Account } from "@/types/firestore";
+import { createClient } from "@/utils/supabase/client";
+import { createMockAccount, isMockEnabled } from "@/utils/mockData";
 
-export async function createAccount({ name, currency, type, members = [], userId }: Account & { userId: string }){
+export async function createAccount({
+  name,
+  currency,
+  type,
+  members = [],
+  userId,
+}: Account & { userId: string }) {
   if (!name || !currency || !type) {
     throw new Error("Missing required fields: name, currency, or type.");
   }
@@ -19,13 +25,33 @@ export async function createAccount({ name, currency, type, members = [], userId
     members = [userId];
   }
 
-  const docRef = await addDoc(collection(db, "accounts"), {
-    name,
-    currency,
-    type,
-    members,
-    createdAt: new Date(),
-  });
+  if (isMockEnabled()) {
+    return createMockAccount({
+      id: "",
+      name,
+      currency,
+      type,
+      members,
+      createdAt: new Date(),
+    });
+  }
 
-  return docRef.id;
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("accounts")
+    .insert({
+      name,
+      currency,
+      type,
+      members,
+      createdAt: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data?.id as string;
 }

@@ -1,15 +1,12 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { auth } from "../../lib/firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 
 import { emailRegex } from "@/helpers";
 import Button from "@/components/Button";
-// import { useState } from "react";
-// import Spinner from "@/components/ui/Spinner";
+import { signInWithOAuth, signUpWithPassword } from "@/utils/authClient";
 
 type SignupInput = {
   username: string;
@@ -21,15 +18,6 @@ type SignupInput = {
 export default function Signup() {
   const router = useRouter();
 
-  // const showErrorNotification = useErrorNotification();
-  // const showSuccessNotification = useSuccessNotification();
-
-  // const [isPending, startTransition] = useTransition();
-  // const [isFetching, setIsFetching] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-
-  // const isMutating = isFetching || isPending;
-
   const {
     register,
     handleSubmit,
@@ -37,52 +25,47 @@ export default function Signup() {
   } = useForm<SignupInput>({ mode: "onChange" });
 
   async function handleSignup(data: SignupInput) {
-    // if (!auth) return setError("Firebase Auth not initialized yet");
-
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
+      const { error } = await signUpWithPassword(
         data.email,
         data.password,
+        data.username,
       );
-      await updateProfile(userCredential.user, {
-        displayName: data.username,
-        // photoURL: "https://example.com/jane-q-user/profile.jpg",
-      });
+
+      if (error) {
+        console.error("Signup error:", error);
+        return;
+      }
 
       router.push("/dashboard");
-    } catch (err: unknown) {
-      console.error("Signup error:", err);
+    } catch (err) {
+      console.error("Unexpected signup error:", err);
     }
   }
 
-  // Google sign-in
   async function handleGoogleSignIn() {
-    // if (!auth) return setError("Firebase Auth not initialized yet");
+    const { error } = await signInWithOAuth(
+      "google",
+      `${location.origin}/auth/callback`,
+    );
 
-    try {
-      // const result = await signInWithPopup(auth, googleProvider);
-      router.push("/dashboard");
-    } catch (err: unknown) {
-      console.error("Google sign-in error:", err);
-      // setError(err.message);
+    if (error) {
+      console.error("Google sign-in error:", error);
     }
   }
 
   return (
-    <div className="">
+    <div>
       <form
         className="flex flex-col justify-center h-1/2"
         onSubmit={handleSubmit(handleSignup)}
       >
-        <h1 className="text-3xl font-semibold text-center text-red mb-10">
-          Signup
-        </h1>
-        <div className="relative flex flex-col justify-around mb-8">
+        <h1 className="text-3xl font-semibold text-center mb-10">Signup</h1>
+
+        <div className="relative mb-8">
           <input
-            type="username"
             placeholder="Username"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium focus:border-purple-300"
+            className="border rounded-xl w-56 sm:w-80 p-2"
             {...register("username", { required: "Username is required" })}
           />
           {errors.username && (
@@ -91,15 +74,16 @@ export default function Signup() {
             </small>
           )}
         </div>
-        <div className="relative flex flex-col justify-around mb-8">
+
+        <div className="relative mb-8">
           <input
             type="email"
             placeholder="Email"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium"
+            className="border rounded-xl w-56 sm:w-80 p-2"
             {...register("email", {
               required: "Email is required",
               validate: (email) =>
-                emailRegex.test(email) ? true : "Invalid email format",
+                emailRegex.test(email) || "Invalid email format",
             })}
           />
           {errors.email && (
@@ -109,39 +93,27 @@ export default function Signup() {
           )}
         </div>
 
-        <div className="relative flex flex-col justify-around mb-8">
+        <div className="relative mb-8">
           <input
             type="password"
             placeholder="Password"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700"
+            className="border rounded-xl w-56 sm:w-80 p-2"
             {...register("password", { required: "Password is required" })}
           />
-          {errors.password && (
-            <small className="absolute top-11 left-2 text-red-300">
-              {errors.password.message}
-            </small>
-          )}
         </div>
 
-        <div className="relative flex flex-col justify-around mb-12">
+        <div className="relative mb-12">
           <input
             type="password"
             placeholder="Confirm Password"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700"
+            className="border rounded-xl w-56 sm:w-80 p-2"
             {...register("confirmPassword", {
-              required: "Please confirm your password",
-              validate: (value, formValues) => {
-                const password = formValues.password;
-                return value === password || "Passwords do not match";
-              },
+              validate: (value, formValues) =>
+                value === formValues.password || "Passwords do not match",
             })}
           />
-          {errors.confirmPassword && (
-            <small className="absolute top-11 left-2 text-red-300">
-              {errors.confirmPassword.message}
-            </small>
-          )}
         </div>
+
         <div className="flex flex-col sm:flex-row justify-between">
           <Button color="primary" type="submit" text="Sign up" />
           <Button
@@ -155,8 +127,9 @@ export default function Signup() {
           />
         </div>
       </form>
+
       <button
-        className="cursor-pointer py-2 px-4 rounded-3xl self-center mt-4 mb-2 sm:mb-0"
+        className="py-2 px-4 rounded-3xl mt-4"
         onClick={handleGoogleSignIn}
       >
         <FcGoogle size={40} />

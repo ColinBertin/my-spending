@@ -1,9 +1,8 @@
 "use client";
 import clsx from "clsx";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
 import Link from "next/link";
+import { signOut } from "@/utils/authClient";
 
 // type menuProps = {
 //   menuState: boolean;
@@ -14,7 +13,7 @@ export default function Menu() {
   const router = useRouter();
 
   async function handleLogout() {
-    await signOut(auth);
+    await signOut();
     router.push("/login");
   }
 

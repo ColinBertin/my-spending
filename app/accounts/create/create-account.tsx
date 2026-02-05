@@ -1,7 +1,5 @@
 "use client";
 
-import { auth } from "../../../firebaseConfig";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { createAccount } from "@/app/lib/createAccount";
 import Select from "@/components/Select";
 import { Account, AccountType } from "@/types/firestore";
@@ -9,10 +7,11 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Loading from "../loading";
 import Button from "@/components/Button";
+import { useAuthUser } from "@/utils/useAuthUser";
 
 export default function CreateAccount() {
   const router = useRouter();
-  const [user] = useAuthState(auth);
+  const { user } = useAuthUser();
 
   const {
     register,
@@ -30,7 +29,7 @@ export default function CreateAccount() {
       type: data.type.toLowerCase() as AccountType,
       currency: data.currency.toLowerCase(),
       members: data.members,
-      userId: user?.uid as string,
+      userId: user?.id as string,
       createdAt: new Date(),
     };
 

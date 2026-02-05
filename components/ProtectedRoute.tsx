@@ -2,9 +2,8 @@
 
 import { ReactNode, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { auth } from "../app/lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
 import Loading from "@/app/loading";
+import { useAuthUser } from "@/utils/useAuthUser";
 
 interface Props {
   children: ReactNode;
@@ -15,10 +14,15 @@ export default function ProtectedRoute({ children, fallback }: Props) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [user, userLoading, userError] = useAuthState(auth);
+  const { user, loading: userLoading, error: userError } = useAuthUser();
 
   useEffect(() => {
-    if (!user && !userLoading && pathname !== "/signup" && pathname !== "/login") {
+    if (
+      !user &&
+      !userLoading &&
+      pathname !== "/signup" &&
+      pathname !== "/login"
+    ) {
       router.push("/login");
     }
   }, [user, userLoading, pathname, router]);

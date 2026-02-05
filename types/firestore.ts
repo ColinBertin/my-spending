@@ -1,5 +1,3 @@
-import { Timestamp } from "firebase/firestore";
-
 // ENUMS
 export type AccountType = "single" | "shared";
 
@@ -22,8 +20,8 @@ export interface Account {
   type: AccountType;
   members: string[];
   currency: string;
-  createdAt: Date | Timestamp;
-  updatedAt?: Date | Timestamp;
+  createdAt: Date;
+  updatedAt?: Date;
 }
 
 export interface Transaction {

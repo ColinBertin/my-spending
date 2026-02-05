@@ -1,18 +1,18 @@
-import { Timestamp } from "firebase/firestore";
 import type { Account } from "@/types/firestore";
 
+function normalizeDate(value: unknown) {
+  if (!value) return undefined;
+  if (value instanceof Date) return value;
+  const parsed = new Date(value as string);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function convertAccount(data: any, id: string): Account {
+export function convertAccount(data: any, id?: string): Account {
   return {
-    id,
+    id: id ?? data.id,
     ...data,
-    createdAt:
-      data.createdAt instanceof Timestamp
-        ? data.createdAt.toDate()
-        : data.createdAt,
-    updatedAt:
-      data.updatedAt instanceof Timestamp
-        ? data.updatedAt.toDate()
-        : data.updatedAt,
+    createdAt: normalizeDate(data.createdAt) ?? new Date(),
+    updatedAt: normalizeDate(data.updatedAt),
   };
 }

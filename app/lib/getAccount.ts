@@ -1,24 +1,34 @@
-import { doc, getDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { db } from "./firebase";
 import { convertAccount } from "./convertAccount";
+import { createClient } from "@/utils/supabase/client";
+import { getAuthUser } from "@/utils/authClient";
+import { getMockAccountById, isMockEnabled } from "@/utils/mockData";
 
 export async function getAccountById(id: string) {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const user = await getAuthUser();
 
   if (!user) throw new Error("User not signed in");
 
-  const ref = doc(db, "accounts", id);
-  const snapshot = await getDoc(ref);
-
-  if (!snapshot.exists()) {
-    throw new Error("Account not found");
+  if (isMockEnabled()) {
+    const mockAccount = getMockAccountById(id);
+    if (!mockAccount) throw new Error("Account not found");
+    if (!mockAccount.members.includes(user.id)) {
+      throw new Error("You do not have permission to view this account");
+    }
+    return convertAccount(mockAccount);
   }
 
-  const account = convertAccount(snapshot.data(), snapshot.id);
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("accounts")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  if (!account.members.includes(user.uid)) {
+  if (error || !data) throw new Error(error?.message ?? "Account not found");
+
+  const account = convertAccount(data);
+
+  if (!account.members.includes(user.id)) {
     throw new Error("You do not have permission to view this account");
   }
 

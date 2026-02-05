@@ -1,13 +1,11 @@
-import { db } from "@/firebaseConfig";
 import { getMonthRange } from "@/helpers";
 import { Transaction } from "@/types/firestore";
+import { createClient } from "@/utils/supabase/client";
 import {
-  collection,
-  getDocs,
-  query,
-  Timestamp,
-  where,
-} from "firebase/firestore";
+  getMockTransactionsForAccountInRange,
+  isMockEnabled,
+} from "@/utils/mockData";
+import { convertTransaction } from "./convertTransaction";
 
 export async function getMonthlyRangeTransactions(
   accountId: string,
@@ -19,28 +17,25 @@ export async function getMonthlyRangeTransactions(
     parseInt(selectedYear),
   );
 
-  const transactionsRef = collection(db, "transactions");
-  const q = query(
-    transactionsRef,
-    where("accountId", "==", accountId),
-    where("date", ">=", Timestamp.fromDate(startOfMonth)),
-    where("date", "<=", Timestamp.fromDate(endOfMonth)),
-  );
+  if (isMockEnabled()) {
+    return getMockTransactionsForAccountInRange(
+      accountId,
+      startOfMonth,
+      endOfMonth,
+    );
+  }
 
-  const snapshot = await getDocs(q);
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("*")
+    .eq("accountId", accountId)
+    .gte("date", startOfMonth.toISOString())
+    .lte("date", endOfMonth.toISOString());
 
-  const data: Transaction[] = snapshot.docs.map((doc) => {
-    const transactionData = doc.data() as Omit<Transaction, "id">;
+  if (error) {
+    throw new Error(error.message);
+  }
 
-    return {
-      id: doc.id,
-      ...transactionData,
-      date:
-        transactionData.date instanceof Timestamp
-          ? transactionData.date.toDate()
-          : transactionData.date,
-    };
-  });
-
-  return data;
+  return (data ?? []).map((row) => convertTransaction(row));
 }

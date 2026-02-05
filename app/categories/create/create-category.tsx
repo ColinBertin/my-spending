@@ -1,7 +1,5 @@
 "use client";
 
-import { auth } from "@/firebaseConfig";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { Category } from "@/types/firestore";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -12,10 +10,11 @@ import { FinanceIconPicker } from "@/components/FinanceIconPicker";
 import ColorPicker from "@/components/ColorPicker";
 import { colorCodes } from "@/helpers";
 import Label from "@/components/Label";
+import { useAuthUser } from "@/utils/useAuthUser";
 
 export default function CreateCategory() {
   const router = useRouter();
-  const [user] = useAuthState(auth);
+  const { user } = useAuthUser();
 
   const {
     register,
@@ -28,7 +27,7 @@ export default function CreateCategory() {
   async function handleCreateCategory(data: Category) {
     const nextCategory = {
       ...data,
-      userId: user?.uid as string,
+      userId: user?.id as string,
     };
 
     try {
