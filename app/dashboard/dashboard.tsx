@@ -1,23 +1,22 @@
 "use client";
 
 import Loading from "../loading";
-// import LineChart from "@/components/Chart";
-// import BarChart from "@/components/BarChart";
-import { useEffect, useState } from "react";
-import { getAccounts } from "../lib/getAccounts";
 import { Account } from "@/types/firestore";
 import TransactionContainer from "@/components/TransactionContainer";
 import { useAuthUser } from "@/utils/useAuthUser";
 
-export default function Dashboard() {
+export default function Dashboard({
+  singleAccounts,
+  sharedAccounts,
+}: {
+  singleAccounts: Account[];
+  sharedAccounts: Account[];
+}) {
   const { user, loading } = useAuthUser();
-
-  const [myAccounts, setMyAccounts] = useState<Account[]>([]);
-  const [mySharedAccounts, setMySharedAccounts] = useState<Account[]>([]);
 
   function getTimeOfDayGreeting() {
     const currentTime = new Date();
-    const currentHour = currentTime.getHours(); // Gets the hour (0-23)
+    const currentHour = currentTime.getHours();
 
     if (currentHour >= 5 && currentHour < 12) {
       return "Good morning, ";
@@ -27,21 +26,6 @@ export default function Dashboard() {
       return "Good evening, ";
     }
   }
-
-  useEffect(() => {
-    if (user) {
-      getAccounts().then((accounts) => {
-        const singleAccounts = accounts.filter(
-          (account) => account.type === "single",
-        );
-        const sharedAccounts = accounts.filter(
-          (account) => account.type === "shared",
-        );
-        setMyAccounts(singleAccounts);
-        setMySharedAccounts(sharedAccounts);
-      });
-    }
-  }, [user]);
 
   if (loading || !user) return <Loading />;
 
@@ -53,11 +37,9 @@ export default function Dashboard() {
       </h2>
       <div className="flex justify-around w-full sm:w-2/3 flex-wrap gap-18">
         {/* Single Accounts */}
-        {myAccounts && <TransactionContainer account={myAccounts[0]} />}
+        {singleAccounts && <TransactionContainer account={singleAccounts[0]} />}
         {/* Shared Accounts */}
-        {mySharedAccounts && (
-          <TransactionContainer account={mySharedAccounts[0]} />
-        )}
+        {sharedAccounts && <TransactionContainer account={sharedAccounts[0]} />}
       </div>
     </div>
   );

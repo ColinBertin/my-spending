@@ -17,11 +17,11 @@ export interface User {
 export interface Account {
   id?: string;
   name: string;
-  type: AccountType;
-  members: string[];
+  type: "single" | "shared" | "professional";
   currency: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  created_at: string;
+  updated_at?: string | null;
+  account_members: { user_id: string }[];
 }
 
 export interface Transaction {

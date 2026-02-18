@@ -91,25 +91,25 @@ let mockAccounts: Account[] = [
     id: "acct-1",
     name: "Personal",
     type: "single",
-    members: [DEFAULT_USER.id],
+    account_members: [{ user_id: DEFAULT_USER.id }],
     currency: "JPY",
-    createdAt: now,
+    created_at: now.toDateString(),
   },
   {
     id: "acct-3",
     name: "Alex Personal",
     type: "single",
-    members: [SECOND_USER.id],
+    account_members: [{ user_id: DEFAULT_USER.id }],
     currency: "EUR",
-    createdAt: now,
+    created_at: now.toDateString(),
   },
   {
     id: "acct-2",
     name: "Shared",
     type: "shared",
-    members: [DEFAULT_USER.id, "mock-user-2"],
+    account_members: [{ user_id: DEFAULT_USER.id }, { user_id: "mock-user-2" }],
     currency: "USD",
-    createdAt: now,
+    created_at: now.toDateString(),
   },
 ];
 
@@ -737,7 +737,9 @@ function generateId(prefix: string) {
 }
 
 export function getMockAccountsForUser(userId: string) {
-  return mockAccounts.filter((account) => account.members.includes(userId));
+  return mockAccounts.filter((account) =>
+    account.account_members?.some((m) => m.user_id === userId),
+  );
 }
 
 export function getMockAccountById(id: string) {
@@ -774,7 +776,7 @@ export function createMockAccount(account: Account) {
   const nextAccount = {
     ...account,
     id,
-    createdAt: account.createdAt ?? new Date(),
+    createdAt: account.created_at ?? new Date(),
   };
   mockAccounts = [...mockAccounts, nextAccount];
   return id;
