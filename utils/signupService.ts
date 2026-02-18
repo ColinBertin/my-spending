@@ -1,5 +1,4 @@
-// utils/signupService.ts
-import { signUpWithPassword } from "@/utils/authClient";
+import { signUpWithPassword } from "./authClient";
 
 type SignupData = {
   username: string;
@@ -13,7 +12,7 @@ function delay(ms: number) {
 }
 
 export async function signup(data: SignupData) {
-  await delay(500); // simulate network call
+  await delay(500);
   const { user, error } = await signUpWithPassword(
     data.email,
     data.password,
