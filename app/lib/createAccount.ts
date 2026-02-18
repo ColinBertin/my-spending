@@ -6,7 +6,7 @@ export async function createAccount({
   name,
   currency,
   type,
-  members = [],
+  account_members = [],
   userId,
 }: Account & { userId: string }) {
   if (!name || !currency || !type) {
@@ -18,11 +18,15 @@ export async function createAccount({
   }
 
   if (type === "shared") {
-    if (!Array.isArray(members) || members.length === 0 || members.length > 2) {
+    if (
+      !Array.isArray(account_members) ||
+      account_members.length === 0 ||
+      account_members.length > 2
+    ) {
       throw new Error("Shared accounts must have 1–2 members.");
     }
   } else {
-    members = [userId];
+    account_members = [{ user_id: userId }];
   }
 
   if (isMockEnabled()) {
@@ -31,8 +35,8 @@ export async function createAccount({
       name,
       currency,
       type,
-      members,
-      createdAt: new Date(),
+      account_members,
+      created_at: new Date().toISOString(),
     });
   }
 
@@ -43,7 +47,7 @@ export async function createAccount({
       name,
       currency,
       type,
-      members,
+      account_members,
       createdAt: new Date().toISOString(),
     })
     .select("id")

@@ -28,7 +28,7 @@ export default function CreateAccount() {
       ...data,
       type: data.type.toLowerCase() as AccountType,
       currency: data.currency.toLowerCase(),
-      members: data.members,
+      members: data.account_members,
       userId: user?.id as string,
       createdAt: new Date(),
     };

@@ -11,7 +11,7 @@ export async function getAccountById(id: string) {
   if (isMockEnabled()) {
     const mockAccount = getMockAccountById(id);
     if (!mockAccount) throw new Error("Account not found");
-    if (!mockAccount.members.includes(user.id)) {
+    if (!mockAccount.account_members?.some((m) => m.user_id === user.id)) {
       throw new Error("You do not have permission to view this account");
     }
     return convertAccount(mockAccount);
@@ -28,7 +28,7 @@ export async function getAccountById(id: string) {
 
   const account = convertAccount(data);
 
-  if (!account.members.includes(user.id)) {
+  if (!account.account_members?.some((m) => m.user_id === user.id)) {
     throw new Error("You do not have permission to view this account");
   }
 
