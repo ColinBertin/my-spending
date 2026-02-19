@@ -30,8 +30,6 @@ export default async function AccountDetailsPage({
     .eq("created_by", user.id)
     .order("created_at", { ascending: true });
 
-  console.log(transactions);
-
   if (error) throw error;
 
   return <AccountDetails accountId={id} transactions={transactions} />;
