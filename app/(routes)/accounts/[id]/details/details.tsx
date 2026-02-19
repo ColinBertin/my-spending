@@ -13,11 +13,13 @@ export default function AccountDetails({
   transactions,
   initialMonth,
   initialYear,
+  accountName,
 }: {
   accountId: string;
   transactions: Transaction[];
   initialMonth: string;
   initialYear: string;
+  accountName: string;
 }) {
   const router = useRouter();
 
@@ -76,7 +78,7 @@ export default function AccountDetails({
   return (
     <div className="flex flex-col justify-center items-center h-full mt-12">
       <h1 className="text-3xl font-semibold text-center text-red mb-10">
-        Account Name
+        {accountName}
       </h1>
       <div className="relative flex gap-2 justify-around mb-8">
         <Select

@@ -28,6 +28,14 @@ export default async function AccountDetailsPage({
 
   if (!user) redirect("/login");
 
+  const { data: account, error: accountError } = await supabase
+    .from("accounts")
+    .select("name")
+    .eq("id", id)
+    .single();
+
+  if (accountError) throw accountError;
+
   const { data: transactions, error } = await supabase
     .from("transactions")
     .select(
@@ -47,6 +55,7 @@ export default async function AccountDetailsPage({
       transactions={transactions ?? []}
       initialMonth={(currentMonthIndex + 1).toString()}
       initialYear={currentYear.toString()}
+      accountName={account?.name ?? "Account"}
     />
   );
 }
