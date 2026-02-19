@@ -1,4 +1,4 @@
-import { Transaction } from "@/types/firestore";
+import { Transaction } from "@/types";
 import TransactionList from "./TransactionList";
 
 export default function MonthlyTransactions({

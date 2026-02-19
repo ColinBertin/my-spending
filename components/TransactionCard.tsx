@@ -1,4 +1,4 @@
-import { Transaction } from "@/types/firestore";
+import { Transaction } from "@/types";
 import { FinanceIcon } from "./FinanceIcon";
 import { formatCurrencyIntoYen } from "@/helpers";
 
@@ -9,11 +9,11 @@ type TransactionCardProps = {
 export default function TransactionCard({ transaction }: TransactionCardProps) {
   return (
     <li className="py-1 flex w-80 space-x-4 items-center bg-gray-50 rounded-xl px-2 mb-2">
-      {transaction.categoryIcon && transaction.categoryIconPack && (
+      {transaction.category_icon && transaction.category_icon_pack && (
         <FinanceIcon
-          icon={transaction.categoryIcon}
-          iconPack={transaction.categoryIconPack}
-          iconColor={transaction.categoryColor || ""}
+          icon={transaction.category_icon}
+          iconPack={transaction.category_icon_pack}
+          iconColor={transaction.category_color || ""}
         />
       )}
       <div className="flex flex-col">

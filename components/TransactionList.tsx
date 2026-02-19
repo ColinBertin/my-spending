@@ -1,5 +1,5 @@
 // import { formatCurrencyIntoYen } from "@/helpers";
-import { Transaction } from "@/types/firestore";
+import { Transaction } from "@/types";
 // import { FinanceIcon } from "./FinanceIcon";
 import TransactionCard from "./TransactionCard";
 
