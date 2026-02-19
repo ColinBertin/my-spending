@@ -26,7 +26,7 @@ export default function TransactionCard({ transaction }: TransactionCardProps) {
             ).toLocaleString()}
           </small>
         </p>
-        <p>{formatCurrencyIntoYen(transaction.amount)}</p>
+        <p>{<p>{formatCurrencyIntoYen(Number(transaction.amount))}</p>}</p>
       </div>
     </li>
   );
