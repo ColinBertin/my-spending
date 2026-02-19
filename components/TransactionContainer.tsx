@@ -1,16 +1,14 @@
 "use client";
 
-import { Account } from "@/types";
-// import DoughnutChart from "./Doughnut";
-// import { useEffect, useState } from "react";
+import { Account, Transaction } from "@/types";
+import DoughnutChart from "./Doughnut";
+import { useCallback, useEffect, useState } from "react";
 // import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
-// import { formatCurrencyIntoYen, months } from "@/helpers";
-// import MonthlyTransactions from "./MonthlyTransactions";
+import { formatCurrencyIntoYen, months } from "@/helpers";
+import MonthlyTransactions from "./MonthlyTransactions";
 import Button from "./Button";
-// import Select from "./Select";
-// import { getMonthlyRangeTransactions } from "@/app/lib/getMonthlyRangeTransactions";
-// import { useAuthUser } from "@/utils/useAuthUser";
+import Select from "./Select";
 // import BarChart from "./BarChart";
 // import LineChart from "./Chart";
 
@@ -20,64 +18,78 @@ export default function TransactionContainer({
   account: Account;
 }) {
   const router = useRouter();
-  // const { user, loading } = useAuthUser();
 
-  // const currentMonth = (new Date().getMonth() + 1).toString();
-  // const currentYear = new Date().getFullYear().toString();
+  const currentMonth = (new Date().getMonth() + 1).toString();
+  const currentYear = new Date().getFullYear().toString();
 
-  // const [transactions, setTransactions] = useState<Transaction[]>();
-  // const [spending, setSpending] = useState<number[]>();
-  // const [categories, setCategories] = useState<string[]>();
-  // const [totalSpending, setTotalSpending] = useState<number>(0);
+  // const [isFetching, setIsFetching] = useState(false)
+  const [transactions, setTransactions] = useState<Transaction[]>();
+  const [spending, setSpending] = useState<number[]>();
+  const [categories, setCategories] = useState<string[]>();
+  const [totalSpending, setTotalSpending] = useState<number>(0);
 
-  // const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
-  // const [selectedYear, setSelectedYear] = useState<string>(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
+  const [selectedYear, setSelectedYear] = useState<string>(currentYear);
 
   const { id, name } = account ? account : {};
 
-  // const years = Array.from(
-  //   { length: 8 },
-  //   (_, i) => parseInt(currentYear) - 5 + i,
-  // ).map((year) => ({ id: year.toString(), name: year.toString() }));
+  const years = Array.from(
+    { length: 8 },
+    (_, i) => parseInt(currentYear) - 5 + i,
+  ).map((year) => ({ id: year.toString(), name: year.toString() }));
 
-  // const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //   setSelectedMonth(e.target.value);
-  // };
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMonth(e.target.value);
+  };
 
-  // const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //   setSelectedYear(e.target.value);
-  // };
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedYear(e.target.value);
+  };
 
-  // useEffect(() => {
-  //   if (user && id) {
-  //     getMonthlyRangeTransactions(id, selectedMonth, selectedYear).then(
-  //       (transactions) => {
-  //         const categoryTotals: Record<string, number> = {};
-  //         transactions.forEach((t) => {
-  //           if (!t.category_name) return;
-  //           if (!categoryTotals[t.category_name])
-  //             categoryTotals[t.category_name] = 0;
-  //           categoryTotals[t.category_name] += t.amount;
-  //         });
+  const getTransactions = useCallback(async () => {
+    const res = await fetch(
+      `/api/transactions?accountId=${account.id}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    const json = await res.json().catch(() => ({}));
 
-  //         const sortedEntries = Object.entries(categoryTotals).sort(
-  //           ([a], [b]) => a.localeCompare(b),
-  //         );
+    if (!res.ok) {
+      throw new Error(json.error ?? "Failed to get transactions");
+    }
+    if (json.transactions) {
+      const categoryTotals: Record<string, number> = {};
+      const { transactions } = json;
+      transactions.forEach((t: Transaction) => {
+        if (!t.category_name) return;
+        if (!categoryTotals[t.category_name])
+          categoryTotals[t.category_name] = 0;
+        categoryTotals[t.category_name] += t.amount;
+      });
 
-  //         const sortedCategories = sortedEntries.map(([category]) => category);
-  //         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //         const sortedSpending = sortedEntries.map(([_, total]) => total);
+      const sortedEntries = Object.entries(categoryTotals).sort(([a], [b]) =>
+        a.localeCompare(b),
+      );
 
-  //         setTransactions(transactions);
-  //         setCategories(sortedCategories);
-  //         setSpending(sortedSpending);
-  //         setTotalSpending(sortedSpending.reduce((acc, val) => acc + val, 0));
-  //       },
-  //     );
-  //   }
-  // }, [id, selectedMonth, selectedYear, user]);
+      const sortedCategories = sortedEntries.map(([category]) => category);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const sortedSpending = sortedEntries.map(([_, total]) => total);
 
-  // if (loading) return <Loading />;
+      setTransactions(transactions);
+      setCategories(sortedCategories);
+      setSpending(sortedSpending);
+      setTotalSpending(sortedSpending.reduce((acc, val) => acc + val, 0));
+      setTransactions(json.transactions);
+    }
+  }, [account.id, selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    getTransactions();
+  }, [getTransactions]);
+
+  // if (isFetching) return <Loading />;
 
   return (
     <ul className="">
@@ -86,7 +98,7 @@ export default function TransactionContainer({
           <a className="text-2xl font-bold" href={`/accounts/${id}/details`}>
             {name}
           </a>
-          {/* <div className="relative flex gap-2 justify-around mb-8">
+          <div className="relative flex gap-2 justify-around mb-8">
             <Select
               defaultValue={currentMonth}
               options={months}
@@ -97,7 +109,7 @@ export default function TransactionContainer({
               options={years}
               onChange={handleYearChange}
             />
-          </div> */}
+          </div>
           <Button
             type="button"
             handleChange={() =>
@@ -106,7 +118,25 @@ export default function TransactionContainer({
             text="Add Transaction"
             color="primary"
           />
-          <p>Accounts</p>
+          {categories && categories.length > 0 ? (
+            <>
+              <DoughnutChart
+                labelSet={categories || []}
+                dataSet={spending || []}
+              />
+              {/* <BarChart labelSet={categories || []} dataSet={spending || []} /> */}
+              {/* <LineChart labelSet={categories || []} dataSet={spending || []} /> */}
+              <p className="text-lg">
+                Total Spending: {formatCurrencyIntoYen(totalSpending)}
+              </p>
+              <MonthlyTransactions
+                accountId={id as string}
+                transactions={transactions}
+              />
+            </>
+          ) : (
+            <p className="font-bold">No transactions found for this period.</p>
+          )}
         </li>
       )}
     </ul>

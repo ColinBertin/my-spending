@@ -1,76 +1,107 @@
 "use client";
 
-// import { getAccountById } from "@/app/lib/getAccount";
-// import { getMonthlyRangeTransactions } from "@/app/lib/getMonthlyRangeTransactions";
 import Button from "@/components/Button";
-// import Select from "@/components/Select";
+import Select from "@/components/Select";
 import TransactionList from "@/components/TransactionList";
-// import { months } from "@/helpers";
+import { months } from "@/helpers";
 import { Transaction } from "@/types";
 import { useRouter } from "next/navigation";
-// import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export default function AccountDetails({
   accountId,
   transactions,
+  initialMonth,
+  initialYear,
 }: {
   accountId: string;
   transactions: Transaction[];
+  initialMonth: string;
+  initialYear: string;
 }) {
   const router = useRouter();
 
-  // const currentMonth = (new Date().getMonth() + 1).toString();
-  // const currentYear = new Date().getFullYear().toString();
+  const [selectedMonth, setSelectedMonth] = useState<string>(initialMonth);
+  const [selectedYear, setSelectedYear] = useState<string>(initialYear);
+  const [selectedTransactions, setSelectedTransactions] =
+    useState<Transaction[]>(transactions);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  // const [account, setAccount] = useState<Account>();
-  // const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
-  // const [selectedYear, setSelectedYear] = useState<string>(currentYear);
+  const years = useMemo(
+    () =>
+      Array.from(
+        { length: 8 },
+        (_, i) => parseInt(initialYear, 10) - 5 + i,
+      ).map((year) => ({ id: year.toString(), name: year.toString() })),
+    [initialYear],
+  );
 
-  // const years = Array.from(
-  //   { length: 8 },
-  //   (_, i) => parseInt(currentYear) - 5 + i,
-  // ).map((year) => ({ id: year.toString(), name: year.toString() }));
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMonth(e.target.value);
+  };
 
-  // const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //   setSelectedMonth(e.target.value);
-  // };
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedYear(e.target.value);
+  };
 
-  // const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //   setSelectedYear(e.target.value);
-  // };
+  const getFilteredTransactions = useCallback(async () => {
+    setIsFetching(true);
+    setErrorMessage("");
 
-  // useEffect(() => {
-  //   getAccountById(id).then((account) => {
-  //     setAccount(account);
-  //   });
+    try {
+      const res = await fetch(
+        `/api/transactions?accountId=${encodeURIComponent(accountId)}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      const json = await res.json().catch(() => ({}));
 
-  //   getMonthlyRangeTransactions(id, selectedMonth, selectedYear).then(
-  //     (transactions) => {
-  //       setTransactions(transactions);
-  //     },
-  //   );
-  // }, [id, selectedMonth, selectedYear]);
+      if (!res.ok) {
+        throw new Error(json.error ?? "Failed to get transactions");
+      }
+
+      setSelectedTransactions(json.transactions ?? []);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to get transactions",
+      );
+    } finally {
+      setIsFetching(false);
+    }
+  }, [accountId, selectedMonth, selectedYear]);
 
   return (
     <div className="flex flex-col justify-center items-center h-full mt-12">
       <h1 className="text-3xl font-semibold text-center text-red mb-10">
-        {/* {account?.name} */} Account Name
+        Account Name
       </h1>
-      {/* <div className="relative flex gap-2 justify-around mb-8">
+      <div className="relative flex gap-2 justify-around mb-8">
         <Select
-          defaultValue={currentMonth}
+          defaultValue={initialMonth}
           options={months}
-          onChange={handleMonthChange}
+          handleChange={handleMonthChange}
         />
         <Select
-          defaultValue={currentYear}
+          defaultValue={initialYear}
           options={years}
-          onChange={handleYearChange}
+          handleChange={handleYearChange}
         />
-      </div> */}
+        <Button
+          type="button"
+          color="secondary"
+          text={isFetching ? "Loading..." : "Filter"}
+          handleChange={getFilteredTransactions}
+        />
+      </div>
       <div className="mb-6">
-        {transactions && transactions.length > 0 ? (
-          <TransactionList transactions={transactions} />
+        {errorMessage && (
+          <p className="font-semibold text-red-500 mb-4">{errorMessage}</p>
+        )}
+        {selectedTransactions && selectedTransactions.length > 0 ? (
+          <TransactionList transactions={selectedTransactions} />
         ) : (
           <p className="font-bold">No transactions found.</p>
         )}
