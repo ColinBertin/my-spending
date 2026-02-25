@@ -51,13 +51,14 @@ export const FinanceIconPicker: FC<FinanceIconPickerProps> = ({
 
           return (
             <button
+              type="button"
               key={`${pack}-${iconName}`}
               onClick={(e) => {
                 e.preventDefault();
                 handleSelect(pack, iconName);
               }}
               {...rest}
-              className={`flex flex-col items-center p-2 border rounded-full transition-colors cursor-pointer
+              className={`flex items-center justify-center w-10 h-10 aspect-square border rounded-full transition-colors cursor-pointer
                 hover:bg-orange-50 ${isSelected ? "bg-orange-100" : ""}`}
             >
               <IconComponent

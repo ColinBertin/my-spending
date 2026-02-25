@@ -16,7 +16,7 @@ export const FinanceIcon: FC<FinanceIconProps> = ({
   icon,
   iconPack,
   iconColor,
-  className = "w-8 h-8 py-1 border rounded-full text-orange-dark",
+  className = "w-8 h-8 p-1.5 border rounded-full text-orange-dark",
 }) => {
   const iconSets: Record<
     string,
