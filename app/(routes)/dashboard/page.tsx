@@ -33,13 +33,5 @@ export default async function DashboardPage() {
     (r) => r.account,
   );
 
-  const singleAccounts = accounts.filter((a) => a.type === "single");
-  const sharedAccounts = accounts.filter((a) => a.type === "shared");
-
-  return (
-    <Dashboard
-      singleAccounts={singleAccounts}
-      sharedAccounts={sharedAccounts}
-    />
-  );
+  return <Dashboard accounts={accounts} />;
 }

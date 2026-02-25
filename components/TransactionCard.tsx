@@ -8,7 +8,7 @@ type TransactionCardProps = {
 
 export default function TransactionCard({ transaction }: TransactionCardProps) {
   return (
-    <li className="py-1 flex w-80 space-x-4 items-center bg-gray-50 rounded-xl px-2 mb-2">
+    <li className="py-1.5 flex w-full space-x-4 items-center bg-gray-50 rounded-xl px-3 mb-2">
       {transaction.category_icon && transaction.category_icon_pack && (
         <FinanceIcon
           icon={transaction.category_icon}

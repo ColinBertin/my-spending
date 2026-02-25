@@ -8,11 +8,11 @@ export default function MonthlyTransactions({
   transactions?: Transaction[];
 }) {
   return (
-    <div className="h-80 w-full px-2 overflow-y-auto">
+    <div className="h-72 w-full px-1 overflow-y-auto flex justify-center">
       {transactions && transactions.length > 0 ? (
         <TransactionList transactions={transactions} />
       ) : (
-        <p className="font-bold">No transactions found.</p>
+        <p className="font-bold text-center">No transactions found.</p>
       )}
     </div>
   );

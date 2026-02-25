@@ -9,6 +9,7 @@ import { formatCurrencyIntoYen, months } from "@/helpers";
 import MonthlyTransactions from "./MonthlyTransactions";
 import Button from "./Button";
 import Select from "./Select";
+import { FaUser, FaUsers, FaUserTie } from "react-icons/fa";
 // import BarChart from "./BarChart";
 // import LineChart from "./Chart";
 
@@ -32,6 +33,12 @@ export default function TransactionContainer({
   const [selectedYear, setSelectedYear] = useState<string>(currentYear);
 
   const { id, name } = account ? account : {};
+
+  const getAccountTypeIcon = (type: Account["type"]) => {
+    if (type === "single") return <FaUser className="h-5 w-5" />;
+    if (type === "shared") return <FaUsers className="h-5 w-5" />;
+    return <FaUserTie className="h-5 w-5" />;
+  };
 
   const years = Array.from(
     { length: 8 },
@@ -94,11 +101,15 @@ export default function TransactionContainer({
   return (
     <ul className="">
       {account && (
-        <li key={name} className="flex flex-col items-center gap-4">
-          <a className="text-2xl font-bold" href={`/accounts/${id}/details`}>
-            {name}
+        <li key={name} className="flex flex-col items-center gap-3">
+          <a
+            className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-blue-dark"
+            href={`/accounts/${id}/details`}
+          >
+            {getAccountTypeIcon(account.type)}
+            <span>{name}</span>
           </a>
-          <div className="relative flex gap-2 justify-around mb-8">
+          <div className="relative flex gap-2 justify-around mb-4">
             <Select
               defaultValue={currentMonth}
               options={months}
@@ -126,7 +137,7 @@ export default function TransactionContainer({
               />
               {/* <BarChart labelSet={categories || []} dataSet={spending || []} /> */}
               {/* <LineChart labelSet={categories || []} dataSet={spending || []} /> */}
-              <p className="text-lg">
+              <p className="text-base sm:text-lg font-semibold">
                 Total Spending: {formatCurrencyIntoYen(totalSpending)}
               </p>
               <MonthlyTransactions
