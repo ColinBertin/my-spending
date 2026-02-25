@@ -26,11 +26,16 @@ export default function Dashboard({ accounts }: { accounts: Account[] }) {
 
   if (loading || !user) return <Loading />;
 
+  const rawUserName = user.user_metadata?.username?.trim();
+  const userName = rawUserName
+    ? `${rawUserName.charAt(0).toUpperCase()}${rawUserName.slice(1)}`
+    : null;
+
   return (
     <div className="pt-24 sm:pt-30 pb-20 px-4 sm:px-6 flex flex-col justify-center items-center gap-10">
       <h2 className="text-3xl font-bold">
         {getTimeOfDayGreeting()}
-        {user.user_metadata?.username || user.email || "there"}!
+        {userName || user.email || "there"}!
       </h2>
       <div className="w-full max-w-6xl grid grid-cols-1 xl:grid-cols-2 gap-5">
         {accountsWithId.map((account) => (
