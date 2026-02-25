@@ -1,8 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isMockEnabled } from "@/utils/mock/env";
 
 export async function updateSession(request: NextRequest) {
-  if (process.env.NEXT_PUBLIC_USE_MOCK === "true") {
+  if (isMockEnabled()) {
     return NextResponse.next({ request });
   }
 

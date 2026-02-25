@@ -2,6 +2,11 @@ import { Account, CategoryTotal, DashboardAccountSummary } from "@/types";
 import Dashboard from "./dashboard";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import {
+  getMockDashboardAccountSummaries,
+  MOCK_USER_ID,
+} from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 
 export const metadata = {
   title: "Dashboard",
@@ -12,7 +17,6 @@ type AccountMemberRow = {
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
   const now = new Date();
   const currentYear = now.getUTCFullYear();
   const currentMonthIndex = now.getUTCMonth();
@@ -22,6 +26,18 @@ export default async function DashboardPage() {
   const end = new Date(
     Date.UTC(currentYear, currentMonthIndex + 1, 1, 0, 0, 0),
   );
+
+  if (isMockEnabled()) {
+    const accountSummaries = getMockDashboardAccountSummaries({
+      userId: MOCK_USER_ID,
+      selectedMonth: currentMonth,
+      selectedYear: currentYearString,
+    });
+
+    return <Dashboard accountSummaries={accountSummaries} />;
+  }
+
+  const supabase = await createClient();
 
   const {
     data: { user },

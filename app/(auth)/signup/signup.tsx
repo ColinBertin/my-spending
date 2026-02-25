@@ -7,6 +7,7 @@ import { FcGoogle } from "react-icons/fc";
 import { emailRegex } from "@/helpers";
 import Button from "@/components/Button";
 import { signInWithOAuth, signUpWithPassword } from "@/utils/authClient";
+import { isMockEnabled } from "@/utils/mock/env";
 
 type SignupInput = {
   username: string;
@@ -51,6 +52,11 @@ export default function Signup() {
 
     if (error) {
       console.error("Google sign-in error:", error);
+      return;
+    }
+
+    if (isMockEnabled()) {
+      router.push("/");
     }
   }
 

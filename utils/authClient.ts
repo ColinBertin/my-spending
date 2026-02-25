@@ -1,7 +1,14 @@
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
-// import { isMockEnabled, mockAuth } from "@/utils/mockData";
 import type { AuthUser } from "@/utils/authTypes";
+import { isMockEnabled } from "@/utils/mock/env";
+import {
+  getMockAuthUser,
+  mockSignInWithOAuth,
+  mockSignInWithPassword,
+  mockSignOut,
+  mockSignUpWithPassword,
+} from "@/utils/mock/auth";
 
 function toAuthUser(user: User): AuthUser {
   return {
@@ -13,9 +20,9 @@ function toAuthUser(user: User): AuthUser {
 }
 
 export async function getAuthUser(): Promise<AuthUser | null> {
-  // if (isMockEnabled()) {
-  //   return mockAuth.getUser();
-  // }
+  if (isMockEnabled()) {
+    return getMockAuthUser();
+  }
 
   const supabase = createClient();
   const { data, error } = await supabase.auth.getUser();
@@ -27,9 +34,9 @@ export async function signInWithPassword(
   email: string,
   password: string,
 ): Promise<{ user: AuthUser | null; error: string | null }> {
-  // if (isMockEnabled()) {
-  //   return mockAuth.signIn({ email, password });
-  // }
+  if (isMockEnabled()) {
+    return mockSignInWithPassword(email);
+  }
 
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -48,9 +55,9 @@ export async function signUpWithPassword(
   password: string,
   username: string,
 ): Promise<{ user: AuthUser | null; error: string | null }> {
-  // if (isMockEnabled()) {
-  //   return mockAuth.signUp({ email, password, username });
-  // }
+  if (isMockEnabled()) {
+    return mockSignUpWithPassword(email, username);
+  }
 
   const supabase = createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -68,9 +75,9 @@ export async function signUpWithPassword(
 }
 
 export async function signOut(): Promise<{ error: string | null }> {
-  // if (isMockEnabled()) {
-  //   return mockAuth.signOut();
-  // }
+  if (isMockEnabled()) {
+    return mockSignOut();
+  }
 
   const supabase = createClient();
   const { error } = await supabase.auth.signOut();
@@ -81,11 +88,9 @@ export async function signInWithOAuth(
   provider: "google" | "github",
   redirectTo: string,
 ): Promise<{ error: string | null }> {
-  // if (isMockEnabled()) {
-  //   const email = "demo@mock.local";
-  //   await mockAuth.signIn({ email, password: "mock" });
-  //   return { error: null };
-  // }
+  if (isMockEnabled()) {
+    return mockSignInWithOAuth(provider);
+  }
 
   const supabase = createClient();
   const { error } = await supabase.auth.signInWithOAuth({

@@ -2,6 +2,7 @@ import * as HiIcons from "react-icons/hi";
 import * as FaIcons from "react-icons/fa";
 import * as MdIcons from "react-icons/md";
 import * as BiIcons from "react-icons/bi";
+import * as LuIcons from "lucide-react";
 import type { FC } from "react";
 import { colorCodes } from "@/helpers";
 
@@ -26,6 +27,11 @@ export const FinanceIcon: FC<FinanceIconProps> = ({
     fa: FaIcons,
     md: MdIcons,
     bi: BiIcons,
+    lucide: LuIcons as unknown as Record<
+      string,
+      FC<React.SVGProps<SVGSVGElement>>
+    >,
+    lu: LuIcons as unknown as Record<string, FC<React.SVGProps<SVGSVGElement>>>,
   };
 
   const IconSet = iconSets[iconPack];
@@ -33,11 +39,18 @@ export const FinanceIcon: FC<FinanceIconProps> = ({
 
   if (!IconComponent) return null;
 
+  const colorFromPalette = colorCodes[iconColor as keyof typeof colorCodes];
+  const resolvedColor =
+    colorFromPalette ||
+    (typeof iconColor === "string" && iconColor.trim().startsWith("#")
+      ? iconColor
+      : "#f97316");
+
   return (
     <IconComponent
       className={className}
       style={{
-        color: colorCodes[iconColor as keyof typeof colorCodes] ?? "#f97316",
+        color: resolvedColor,
       }}
     />
   );

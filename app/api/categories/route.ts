@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { createMockCategoryForUser, MOCK_USER_ID } from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   let body: unknown;
   try {
     body = await req.json();
@@ -59,6 +54,27 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
+
+  if (isMockEnabled()) {
+    const { id } = createMockCategoryForUser(
+      {
+        name: name.trim(),
+        color: typeof color === "string" ? color.trim() : null,
+        icon: typeof icon === "string" ? icon.trim() : null,
+        icon_pack: typeof icon_pack === "string" ? icon_pack.trim() : null,
+      },
+      MOCK_USER_ID,
+    );
+
+    return NextResponse.json({ id }, { status: 201 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = createAdminClient();
 

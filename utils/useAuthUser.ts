@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import type { AuthUser } from "@/utils/authTypes";
+import { isMockEnabled } from "@/utils/mock/env";
+import { getMockAuthUser, subscribeToMockAuthChanges } from "@/utils/mock/auth";
 
 export function useAuthUser() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -10,6 +12,19 @@ export function useAuthUser() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isMockEnabled()) {
+      setUser(getMockAuthUser());
+      setLoading(false);
+
+      const unsubscribe = subscribeToMockAuthChanges((nextUser) => {
+        setUser(nextUser);
+      });
+
+      return () => {
+        unsubscribe();
+      };
+    }
+
     const supabase = createClient();
     let isMounted = true;
 
