@@ -43,6 +43,26 @@ export interface Transaction {
   updated_at?: Date;
 }
 
+export interface CategoryTotal {
+  category: string;
+  total: number;
+  category_icon?: string;
+  category_icon_pack?: string;
+  category_color?: string;
+}
+
+export interface MonthlyCategorySummary {
+  categoryTotals: CategoryTotal[];
+  totalSpending: number;
+  selectedMonth: string;
+  selectedYear: string;
+}
+
+export interface DashboardAccountSummary {
+  account: Account;
+  summary: MonthlyCategorySummary;
+}
+
 export interface Category {
   id: string;
   user_id?: string;

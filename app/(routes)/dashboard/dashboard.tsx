@@ -1,14 +1,22 @@
 "use client";
 
 import Loading from "../../loading";
-import { Account } from "@/types";
+import { DashboardAccountSummary } from "@/types";
 import { useAuthUser } from "@/utils/useAuthUser";
 import TransactionContainer from "@/components/TransactionContainer";
 
-export default function Dashboard({ accounts }: { accounts: Account[] }) {
+export default function Dashboard({
+  accountSummaries,
+}: {
+  accountSummaries: DashboardAccountSummary[];
+}) {
   const { user, loading } = useAuthUser();
-  const accountsWithId = accounts.filter(
-    (account): account is Account & { id: string } => Boolean(account.id),
+  const accountSummariesWithId = accountSummaries.filter(
+    (
+      accountSummary,
+    ): accountSummary is DashboardAccountSummary & {
+      account: DashboardAccountSummary["account"] & { id: string };
+    } => Boolean(accountSummary.account.id),
   );
 
   function getTimeOfDayGreeting() {
@@ -38,16 +46,16 @@ export default function Dashboard({ accounts }: { accounts: Account[] }) {
         {userName || user.email || "there"}!
       </h2>
       <div className="w-full max-w-6xl grid grid-cols-1 xl:grid-cols-2 gap-5">
-        {accountsWithId.map((account) => (
+        {accountSummariesWithId.map(({ account, summary }) => (
           <section
             key={account.id}
             className="w-full max-w-[34rem] mx-auto rounded-2xl border border-blue-dark/20 bg-white p-3 sm:p-4 shadow-sm"
           >
-            <TransactionContainer account={account} />
+            <TransactionContainer account={account} initialSummary={summary} />
           </section>
         ))}
       </div>
-      {accountsWithId.length === 0 && (
+      {accountSummariesWithId.length === 0 && (
         <p className="text-lg font-semibold">No accounts found yet.</p>
       )}
     </div>

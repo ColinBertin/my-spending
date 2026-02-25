@@ -1,8 +1,8 @@
 "use client";
 
-import { Account, Transaction } from "@/types";
+import { Account, CategoryTotal, MonthlyCategorySummary } from "@/types";
 import DoughnutChart from "./Doughnut";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
 import { formatCurrencyIntoYen, months } from "@/helpers";
@@ -15,24 +15,39 @@ import { FaUser, FaUsers, FaUserTie } from "react-icons/fa";
 
 export default function TransactionContainer({
   account,
+  initialSummary,
 }: {
-  account: Account;
+  account: Account & { id: string };
+  initialSummary: MonthlyCategorySummary;
 }) {
   const router = useRouter();
+  const hasMounted = useRef(false);
 
-  const currentMonth = (new Date().getMonth() + 1).toString();
   const currentYear = new Date().getFullYear().toString();
 
-  // const [isFetching, setIsFetching] = useState(false)
-  const [transactions, setTransactions] = useState<Transaction[]>();
-  const [spending, setSpending] = useState<number[]>();
-  const [categories, setCategories] = useState<string[]>();
-  const [totalSpending, setTotalSpending] = useState<number>(0);
+  const [categoryTotals, setCategoryTotals] = useState<CategoryTotal[]>(
+    initialSummary.categoryTotals,
+  );
+  const [totalSpending, setTotalSpending] = useState<number>(
+    initialSummary.totalSpending,
+  );
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    initialSummary.selectedMonth,
+  );
+  const [selectedYear, setSelectedYear] = useState<string>(
+    initialSummary.selectedYear,
+  );
 
-  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
-  const [selectedYear, setSelectedYear] = useState<string>(currentYear);
+  const { id, name } = account;
 
-  const { id, name } = account ? account : {};
+  const categories = useMemo(
+    () => categoryTotals.map((item) => item.category),
+    [categoryTotals],
+  );
+  const spending = useMemo(
+    () => categoryTotals.map((item) => item.total),
+    [categoryTotals],
+  );
 
   const getAccountTypeIcon = (type: Account["type"]) => {
     if (type === "single") return <FaUser className="h-5 w-5" />;
@@ -53,9 +68,9 @@ export default function TransactionContainer({
     setSelectedYear(e.target.value);
   };
 
-  const getTransactions = useCallback(async () => {
+  const getCategoryTotals = useCallback(async () => {
     const res = await fetch(
-      `/api/transactions?accountId=${account.id}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`,
+      `/api/transactions?summary=true&accountId=${account.id}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -64,92 +79,71 @@ export default function TransactionContainer({
     const json = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      throw new Error(json.error ?? "Failed to get transactions");
+      throw new Error(json.error ?? "Failed to get category totals");
     }
-    if (json.transactions) {
-      const categoryTotals: Record<string, number> = {};
-      const { transactions } = json;
-      transactions.forEach((t: Transaction) => {
-        if (!t.category_name) return;
-        if (!categoryTotals[t.category_name])
-          categoryTotals[t.category_name] = 0;
-        categoryTotals[t.category_name] += t.amount;
-      });
 
-      const sortedEntries = Object.entries(categoryTotals).sort(([a], [b]) =>
-        a.localeCompare(b),
-      );
-
-      const sortedCategories = sortedEntries.map(([category]) => category);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const sortedSpending = sortedEntries.map(([_, total]) => total);
-
-      setTransactions(transactions);
-      setCategories(sortedCategories);
-      setSpending(sortedSpending);
-      setTotalSpending(sortedSpending.reduce((acc, val) => acc + val, 0));
-      setTransactions(json.transactions);
-    }
+    setCategoryTotals((json.categoryTotals as CategoryTotal[]) ?? []);
+    setTotalSpending(Number(json.totalSpending) || 0);
   }, [account.id, selectedMonth, selectedYear]);
 
   useEffect(() => {
-    getTransactions();
-  }, [getTransactions]);
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
+    getCategoryTotals().catch(() => {
+      setCategoryTotals([]);
+      setTotalSpending(0);
+    });
+  }, [getCategoryTotals]);
 
   // if (isFetching) return <Loading />;
 
   return (
     <ul className="">
-      {account && (
-        <li key={name} className="flex flex-col items-center gap-3">
-          <a
-            className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-blue-dark"
-            href={`/accounts/${id}/details`}
-          >
-            {getAccountTypeIcon(account.type)}
-            <span>{name}</span>
-          </a>
-          <div className="relative flex gap-2 justify-around mb-4">
-            <Select
-              defaultValue={currentMonth}
-              options={months}
-              onChange={handleMonthChange}
-            />
-            <Select
-              defaultValue={currentYear}
-              options={years}
-              onChange={handleYearChange}
-            />
-          </div>
-          <Button
-            type="button"
-            handleChange={() =>
-              router.push(`/accounts/${account.id}/transactions/create`)
-            }
-            text="Add Transaction"
-            color="primary"
+      <li key={name} className="flex flex-col items-center gap-3">
+        <a
+          className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-blue-dark"
+          href={`/accounts/${id}/details`}
+        >
+          {getAccountTypeIcon(account.type)}
+          <span>{name}</span>
+        </a>
+        <div className="relative flex gap-2 justify-around mb-4">
+          <Select
+            defaultValue={initialSummary.selectedMonth}
+            options={months}
+            onChange={handleMonthChange}
           />
-          {categories && categories.length > 0 ? (
-            <>
-              <DoughnutChart
-                labelSet={categories || []}
-                dataSet={spending || []}
-              />
-              {/* <BarChart labelSet={categories || []} dataSet={spending || []} /> */}
-              {/* <LineChart labelSet={categories || []} dataSet={spending || []} /> */}
-              <p className="text-base sm:text-lg font-semibold">
-                Total Spending: {formatCurrencyIntoYen(totalSpending)}
-              </p>
-              <MonthlyTransactions
-                accountId={id as string}
-                transactions={transactions}
-              />
-            </>
-          ) : (
-            <p className="font-bold">No transactions found for this period.</p>
-          )}
-        </li>
-      )}
+          <Select
+            defaultValue={initialSummary.selectedYear}
+            options={years}
+            onChange={handleYearChange}
+          />
+        </div>
+        <Button
+          type="button"
+          handleChange={() =>
+            router.push(`/accounts/${account.id}/transactions/create`)
+          }
+          text="Add Transaction"
+          color="primary"
+        />
+        {categoryTotals.length > 0 ? (
+          <>
+            <DoughnutChart labelSet={categories} dataSet={spending} />
+            {/* <BarChart labelSet={categories || []} dataSet={spending || []} /> */}
+            {/* <LineChart labelSet={categories || []} dataSet={spending || []} /> */}
+            <p className="text-base sm:text-lg font-semibold">
+              Total Spending: {formatCurrencyIntoYen(totalSpending)}
+            </p>
+            <MonthlyTransactions categoryTotals={categoryTotals} />
+          </>
+        ) : (
+          <p className="font-bold">No spending found for this period.</p>
+        )}
+      </li>
     </ul>
   );
 }
