@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/Button";
+import LineChart from "@/components/Chart";
 import Select from "@/components/Select";
 import TransactionList from "@/components/TransactionList";
 import { months } from "@/helpers";
@@ -75,47 +76,90 @@ export default function AccountDetails({
     }
   }, [accountId, selectedMonth, selectedYear]);
 
+  const chartLabels = useMemo(
+    () =>
+      selectedTransactions.map((transaction) =>
+        (transaction.date instanceof Date
+          ? transaction.date
+          : new Date(transaction.date)
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+      ),
+    [selectedTransactions],
+  );
+
+  const chartData = useMemo(
+    () => selectedTransactions.map((transaction) => Number(transaction.amount)),
+    [selectedTransactions],
+  );
+
   return (
-    <div className="flex flex-col justify-center items-center h-full mt-12">
-      <h1 className="text-3xl font-semibold text-center text-red mb-10">
-        {accountName}
-      </h1>
-      <div className="relative flex gap-2 justify-around mb-8">
-        <Select
-          defaultValue={initialMonth}
-          options={months}
-          handleChange={handleMonthChange}
-        />
-        <Select
-          defaultValue={initialYear}
-          options={years}
-          handleChange={handleYearChange}
-        />
-        <Button
-          type="button"
-          color="secondary"
-          text={isFetching ? "Loading..." : "Filter"}
-          handleChange={getFilteredTransactions}
-        />
+    <div className="w-full px-4 sm:px-6 pt-24 pb-12">
+      <div className="mx-auto w-full max-w-5xl flex flex-col items-center">
+        <h1 className="text-3xl font-semibold text-center text-red mb-8">
+          {accountName}
+        </h1>
+
+        <div className="w-full rounded-2xl border border-blue-dark/20 bg-white p-4 sm:p-6 shadow-sm">
+          {chartData.length > 0 && (
+            <div className="w-full flex justify-center mb-8">
+              <LineChart
+                labelSet={chartLabels}
+                dataSet={chartData}
+                datasetLabel="Amount"
+              />
+            </div>
+          )}
+
+          <div className="w-full max-w-lg mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 mb-8">
+            <Select
+              defaultValue={initialMonth}
+              options={months}
+              handleChange={handleMonthChange}
+              className="sm:w-40"
+            />
+            <Select
+              defaultValue={initialYear}
+              options={years}
+              handleChange={handleYearChange}
+              className="sm:w-40"
+            />
+            <Button
+              type="button"
+              color="secondary"
+              text={isFetching ? "Loading..." : "Filter"}
+              handleChange={getFilteredTransactions}
+            />
+          </div>
+
+          {errorMessage && (
+            <p className="font-semibold text-red-500 text-center mb-4">
+              {errorMessage}
+            </p>
+          )}
+
+          <div className="w-full flex justify-center">
+            {selectedTransactions && selectedTransactions.length > 0 ? (
+              <TransactionList transactions={selectedTransactions} />
+            ) : (
+              <p className="font-bold text-center">No transactions found.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <Button
+            type="button"
+            handleChange={() =>
+              router.push(`/accounts/${accountId}/transactions/create`)
+            }
+            color="primary"
+            text="Add Transaction"
+          />
+        </div>
       </div>
-      <div className="mb-6">
-        {errorMessage && (
-          <p className="font-semibold text-red-500 mb-4">{errorMessage}</p>
-        )}
-        {selectedTransactions && selectedTransactions.length > 0 ? (
-          <TransactionList transactions={selectedTransactions} />
-        ) : (
-          <p className="font-bold">No transactions found.</p>
-        )}
-      </div>
-      <Button
-        type="button"
-        handleChange={() =>
-          router.push(`/accounts/${accountId}/transactions/create`)
-        }
-        color="primary"
-        text="Add Transaction"
-      />
     </div>
   );
 }

@@ -10,8 +10,6 @@ import MonthlyTransactions from "./MonthlyTransactions";
 import Button from "./Button";
 import Select from "./Select";
 import { FaUser, FaUsers, FaUserTie } from "react-icons/fa";
-// import BarChart from "./BarChart";
-// import LineChart from "./Chart";
 
 export default function TransactionContainer({
   account,
@@ -110,16 +108,18 @@ export default function TransactionContainer({
           {getAccountTypeIcon(account.type)}
           <span>{name}</span>
         </a>
-        <div className="relative flex gap-2 justify-around mb-4">
+        <div className="relative flex flex-wrap gap-2 justify-center mb-4">
           <Select
             defaultValue={initialSummary.selectedMonth}
             options={months}
             onChange={handleMonthChange}
+            className="sm:w-40"
           />
           <Select
             defaultValue={initialSummary.selectedYear}
             options={years}
             onChange={handleYearChange}
+            className="sm:w-40"
           />
         </div>
         <Button
@@ -133,8 +133,6 @@ export default function TransactionContainer({
         {categoryTotals.length > 0 ? (
           <>
             <DoughnutChart labelSet={categories} dataSet={spending} />
-            {/* <BarChart labelSet={categories || []} dataSet={spending || []} /> */}
-            {/* <LineChart labelSet={categories || []} dataSet={spending || []} /> */}
             <p className="text-base sm:text-lg font-semibold">
               Total Spending: {formatCurrencyIntoYen(totalSpending)}
             </p>
