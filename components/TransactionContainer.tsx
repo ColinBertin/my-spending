@@ -1,40 +1,56 @@
 "use client";
 
-import { Account, Transaction } from "@/types/firestore";
+import { Account, CategoryTotal, MonthlyCategorySummary } from "@/types";
 import DoughnutChart from "./Doughnut";
-import { useEffect, useState } from "react";
-import { auth } from "@/app/lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import Loading from "@/app/loading";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrencyIntoYen, months } from "@/helpers";
 import MonthlyTransactions from "./MonthlyTransactions";
 import Button from "./Button";
 import Select from "./Select";
-import { getMonthlyRangeTransactions } from "@/app/lib/getMonthlyRangeTransactions";
-// import BarChart from "./BarChart";
-// import LineChart from "./Chart";
+import { FaUser, FaUsers, FaUserTie } from "react-icons/fa";
 
 export default function TransactionContainer({
   account,
+  initialSummary,
 }: {
-  account: Account;
+  account: Account & { id: string };
+  initialSummary: MonthlyCategorySummary;
 }) {
   const router = useRouter();
-  const [user, loading] = useAuthState(auth);
+  const hasMounted = useRef(false);
 
-  const currentMonth = (new Date().getMonth() + 1).toString();
   const currentYear = new Date().getFullYear().toString();
 
-  const [transactions, setTransactions] = useState<Transaction[]>();
-  const [spending, setSpending] = useState<number[]>();
-  const [categories, setCategories] = useState<string[]>();
-  const [totalSpending, setTotalSpending] = useState<number>(0);
+  const [categoryTotals, setCategoryTotals] = useState<CategoryTotal[]>(
+    initialSummary.categoryTotals,
+  );
+  const [totalSpending, setTotalSpending] = useState<number>(
+    initialSummary.totalSpending,
+  );
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    initialSummary.selectedMonth,
+  );
+  const [selectedYear, setSelectedYear] = useState<string>(
+    initialSummary.selectedYear,
+  );
 
-  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
-  const [selectedYear, setSelectedYear] = useState<string>(currentYear);
+  const { id, name } = account;
 
-  const { id, name } = account ? account : {};
+  const categories = useMemo(
+    () => categoryTotals.map((item) => item.category),
+    [categoryTotals],
+  );
+  const spending = useMemo(
+    () => categoryTotals.map((item) => item.total),
+    [categoryTotals],
+  );
+
+  const getAccountTypeIcon = (type: Account["type"]) => {
+    if (type === "single") return <FaUser className="h-5 w-5" />;
+    if (type === "shared") return <FaUsers className="h-5 w-5" />;
+    return <FaUserTie className="h-5 w-5" />;
+  };
 
   const years = Array.from(
     { length: 8 },
@@ -49,85 +65,80 @@ export default function TransactionContainer({
     setSelectedYear(e.target.value);
   };
 
-  useEffect(() => {
-    if (user && id) {
-      getMonthlyRangeTransactions(id, selectedMonth, selectedYear).then(
-        (transactions) => {
-          const categoryTotals: Record<string, number> = {};
-          transactions.forEach((t) => {
-            if (!t.categoryName) return;
-            if (!categoryTotals[t.categoryName])
-              categoryTotals[t.categoryName] = 0;
-            categoryTotals[t.categoryName] += t.amount;
-          });
+  const getCategoryTotals = useCallback(async () => {
+    const res = await fetch(
+      `/api/transactions?summary=true&accountId=${account.id}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    const json = await res.json().catch(() => ({}));
 
-          const sortedEntries = Object.entries(categoryTotals).sort(
-            ([a], [b]) => a.localeCompare(b),
-          );
-
-          const sortedCategories = sortedEntries.map(([category]) => category);
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const sortedSpending = sortedEntries.map(([_, total]) => total);
-
-          setTransactions(transactions);
-          setCategories(sortedCategories);
-          setSpending(sortedSpending);
-          setTotalSpending(sortedSpending.reduce((acc, val) => acc + val, 0));
-        },
-      );
+    if (!res.ok) {
+      throw new Error(json.error ?? "Failed to get category totals");
     }
-  }, [id, selectedMonth, selectedYear, user]);
 
-  if (loading) return <Loading />;
+    setCategoryTotals((json.categoryTotals as CategoryTotal[]) ?? []);
+    setTotalSpending(Number(json.totalSpending) || 0);
+  }, [account.id, selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
+    getCategoryTotals().catch(() => {
+      setCategoryTotals([]);
+      setTotalSpending(0);
+    });
+  }, [getCategoryTotals]);
 
   return (
     <ul className="">
-      {account && (
-        <li key={name} className="flex flex-col items-center gap-4">
-          <a className="text-2xl font-bold" href={`/accounts/${id}/details`}>
-            {name}
-          </a>
-          <div className="relative flex gap-2 justify-around mb-8">
-            <Select
-              defaultValue={currentMonth}
-              options={months}
-              onChange={handleMonthChange}
-            />
-            <Select
-              defaultValue={currentYear}
-              options={years}
-              onChange={handleYearChange}
-            />
-          </div>
-          <Button
-            type="button"
-            handleChange={() =>
-              router.push(`/accounts/${account.id}/transactions/create`)
-            }
-            text="Add Transaction"
-            color="primary"
+      <li key={name} className="flex flex-col items-center gap-3">
+        <a
+          className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-blue-dark"
+          href={`/accounts/${id}/details`}
+        >
+          {getAccountTypeIcon(account.type)}
+          <span>{name}</span>
+        </a>
+        <div className="relative flex flex-wrap gap-2 justify-center mb-4">
+          <Select
+            defaultValue={initialSummary.selectedMonth}
+            options={months}
+            onChange={handleMonthChange}
+            className="sm:w-40"
           />
-          {categories && categories.length > 0 ? (
-            <>
-              <DoughnutChart
-                labelSet={categories || []}
-                dataSet={spending || []}
-              />
-              {/* <BarChart labelSet={categories || []} dataSet={spending || []} /> */}
-              {/* <LineChart labelSet={categories || []} dataSet={spending || []} /> */}
-              <p className="text-lg">
-                Total Spending: {formatCurrencyIntoYen(totalSpending)}
-              </p>
-              <MonthlyTransactions
-                accountId={id as string}
-                transactions={transactions}
-              />
-            </>
-          ) : (
-            <p className="font-bold">No transactions found for this period.</p>
-          )}
-        </li>
-      )}
+          <Select
+            defaultValue={initialSummary.selectedYear}
+            options={years}
+            onChange={handleYearChange}
+            className="sm:w-40"
+          />
+        </div>
+        <Button
+          type="button"
+          handleChange={() =>
+            router.push(`/accounts/${account.id}/transactions/create`)
+          }
+          text="Add Transaction"
+          color="primary"
+        />
+        {categoryTotals.length > 0 ? (
+          <>
+            <DoughnutChart labelSet={categories} dataSet={spending} />
+            <p className="text-base sm:text-lg font-semibold">
+              Total Spending: {formatCurrencyIntoYen(totalSpending)}
+            </p>
+            <MonthlyTransactions categoryTotals={categoryTotals} />
+          </>
+        ) : (
+          <p className="font-bold">No spending found for this period.</p>
+        )}
+      </li>
     </ul>
   );
 }

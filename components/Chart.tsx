@@ -10,27 +10,48 @@ const Line = dynamic(() => import("react-chartjs-2").then((mod) => mod.Line), {
 const LineChart = ({
   labelSet,
   dataSet,
+  datasetLabel = "Transactions",
 }: {
   labelSet: string[];
   dataSet: number[];
+  datasetLabel?: string;
 }) => {
   const data = {
     labels: labelSet,
     datasets: [
       {
-        // label: 'Line Chart',
+        label: datasetLabel,
         data: dataSet,
         fill: false,
         borderColor: "rgb(75, 192, 192)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
         tension: 0.1,
       },
     ],
   };
 
   return (
-    <div style={{ width: "300px", height: "300px" }}>
-      <h1>Example 1: Line Chart</h1>
-      <Line data={data} />
+    <div className="w-full max-w-4xl h-72 sm:h-80">
+      <Line
+        data={data}
+        options={{
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45,
+                autoSkip: true,
+                maxTicksLimit: 10,
+              },
+            },
+            y: {
+              beginAtZero: true,
+            },
+          },
+        }}
+      />
     </div>
   );
 };

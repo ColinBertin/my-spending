@@ -37,6 +37,19 @@ export function getMonthRange(monthNumber: number, year?: number) {
   return { startOfMonth, endOfMonth };
 }
 
+export function getTimeOfDayGreeting() {
+  const currentTime = new Date();
+  const currentHour = currentTime.getHours();
+
+  if (currentHour >= 5 && currentHour < 12) {
+    return "Good morning, ";
+  } else if (currentHour >= 12 && currentHour < 18) {
+    return "Good afternoon, ";
+  } else {
+    return "Good evening, ";
+  }
+}
+
 export const colorCodes = {
   // Reds & Warm Pinks
   rose: "#FEE2E2",

@@ -1,0 +1,215 @@
+"use client";
+
+import Select from "@/components/Select";
+import { Category, Transaction, TransactionType } from "@/types";
+import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
+import Loading from "./loading";
+import Calendar from "@/components/Calendar";
+import Button from "@/components/Button";
+import { useAuthUser } from "@/utils/useAuthUser";
+
+export default function CreateTransaction({
+  accountId,
+  categories,
+}: {
+  accountId: string;
+  categories: Category[];
+}) {
+  const router = useRouter();
+  const { user } = useAuthUser();
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<Transaction>({ mode: "onChange" });
+
+  // async function handleCreateAccount(data: Transaction) {
+  //   const id = data.categoryId;
+  //   const category = categories.find((cat) => cat.id === id);
+
+  //   const nextTransaction = {
+  //     ...data,
+  //     categoryName: category?.name || "",
+  //     categoryIcon: category?.icon || "",
+  //     categoryIconPack: category?.icon_pack || "",
+  //     categoryColor: category?.color || "",
+  //     type: data.type.toLowerCase() as TransactionType,
+  //     currency: data.currency.toLowerCase(),
+  //     userId: user?.id as string,
+  //     accountId,
+  //   };
+
+  //   try {
+  //     const newTransaction = await createTransaction(nextTransaction);
+  //     console.log("Transaction created with ID:", newTransaction);
+  //     router.push(`/accounts/${accountId}/details`);
+  //   } catch (err: unknown) {
+  //     console.error(err);
+  //   }
+  // }
+
+  const onSubmit = async (values: Transaction) => {
+    const id = values.category_id;
+    const category = categories.find((cat) => cat.id === id);
+
+    const res = await fetch("/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...values,
+        category_name: category?.name || "",
+        category_icon: category?.icon || "",
+        category_icon_pack: category?.icon_pack || "",
+        category_color: category?.color || "",
+        type: values.type.toLowerCase() as TransactionType,
+        currency: values.currency.toLowerCase(),
+        account_id: accountId,
+      }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(json.error ?? "Failed to create account");
+    }
+
+    router.push("/");
+  };
+
+  // useEffect(() => {
+  //   if (typeof window === "undefined") return;
+  //   getCategories().then((categories) => {
+  //     const formatted = categories.map((category) => ({
+  //       id: category.id,
+  //       name: category.name,
+  //       icon: category.icon || "",
+  //       iconPack: category.iconPack || "",
+  //       iconColor: category.color,
+  //     }));
+  //     setCategories(formatted);
+  //   });
+  // }, []);
+
+  if (!user) return <Loading />;
+
+  return (
+    <div className="w-full px-4 sm:px-6 pt-24 pb-12">
+      <div className="mx-auto w-full max-w-5xl flex justify-center">
+        <form
+          className="w-full max-w-2xl rounded-2xl border border-blue-dark/20 bg-white p-5 sm:p-6 shadow-sm flex flex-col items-center"
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <h1 className="text-3xl font-semibold text-center text-red mb-8">
+            New Transaction
+          </h1>
+
+          <div className="relative w-full max-w-md mb-6">
+            <input
+              type="text"
+              placeholder="Title"
+              className="border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300"
+              {...register("title", { required: "Title is required" })}
+            />
+            {errors.title && (
+              <small className="absolute top-11 left-2 text-red-300">
+                {errors.title.message}
+              </small>
+            )}
+          </div>
+
+          <div className="w-full max-w-md flex flex-col gap-4 mb-6">
+            <div className="relative">
+              {categories && (
+                <Select
+                  defaultValue={categories[0]?.id || ""}
+                  options={categories}
+                  {...register("category_id", {
+                    required: "Category is required",
+                  })}
+                />
+              )}
+            </div>
+            <div className="relative">
+              <Select
+                defaultValue={"expense"}
+                options={[
+                  { id: "expense", name: "Expense" },
+                  { id: "income", name: "Income" },
+                ]}
+                {...register("type", { required: "Type is required" })}
+              />
+            </div>
+            <div className="relative">
+              <Select
+                defaultValue={"JPY"}
+                options={[
+                  { id: "JPY", name: "JPY" },
+                  { id: "EUR", name: "EUR" },
+                  { id: "USD", name: "USD" },
+                ]}
+                {...register("currency", { required: "Currency is required" })}
+              />
+            </div>
+          </div>
+
+          <div className="relative w-full max-w-md mb-6">
+            <input
+              type="number"
+              placeholder="Amount"
+              className="border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300"
+              {...register("amount", { required: "Amount is required" })}
+            />
+            {errors.amount && (
+              <small className="absolute top-11 left-2 text-red-300">
+                {errors.amount.message}
+              </small>
+            )}
+          </div>
+
+          <div className="relative w-full max-w-md mb-6">
+            <textarea
+              placeholder="note"
+              className="border border-gray-500 rounded-xl w-full p-2 text-gray-700 font-medium focus:border-purple-300"
+              rows={4}
+              {...register("note")}
+            />
+            {errors.note && (
+              <small className="absolute top-[100%] left-2 mt-1 text-red-300">
+                {errors.note.message}
+              </small>
+            )}
+          </div>
+
+          <div className="w-full flex justify-center mb-2">
+            <Controller
+              control={control}
+              name="date"
+              rules={{ required: "Date is required" }}
+              render={({ field }) => (
+                <Calendar value={field.value} onChange={field.onChange} />
+              )}
+            />
+          </div>
+
+          {errors.date && (
+            <small className="text-red-500 text-sm text-center mb-3">
+              {errors.date.message}
+            </small>
+          )}
+
+          <div className="w-full max-w-md flex flex-col sm:flex-row justify-center gap-2 mt-2">
+            <Button
+              type="button"
+              handleChange={() => router.back()}
+              text="Cancel"
+            />
+            <Button type="submit" color="primary" text="Add" />
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

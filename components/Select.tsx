@@ -15,14 +15,20 @@ export default function Select({
   defaultValue,
   options,
   handleChange,
+  className,
+  onChange,
   ...rest
 }: SelectProps) {
   return (
     <select
-      id="column"
-      className={`border border-gray-500 rounded-xl p-2 focus:border-purple-300 flex-1 `}
+      className={[
+        "w-full h-10 border border-gray-500 rounded-xl px-3 focus:border-purple-300",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       defaultValue={defaultValue}
-      onChange={handleChange}
+      onChange={onChange ?? handleChange}
       {...rest}
     >
       {options.map((option) => (

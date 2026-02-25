@@ -1,20 +1,20 @@
 "use client";
 import clsx from "clsx";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
 import Link from "next/link";
+import { signOut } from "@/utils/authClient";
 
 // type menuProps = {
 //   menuState: boolean;
 //   handleNavbar?: () => void;
 // };
 
-export default function Menu() {
+export default function Menu({ onItemClick }: { onItemClick?: () => void }) {
   const router = useRouter();
 
   async function handleLogout() {
-    await signOut(auth);
+    onItemClick?.();
+    await signOut();
     router.push("/login");
   }
 
@@ -22,7 +22,7 @@ export default function Menu() {
   const isSamePath = (p: string) => pathname?.endsWith(p);
 
   const sections = [
-    { title: "Dashboard", href: "/dashboard" },
+    { title: "Dashboard", href: "/" },
     { title: "New Account", href: "/accounts/create" },
     { title: "New Category", href: "/categories/create" },
   ];
@@ -31,7 +31,7 @@ export default function Menu() {
     <>
       <ul className={clsx("text-center md:text-start")}>
         {sections.map((section) => (
-          <Link key={section.title} href={section.href}>
+          <Link key={section.title} href={section.href} onClick={onItemClick}>
             <li
               className={`${
                 isSamePath(section.href)

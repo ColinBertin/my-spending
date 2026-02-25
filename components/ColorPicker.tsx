@@ -12,7 +12,7 @@ export default function ColorPicker({
   colors,
 }: ColorPickerProps) {
   return (
-    <div className="flex flex-wrap gap-2 flex justify-center h-20 overflow-scroll border rounded-xl bg-white py-1">
+    <div className="flex flex-wrap gap-2 flex justify-center h-40 overflow-scroll border rounded-xl bg-white py-1">
       {Object.entries(colors).map(([code, hex]) => (
         <div
           key={code}

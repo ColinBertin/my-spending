@@ -44,8 +44,8 @@ const DoughnutChart = ({
   };
 
   return (
-    <div style={{ width: "350px", height: "350px" }}>
-      <Doughnut data={data} />
+    <div className="w-[220px] h-[220px] sm:w-[250px] sm:h-[250px] mx-auto">
+      <Doughnut data={data} options={{ maintainAspectRatio: false }} />
     </div>
   );
 };
