@@ -1,9 +1,10 @@
 "use client";
 
-import Loading from "../../loading";
+import Loading from "../loading";
 import { DashboardAccountSummary } from "@/types";
 import { useAuthUser } from "@/utils/useAuthUser";
 import TransactionContainer from "@/components/TransactionContainer";
+import { getTimeOfDayGreeting } from "@/helpers";
 
 export default function Dashboard({
   accountSummaries,
@@ -19,19 +20,6 @@ export default function Dashboard({
     } => Boolean(accountSummary.account.id),
   );
 
-  function getTimeOfDayGreeting() {
-    const currentTime = new Date();
-    const currentHour = currentTime.getHours();
-
-    if (currentHour >= 5 && currentHour < 12) {
-      return "Good morning, ";
-    } else if (currentHour >= 12 && currentHour < 18) {
-      return "Good afternoon, ";
-    } else {
-      return "Good evening, ";
-    }
-  }
-
   if (loading || !user) return <Loading />;
 
   const rawUserName = user.user_metadata?.username?.trim();
@@ -43,7 +31,7 @@ export default function Dashboard({
     <div className="pt-24 sm:pt-30 pb-20 px-4 sm:px-6 flex flex-col justify-center items-center gap-10">
       <h2 className="text-3xl font-bold">
         {getTimeOfDayGreeting()}
-        {userName || user.email || "there"}!
+        {userName || "there"}!
       </h2>
       <div className="w-full max-w-6xl grid grid-cols-1 xl:grid-cols-2 gap-5">
         {accountSummariesWithId.map(({ account, summary }) => (

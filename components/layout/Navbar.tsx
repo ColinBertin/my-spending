@@ -15,9 +15,13 @@ export default function NavBar() {
 
   const [navbar, setNavbar] = useState(false);
 
-  const handleNavbar = useCallback(() => {
-    setNavbar(!navbar);
-  }, [navbar]);
+  const toggleNavbar = useCallback(() => {
+    setNavbar((prev) => !prev);
+  }, []);
+
+  const closeNavbar = useCallback(() => {
+    setNavbar(false);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -25,7 +29,7 @@ export default function NavBar() {
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        handleNavbar?.();
+        closeNavbar();
       }
     };
 
@@ -40,13 +44,13 @@ export default function NavBar() {
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
-  }, [navbar, handleNavbar]);
+  }, [navbar, closeNavbar]);
 
   return (
     <>
       <nav className="w-full fixed top-0 left-0 bg-blue-dark flex justify-between px-6 py-4 z-50">
         {/* LOGO */}
-        <Link href="/dashboard" className="flex items-center space-x-2">
+        <Link href="/" className="flex items-center space-x-2">
           <h2 className="flex items-center gap-2 text-white text-2xl font-bold">
             <Image className="w-7 h-7" src={logo} alt="some text" />
             <span className="hidden sm:block">My Finances</span>
@@ -55,7 +59,7 @@ export default function NavBar() {
         {/* HAMBURGER BUTTON */}
         <button
           className="text-white rounded-md outline-none hover:text-orange-light transition ease-in duration-100 cursor-pointer"
-          onClick={handleNavbar}
+          onClick={toggleNavbar}
         >
           {navbar ? (
             <IoCloseOutline className="h-6 w-6 md:h-8 md:w-8" />
@@ -83,7 +87,7 @@ export default function NavBar() {
             "flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-blue-dark md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded",
           )}
         >
-          <Menu />
+          <Menu onItemClick={closeNavbar} />
         </div>
       </Transition>
     </>

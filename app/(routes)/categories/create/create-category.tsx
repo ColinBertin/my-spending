@@ -40,7 +40,7 @@ export default function CreateCategory() {
     }
     setIsFetching(false);
     startTransition(() => {
-      router.push("/dashboard");
+      router.push("/");
     });
   };
 

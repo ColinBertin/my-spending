@@ -37,7 +37,7 @@ export default function Signup() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/");
     } catch (err) {
       console.error("Unexpected signup error:", err);
     }

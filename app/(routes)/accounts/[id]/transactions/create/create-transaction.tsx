@@ -76,7 +76,7 @@ export default function CreateTransaction({
       throw new Error(json.error ?? "Failed to create account");
     }
 
-    router.push("/dashboard");
+    router.push("/");
   };
 
   // useEffect(() => {

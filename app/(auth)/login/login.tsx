@@ -41,7 +41,7 @@ export default function Login() {
         console.error("Login error:", error);
         return;
       }
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: unknown) {
       console.error("Login error:", err);
       // setError(err.message);

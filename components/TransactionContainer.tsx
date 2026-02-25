@@ -3,7 +3,6 @@
 import { Account, CategoryTotal, MonthlyCategorySummary } from "@/types";
 import DoughnutChart from "./Doughnut";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-// import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
 import { formatCurrencyIntoYen, months } from "@/helpers";
 import MonthlyTransactions from "./MonthlyTransactions";
@@ -95,8 +94,6 @@ export default function TransactionContainer({
       setTotalSpending(0);
     });
   }, [getCategoryTotals]);
-
-  // if (isFetching) return <Loading />;
 
   return (
     <ul className="">

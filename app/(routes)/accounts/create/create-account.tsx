@@ -37,7 +37,7 @@ export default function CreateAccount() {
 
     setIsFetching(true);
     startTransition(() => {
-      router.push("/dashboard");
+      router.push("/");
     });
   };
 
