@@ -10,11 +10,18 @@ import ColorPicker from "@/components/ColorPicker";
 import { colorCodes } from "@/helpers";
 import Label from "@/components/Label";
 import { useState, useTransition } from "react";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "@/components/ui/NotificationProvider";
 
 export default function CreateCategory() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isFetching, setIsFetching] = useState(false);
+
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
 
   const isMutating = isPending || isFetching;
 
@@ -35,13 +42,18 @@ export default function CreateCategory() {
     });
     const json = await res.json().catch(() => ({}));
 
-    if (!res.ok) {
-      throw new Error(json.error ?? "Failed to create account");
-    }
     setIsFetching(false);
+
+    if (!res.ok) {
+      showErrorNotification("Failed to create account");
+      console.error(json.error);
+      return;
+    }
+
     startTransition(() => {
       router.push("/");
     });
+    showSuccessNotification("Category created !");
   };
 
   const color = useWatch({
