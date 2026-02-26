@@ -7,7 +7,11 @@ import { Controller, useForm } from "react-hook-form";
 import Loading from "./loading";
 import Calendar from "@/components/Calendar";
 import Button from "@/components/Button";
-import { useAuthUser } from "@/utils/useAuthUser";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "@/components/ui/NotificationProvider";
+import { useState, useTransition } from "react";
 
 export default function CreateTransaction({
   accountId,
@@ -17,7 +21,13 @@ export default function CreateTransaction({
   categories: Category[];
 }) {
   const router = useRouter();
-  const { user } = useAuthUser();
+  const [isPending, startTransition] = useTransition();
+  const [isFetching, setIsFetching] = useState(false);
+
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
+
+  const isMutating = isPending || isFetching;
 
   const {
     register,
@@ -28,6 +38,7 @@ export default function CreateTransaction({
   } = useForm<Transaction>({ mode: "onChange" });
 
   const onSubmit = async (values: Transaction) => {
+    setIsFetching(true);
     const id = values.category_id;
     const category = categories.find((cat) => cat.id === id);
 
@@ -47,15 +58,24 @@ export default function CreateTransaction({
     });
 
     const json = await res.json().catch(() => ({}));
+    setIsFetching(false);
 
     if (!res.ok) {
-      throw new Error(json.error ?? "Failed to create account");
+      showErrorNotification("Failed to add transaction");
+      console.error(json.error);
+      return;
     }
-    reset();
-    router.refresh();
+
+    startTransition(() => {
+      reset();
+      router.refresh();
+    });
+    showSuccessNotification("Transaction added !");
   };
 
-  if (!user) return <Loading />;
+  if (isMutating) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full px-4 sm:px-6 pt-24 pb-12">

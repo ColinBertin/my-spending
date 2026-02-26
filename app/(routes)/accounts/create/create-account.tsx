@@ -7,11 +7,18 @@ import Loading from "../loading";
 import Button from "@/components/Button";
 import { Account } from "@/types";
 import { useState, useTransition } from "react";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "@/components/ui/NotificationProvider";
 
 export default function CreateAccount() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isFetching, setIsFetching] = useState(false);
+
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
 
   const isMutating = isPending || isFetching;
 
@@ -30,15 +37,18 @@ export default function CreateAccount() {
     });
 
     const json = await res.json().catch(() => ({}));
+    setIsFetching(false);
 
     if (!res.ok) {
-      throw new Error(json.error ?? "Failed to create account");
+      showErrorNotification("Failed to create account");
+      console.error(json.error);
+      return;
     }
 
-    setIsFetching(true);
     startTransition(() => {
       router.push("/");
     });
+    showSuccessNotification("New Account created !");
   };
 
   if (isMutating) {
