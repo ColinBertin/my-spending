@@ -25,6 +25,7 @@ export default function Menu({ onItemClick }: { onItemClick?: () => void }) {
     { title: "Dashboard", href: "/" },
     { title: "New Account", href: "/accounts/create" },
     { title: "New Category", href: "/categories/create" },
+    { title: "Pro: Generate Ledger", href: "/ledger-generator" },
   ];
 
   return (

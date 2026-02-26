@@ -10,6 +10,7 @@ import ColorPicker from "@/components/ColorPicker";
 import { colorCodes } from "@/helpers";
 import Label from "@/components/Label";
 import { useState, useTransition } from "react";
+import Select from "@/components/Select";
 
 export default function CreateCategory() {
   const router = useRouter();
@@ -77,6 +78,16 @@ export default function CreateCategory() {
               </small>
             )}
           </div>
+          <div className="relative">
+            <Select
+              defaultValue={"normal"}
+              options={[
+                { id: "normal", name: "Normal" },
+                { id: "professional", name: "Professional" },
+              ]}
+              {...register("type", { required: "Type is required" })}
+            />
+          </div>
 
           <div className="relative w-full flex flex-col items-center px-2 mb-6">
             <Label text="Color" htmlFor="color" />
@@ -85,7 +96,7 @@ export default function CreateCategory() {
               control={control}
               render={({ field }) => (
                 <ColorPicker
-                  value={field.value}
+                  value={field.value as string}
                   onChange={field.onChange}
                   colors={colorCodes}
                 />

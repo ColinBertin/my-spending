@@ -23,33 +23,9 @@ export default function CreateTransaction({
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<Transaction>({ mode: "onChange" });
-
-  // async function handleCreateAccount(data: Transaction) {
-  //   const id = data.categoryId;
-  //   const category = categories.find((cat) => cat.id === id);
-
-  //   const nextTransaction = {
-  //     ...data,
-  //     categoryName: category?.name || "",
-  //     categoryIcon: category?.icon || "",
-  //     categoryIconPack: category?.icon_pack || "",
-  //     categoryColor: category?.color || "",
-  //     type: data.type.toLowerCase() as TransactionType,
-  //     currency: data.currency.toLowerCase(),
-  //     userId: user?.id as string,
-  //     accountId,
-  //   };
-
-  //   try {
-  //     const newTransaction = await createTransaction(nextTransaction);
-  //     console.log("Transaction created with ID:", newTransaction);
-  //     router.push(`/accounts/${accountId}/details`);
-  //   } catch (err: unknown) {
-  //     console.error(err);
-  //   }
-  // }
 
   const onSubmit = async (values: Transaction) => {
     const id = values.category_id;
@@ -75,23 +51,9 @@ export default function CreateTransaction({
     if (!res.ok) {
       throw new Error(json.error ?? "Failed to create account");
     }
-
-    router.push("/");
+    reset();
+    router.refresh();
   };
-
-  // useEffect(() => {
-  //   if (typeof window === "undefined") return;
-  //   getCategories().then((categories) => {
-  //     const formatted = categories.map((category) => ({
-  //       id: category.id,
-  //       name: category.name,
-  //       icon: category.icon || "",
-  //       iconPack: category.iconPack || "",
-  //       iconColor: category.color,
-  //     }));
-  //     setCategories(formatted);
-  //   });
-  // }, []);
 
   if (!user) return <Loading />;
 
