@@ -7,7 +7,11 @@ import { Controller, useForm } from "react-hook-form";
 import Loading from "./loading";
 import Calendar from "@/components/Calendar";
 import Button from "@/components/Button";
-import { useAuthUser } from "@/utils/useAuthUser";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "@/components/ui/NotificationProvider";
+import { useState, useTransition } from "react";
 
 export default function CreateTransaction({
   accountId,
@@ -17,7 +21,13 @@ export default function CreateTransaction({
   categories: Category[];
 }) {
   const router = useRouter();
-  const { user } = useAuthUser();
+  const [isPending, startTransition] = useTransition();
+  const [isFetching, setIsFetching] = useState(false);
+
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
+
+  const isMutating = isPending || isFetching;
 
   const {
     register,
@@ -26,32 +36,8 @@ export default function CreateTransaction({
     formState: { errors },
   } = useForm<Transaction>({ mode: "onChange" });
 
-  // async function handleCreateAccount(data: Transaction) {
-  //   const id = data.categoryId;
-  //   const category = categories.find((cat) => cat.id === id);
-
-  //   const nextTransaction = {
-  //     ...data,
-  //     categoryName: category?.name || "",
-  //     categoryIcon: category?.icon || "",
-  //     categoryIconPack: category?.icon_pack || "",
-  //     categoryColor: category?.color || "",
-  //     type: data.type.toLowerCase() as TransactionType,
-  //     currency: data.currency.toLowerCase(),
-  //     userId: user?.id as string,
-  //     accountId,
-  //   };
-
-  //   try {
-  //     const newTransaction = await createTransaction(nextTransaction);
-  //     console.log("Transaction created with ID:", newTransaction);
-  //     router.push(`/accounts/${accountId}/details`);
-  //   } catch (err: unknown) {
-  //     console.error(err);
-  //   }
-  // }
-
   const onSubmit = async (values: Transaction) => {
+    setIsFetching(true);
     const id = values.category_id;
     const category = categories.find((cat) => cat.id === id);
 
@@ -71,29 +57,23 @@ export default function CreateTransaction({
     });
 
     const json = await res.json().catch(() => ({}));
+    setIsFetching(false);
 
     if (!res.ok) {
-      throw new Error(json.error ?? "Failed to create account");
+      showErrorNotification("Failed to add transaction");
+      console.error(json.error);
+      return;
     }
 
-    router.push("/");
+    startTransition(() => {
+      router.push("/");
+    });
+    showSuccessNotification("Transaction added !");
   };
 
-  // useEffect(() => {
-  //   if (typeof window === "undefined") return;
-  //   getCategories().then((categories) => {
-  //     const formatted = categories.map((category) => ({
-  //       id: category.id,
-  //       name: category.name,
-  //       icon: category.icon || "",
-  //       iconPack: category.iconPack || "",
-  //       iconColor: category.color,
-  //     }));
-  //     setCategories(formatted);
-  //   });
-  // }, []);
-
-  if (!user) return <Loading />;
+  if (isMutating) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full px-4 sm:px-6 pt-24 pb-12">
