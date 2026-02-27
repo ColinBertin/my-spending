@@ -53,13 +53,11 @@ export default function AccountDetails({
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        `/api/transactions?accountId=${encodeURIComponent(accountId)}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      const url = `/api/transactions?accountId=${encodeURIComponent(accountId)}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`;
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
@@ -129,6 +127,7 @@ export default function AccountDetails({
             <Button
               type="button"
               color="secondary"
+              disabled={isFetching}
               text={isFetching ? "Loading..." : "Filter"}
               handleChange={getFilteredTransactions}
             />

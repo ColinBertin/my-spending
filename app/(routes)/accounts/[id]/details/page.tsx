@@ -26,7 +26,9 @@ export default async function AccountDetailsPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) {
+    redirect("/login");
+  }
 
   const { data: account, error: accountError } = await supabase
     .from("accounts")
@@ -34,28 +36,30 @@ export default async function AccountDetailsPage({
     .eq("id", id)
     .single();
 
-  if (accountError) throw accountError;
+  if (accountError) {
+    throw accountError;
+  }
 
   const { data: transactions, error } = await supabase
     .from("transactions")
-    .select(
-      "id,title,type,category_name,category_icon,category_icon_pack,category_color,amount,currency,date,note,created_at",
-    )
+    .select("*")
     .eq("account_id", id)
     .eq("created_by", user.id)
     .gte("date", start.toISOString())
     .lt("date", end.toISOString())
     .order("date", { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (
     <AccountDetails
       accountId={id}
-      transactions={transactions ?? []}
+      transactions={transactions}
       initialMonth={(currentMonthIndex + 1).toString()}
       initialYear={currentYear.toString()}
-      accountName={account?.name ?? "Account"}
+      accountName={account?.name}
     />
   );
 }

@@ -20,7 +20,9 @@ export default function Dashboard({
     } => Boolean(accountSummary.account.id),
   );
 
-  if (loading || !user) return <Loading />;
+  if (loading || !user) {
+    return <Loading />;
+  }
 
   const rawUserName = user.user_metadata?.username?.trim();
   const userName = rawUserName
