@@ -1,11 +1,11 @@
 "use client";
 
-import Button from "@/components/Button";
-import LineChart from "@/components/Chart";
-import Select from "@/components/Select";
-import TransactionList from "@/components/TransactionList";
-import { months } from "@/helpers";
-import { Transaction } from "@/types";
+import Button from "../../../../../components/Button";
+import LineChart from "../../../../../components/Chart";
+import Select from "../../../../../components/Select";
+import TransactionList from "../../../../../components/TransactionList";
+import { months } from "../../../../../helpers";
+import { Transaction } from "../../../../../types";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 

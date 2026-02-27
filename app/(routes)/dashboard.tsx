@@ -1,10 +1,10 @@
 "use client";
 
 import Loading from "../loading";
-import { DashboardAccountSummary } from "@/types";
-import { useAuthUser } from "@/utils/useAuthUser";
-import TransactionContainer from "@/components/TransactionContainer";
-import { getTimeOfDayGreeting } from "@/helpers";
+import { DashboardAccountSummary } from "../../types";
+import { useAuthUser } from "../../utils/useAuthUser";
+import TransactionContainer from "../../components/TransactionContainer";
+import { getTimeOfDayGreeting } from "../../helpers";
 
 export default function Dashboard({
   accountSummaries,

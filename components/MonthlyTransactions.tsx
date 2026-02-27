@@ -1,5 +1,5 @@
-import { CategoryTotal } from "@/types";
-import { formatCurrencyIntoYen } from "@/helpers";
+import { CategoryTotal } from "../types";
+import { formatCurrencyIntoYen } from "../helpers";
 import { FinanceIcon } from "./FinanceIcon";
 
 export default function MonthlyTransactions({

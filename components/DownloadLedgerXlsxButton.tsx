@@ -1,8 +1,8 @@
 "use client";
 
 import * as XLSX from "xlsx";
-import { buildLedgerWorkbook } from "@/lib/ledgerXlsx";
-import { Transaction } from "@/types";
+import { buildLedgerWorkbook } from "../lib/ledgerXlsx";
+import { Transaction } from "../types";
 
 type DownloadLedgerXlsxButtonProps = {
   transactions: Transaction[];

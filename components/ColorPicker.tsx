@@ -1,4 +1,4 @@
-import { colorCodes } from "@/helpers";
+import { colorCodes } from "../helpers";
 
 type ColorPickerProps = {
   value: string;

@@ -1,7 +1,7 @@
-import { DownloadLedgerXlsxButton } from "@/components/DownloadLedgerXlsxButton";
-import { FinanceIcon } from "@/components/FinanceIcon";
-import { formatCurrencyIntoYen } from "@/helpers";
-import { Category, TransactionsByCategory } from "@/types";
+import { DownloadLedgerXlsxButton } from "../../../components/DownloadLedgerXlsxButton";
+import { FinanceIcon } from "../../../components/FinanceIcon";
+import { formatCurrencyIntoYen } from "../../../helpers";
+import { Category, TransactionsByCategory } from "../../../types";
 
 type LedgerGeneratorProps = {
   categories: Category[];

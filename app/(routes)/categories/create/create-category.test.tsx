@@ -1,4 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import type { ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CreateCategory from "./create-category";
 
 vi.mock("react", async () => {
@@ -24,7 +26,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/NotificationProvider", () => ({
+vi.mock("../../../../components/ui/NotificationProvider", () => ({
   useSuccessNotification: () => showSuccessNotificationMock,
   useErrorNotification: () => showErrorNotificationMock,
 }));
@@ -46,7 +48,7 @@ vi.mock("react-hook-form", () => ({
   }: {
     render: (params: {
       field: { value: string; onChange: (...event: unknown[]) => void };
-    }) => React.ReactNode;
+    }) => ReactNode;
   }) =>
     render({
       field: {
@@ -56,11 +58,11 @@ vi.mock("react-hook-form", () => ({
     }),
 }));
 
-vi.mock("@/components/ColorPicker", () => ({
+vi.mock("../../../../components/ColorPicker", () => ({
   default: () => <div>Mock ColorPicker</div>,
 }));
 
-vi.mock("@/components/FinanceIconPicker", () => ({
+vi.mock("../../../../components/FinanceIconPicker", () => ({
   FinanceIconPicker: () => <div>Mock FinanceIconPicker</div>,
 }));
 

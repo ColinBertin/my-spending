@@ -1,6 +1,6 @@
-import { Account, CategoryTotal, DashboardAccountSummary } from "@/types";
+import { Account, CategoryTotal, DashboardAccountSummary } from "../../types";
 import Dashboard from "./dashboard";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "../../utils/supabase/server";
 import { redirect } from "next/navigation";
 
 export const metadata = {

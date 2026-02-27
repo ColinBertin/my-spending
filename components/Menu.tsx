@@ -2,7 +2,7 @@
 import clsx from "clsx";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { signOut } from "@/utils/authClient";
+import { signOut } from "../utils/authClient";
 
 // type menuProps = {
 //   menuState: boolean;

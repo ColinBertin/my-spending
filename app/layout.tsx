@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import "./globals.css";
+import NotificationProvider from "../components/ui/NotificationProvider";
 
 export const metadata = {
   title: "My Spending",
@@ -9,7 +10,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="h-screen w-screen bg-gray-100">{children}</body>
+      <body className="h-screen w-screen bg-gray-100">
+        <NotificationProvider>{children}</NotificationProvider>
+      </body>
     </html>
   );
 }

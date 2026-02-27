@@ -1,5 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Category } from "@/types";
+import type { ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Category } from "../../../../../../types";
 import CreateTransaction from "./create-transaction";
 
 vi.mock("react", async () => {
@@ -12,8 +14,10 @@ vi.mock("react", async () => {
 
 const pushMock = vi.fn();
 const backMock = vi.fn();
+const refreshMock = vi.fn();
 const showSuccessNotificationMock = vi.fn();
 const showErrorNotificationMock = vi.fn();
+const resetMock = vi.fn();
 
 let submitHandler: ((values: Record<string, unknown>) => Promise<void>) | null =
   null;
@@ -22,10 +26,11 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: pushMock,
     back: backMock,
+    refresh: refreshMock,
   }),
 }));
 
-vi.mock("@/components/ui/NotificationProvider", () => ({
+vi.mock("../../../../../../components/ui/NotificationProvider", () => ({
   useSuccessNotification: () => showSuccessNotificationMock,
   useErrorNotification: () => showErrorNotificationMock,
 }));
@@ -38,6 +43,7 @@ vi.mock("react-hook-form", () => ({
       return () => undefined;
     },
     control: {},
+    reset: resetMock,
     formState: { errors: {} },
   }),
   Controller: ({
@@ -45,7 +51,7 @@ vi.mock("react-hook-form", () => ({
   }: {
     render: (params: {
       field: { value: Date; onChange: (...event: unknown[]) => void };
-    }) => React.ReactNode;
+    }) => ReactNode;
   }) =>
     render({
       field: {
@@ -55,7 +61,7 @@ vi.mock("react-hook-form", () => ({
     }),
 }));
 
-vi.mock("@/components/Calendar", () => ({
+vi.mock("../../../../../../components/Calendar", () => ({
   default: () => <div>Mock Calendar</div>,
 }));
 
@@ -152,7 +158,9 @@ describe("CreateTransaction", () => {
     expect(showSuccessNotificationMock).toHaveBeenCalledWith(
       "Transaction added !",
     );
-    expect(pushMock).toHaveBeenCalledWith("/");
+    expect(resetMock).toHaveBeenCalledTimes(1);
+    expect(refreshMock).toHaveBeenCalledTimes(1);
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it("shows an error notification on failure", async () => {

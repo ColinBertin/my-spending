@@ -1,4 +1,5 @@
 import { Children } from "react";
+import { describe, expect, it, vi } from "vitest";
 import ColorPicker from "./ColorPicker";
 
 const colors = {

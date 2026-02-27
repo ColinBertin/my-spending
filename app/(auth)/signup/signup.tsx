@@ -2,11 +2,17 @@
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { FcGoogle } from "react-icons/fc";
+// import { FcGoogle } from "react-icons/fc";
 
-import { emailRegex } from "@/helpers";
-import Button from "@/components/Button";
-import { signInWithOAuth, signUpWithPassword } from "@/utils/authClient";
+import { emailRegex } from "../../../helpers";
+import Button from "../../../components/Button";
+import { signUpWithPassword } from "../../../utils/authClient";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "../../../components/ui/NotificationProvider";
+import { useState, useTransition } from "react";
+import Spinner from "../../../components/Spinner";
 
 type SignupInput = {
   username: string;
@@ -18,6 +24,14 @@ type SignupInput = {
 export default function Signup() {
   const router = useRouter();
 
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
+
+  const [isPending, startTransition] = useTransition();
+  const [isFetching, setIsFetching] = useState(false);
+
+  const isMutating = isFetching || isPending;
+
   const {
     register,
     handleSubmit,
@@ -25,33 +39,48 @@ export default function Signup() {
   } = useForm<SignupInput>({ mode: "onChange" });
 
   async function handleSignup(data: SignupInput) {
+    setIsFetching(true);
     try {
       const { error } = await signUpWithPassword(
         data.email,
         data.password,
         data.username,
       );
+      setIsFetching(false);
 
       if (error) {
         console.error("Signup error:", error);
+        showErrorNotification(error);
         return;
       }
 
-      router.push("/");
+      startTransition(() => {
+        router.push("/");
+        showSuccessNotification("Signup successful !");
+      });
     } catch (err) {
+      setIsFetching(false);
       console.error("Unexpected signup error:", err);
     }
   }
 
-  async function handleGoogleSignIn() {
-    const { error } = await signInWithOAuth(
-      "google",
-      `${location.origin}/auth/callback`,
-    );
+  // async function handleGoogleSignIn() {
+  //   const { error } = await signInWithOAuth(
+  //     "google",
+  //     `${location.origin}/auth/callback`,
+  //   );
 
-    if (error) {
-      console.error("Google sign-in error:", error);
-    }
+  //   if (error) {
+  //     console.error("Google sign-in error:", error);
+  //   }
+  // }
+
+  if (isMutating) {
+    return (
+      <div className="flex flex-col h-full w-full justify-center items-center">
+        <Spinner />
+      </div>
+    );
   }
 
   return (
@@ -128,12 +157,12 @@ export default function Signup() {
         </div>
       </form>
 
-      <button
+      {/* <button
         className="py-2 px-4 rounded-3xl mt-4"
         onClick={handleGoogleSignIn}
       >
         <FcGoogle size={40} />
-      </button>
+      </button> */}
     </div>
   );
 }

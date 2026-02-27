@@ -1,5 +1,6 @@
 import { Children, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import Menu from "./Menu";
 
 const pushMock = vi.fn();
@@ -12,16 +13,12 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
-vi.mock("@/utils/authClient", () => ({
+vi.mock("../utils/authClient", () => ({
   signOut: (...args: unknown[]) => signOutMock(...args),
 }));
 

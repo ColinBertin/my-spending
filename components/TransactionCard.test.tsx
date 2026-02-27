@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Transaction } from "@/types";
+import { describe, expect, it, vi } from "vitest";
+import type { Transaction } from "../types";
 import TransactionCard from "./TransactionCard";
 
 vi.mock("./FinanceIcon", () => ({

@@ -1,5 +1,4 @@
-import Navbar from "@/components/layout/Navbar";
-import NotificationProvider from "@/components/ui/NotificationProvider";
+import Navbar from "../../components/layout/Navbar";
 import { Metadata } from "next/types";
 import { ReactNode } from "react";
 
@@ -13,10 +12,8 @@ export const metadata: Metadata = {
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="h-full w-full">
-      <NotificationProvider>
-        <Navbar />
-        {children}
-      </NotificationProvider>
+      <Navbar />
+      {children}
     </div>
   );
 }

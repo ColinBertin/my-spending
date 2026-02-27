@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { createClient } from "../../../utils/supabase/server";
+import { createAdminClient } from "../../../utils/supabase/admin";
 
 const ACCOUNT_TYPES = new Set(["single", "shared", "professional"]);
 const CURRENCIES = new Set(["JPY", "EUR", "USD"]);

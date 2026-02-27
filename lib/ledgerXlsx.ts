@@ -1,4 +1,4 @@
-import { Transaction } from "@/types";
+import { Transaction } from "../types";
 import * as XLSX from "xlsx";
 
 const TEMPLATE_PATH = "/水道光熱費_2024.xlsx";

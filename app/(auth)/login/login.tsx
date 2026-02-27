@@ -3,11 +3,15 @@
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
-import { emailRegex } from "@/helpers";
-import Button from "@/components/Button";
-import { signInWithPassword } from "@/utils/authClient";
-// import { useState } from "react";
-// import Spinner from "@/components/ui/Spinner";
+import Button from "../../../components/Button";
+import { signInWithPassword } from "../../../utils/authClient";
+import { emailRegex } from "../../../helpers";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "../../../components/ui/NotificationProvider";
+import { useState, useTransition } from "react";
+import Spinner from "../../../components/Spinner";
 
 type SignupInput = {
   username: string;
@@ -19,14 +23,13 @@ type SignupInput = {
 export default function Login() {
   const router = useRouter();
 
-  // const showErrorNotification = useErrorNotification();
-  // const showSuccessNotification = useSuccessNotification();
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
 
-  // const [isPending, startTransition] = useTransition();
-  // const [isFetching, setIsFetching] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [isFetching, setIsFetching] = useState(false);
 
-  // const isMutating = isFetching || isPending;
+  const isMutating = isFetching || isPending;
 
   const {
     register,
@@ -36,57 +39,31 @@ export default function Login() {
 
   async function handleLogin(data: SignupInput) {
     try {
+      setIsFetching(true);
       const { error } = await signInWithPassword(data.email, data.password);
+      setIsFetching(false);
       if (error) {
         console.error("Login error:", error);
+        showErrorNotification(error as string);
         return;
       }
-      router.push("/");
+      startTransition(() => {
+        router.push("/");
+        showSuccessNotification("Login successful !");
+      });
     } catch (err: unknown) {
+      setIsFetching(false);
       console.error("Login error:", err);
-      // setError(err.message);
     }
   }
 
-  // const onSubmit: SubmitHandler<SignupInput> = async (data) => {
-  //   setIsFetching(true);
-  //   const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_URL}/signup/`, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       username: data.username,
-  //       email: data.email,
-  //       password: data.password,
-  //     }),
-  //   });
-
-  //   if (res.ok) {
-  //     await signIn("credentials", {
-  //       redirect: false,
-  //       username: data.username,
-  //       password: data.password,
-  //     });
-  //     startTransition(() => {
-  //       setIsFetching(false);
-  //       router.push("/");
-  //       showSuccessNotification("Signed up successfully.");
-  //     });
-  //   } else {
-  //     const error = await res.json();
-  //     startTransition(() => {
-  //       setIsFetching(false);
-  //       showErrorNotification(error.detail);
-  //     });
-  //   }
-  // };
-
-  // if (isMutating) {
-  //   return (
-  //     <div className="flex flex-col h-full w-full justify-center items-center">
-  //       <Spinner />
-  //     </div>
-  //   );
-  // }
+  if (isMutating) {
+    return (
+      <div className="flex flex-col h-full w-full justify-center items-center">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="">
