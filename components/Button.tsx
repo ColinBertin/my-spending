@@ -1,15 +1,17 @@
-type ButtonProps = {
-  type: "submit" | "button" | "reset";
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   color?: string;
   text: string;
   handleChange?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 };
 
 export default function Button({
-  type,
+  type = "button",
   text,
   color,
   handleChange,
+  className = "",
+  onClick,
+  ...rest
 }: ButtonProps) {
   const bgColorClass = () => {
     switch (color) {
@@ -24,9 +26,10 @@ export default function Button({
 
   return (
     <button
-      className={`cursor-pointer ${bgColorClass()} font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-40 mb-2 sm:mb-0`}
+      className={`cursor-pointer ${bgColorClass()} font-semibold py-2 px-4 rounded-3xl self-center w-56 sm:w-40 mb-2 sm:mb-0 ${className}`}
       type={type}
-      onClick={handleChange}
+      onClick={handleChange ?? onClick}
+      {...rest}
     >
       {text}
     </button>

@@ -11,6 +11,15 @@ type AccountMemberRow = {
   account: Account;
 };
 
+type TransactionSummaryRow = {
+  account_id: string | null;
+  category_name: string | null;
+  amount: number;
+  category_icon: string | null;
+  category_icon_pack: string | null;
+  category_color: string | null;
+};
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const now = new Date();
@@ -27,7 +36,9 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) {
+    redirect("/login");
+  }
 
   const { data, error } = await supabase
     .from("account_members")
@@ -36,23 +47,17 @@ export default async function DashboardPage() {
     )
     .eq("user_id", user.id);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   const accounts = (data as unknown as AccountMemberRow[]).map(
     (r) => r.account,
   );
+
   const accountIds = accounts
     .map((account) => account.id)
     .filter((id): id is string => Boolean(id));
-
-  type TransactionSummaryRow = {
-    account_id: string | null;
-    category_name: string | null;
-    amount: number;
-    category_icon: string | null;
-    category_icon_pack: string | null;
-    category_color: string | null;
-  };
 
   let summaryRows: TransactionSummaryRow[] = [];
 
