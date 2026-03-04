@@ -1,15 +1,10 @@
 "use client";
 
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-} from "@headlessui/react";
 import { ClipboardPen, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import Button from "./Button";
+import Modal, { ModalTitleText } from "./Modal";
 import { Category, Transaction, TransactionType } from "../types";
 import {
   useErrorNotification,
@@ -438,256 +433,243 @@ export default function LedgerPreviewTable({
         </table>
       </div>
 
-      <Dialog
+      <Modal
         open={!!activeDialog}
         onClose={closeDialog}
-        className="print-hidden relative z-50"
+        className="print-hidden"
       >
-        <DialogBackdrop className="fixed inset-0 bg-black/30" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="w-full max-w-xl rounded-2xl border border-blue-dark/20 bg-white p-5 shadow-xl">
-            {activeDialog?.mode === "update" &&
-              activeTransaction &&
-              editValues && (
-                <div className="space-y-5">
-                  <DialogTitle className="text-xl font-semibold text-blue-dark">
-                    Update Transaction
-                  </DialogTitle>
+        {activeDialog?.mode === "update" && activeTransaction && editValues && (
+          <div className="space-y-5">
+            <ModalTitleText className="text-blue-dark">
+              Update Transaction
+            </ModalTitleText>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="flex flex-col gap-1 text-sm">
-                      <span className="font-medium text-gray-600">Title</span>
-                      <input
-                        type="text"
-                        value={editValues.title}
-                        onChange={(event) =>
-                          setEditValues((current) =>
-                            current
-                              ? { ...current, title: event.target.value }
-                              : current,
-                          )
-                        }
-                        className={formFieldClassName}
-                      />
-                    </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-gray-600">Title</span>
+                <input
+                  type="text"
+                  value={editValues.title}
+                  onChange={(event) =>
+                    setEditValues((current) =>
+                      current
+                        ? { ...current, title: event.target.value }
+                        : current,
+                    )
+                  }
+                  className={formFieldClassName}
+                />
+              </label>
 
-                    <label className="flex flex-col gap-1 text-sm">
-                      <span className="font-medium text-gray-600">Type</span>
-                      <select
-                        value={editValues.type}
-                        onChange={(event) =>
-                          setEditValues((current) =>
-                            current
-                              ? {
-                                  ...current,
-                                  type: event.target.value as TransactionType,
-                                }
-                              : current,
-                          )
-                        }
-                        className={formFieldClassName}
-                      >
-                        <option value="expense">Expense</option>
-                        <option value="income">Income</option>
-                      </select>
-                    </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-gray-600">Type</span>
+                <select
+                  value={editValues.type}
+                  onChange={(event) =>
+                    setEditValues((current) =>
+                      current
+                        ? {
+                            ...current,
+                            type: event.target.value as TransactionType,
+                          }
+                        : current,
+                    )
+                  }
+                  className={formFieldClassName}
+                >
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+              </label>
 
-                    <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-                      <span className="font-medium text-gray-600">
-                        Category
-                      </span>
-                      <select
-                        value={editValues.categoryId}
-                        onChange={(event) =>
-                          setEditValues((current) =>
-                            current
-                              ? { ...current, categoryId: event.target.value }
-                              : current,
-                          )
-                        }
-                        className={formFieldClassName}
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+              <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+                <span className="font-medium text-gray-600">Category</span>
+                <select
+                  value={editValues.categoryId}
+                  onChange={(event) =>
+                    setEditValues((current) =>
+                      current
+                        ? { ...current, categoryId: event.target.value }
+                        : current,
+                    )
+                  }
+                  className={formFieldClassName}
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-                    <label className="flex flex-col gap-1 text-sm">
-                      <span className="font-medium text-gray-600">Amount</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={editValues.amount}
-                        onChange={(event) =>
-                          setEditValues((current) =>
-                            current
-                              ? { ...current, amount: event.target.value }
-                              : current,
-                          )
-                        }
-                        className={formFieldClassName}
-                      />
-                    </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-gray-600">Amount</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editValues.amount}
+                  onChange={(event) =>
+                    setEditValues((current) =>
+                      current
+                        ? { ...current, amount: event.target.value }
+                        : current,
+                    )
+                  }
+                  className={formFieldClassName}
+                />
+              </label>
 
-                    <label className="flex flex-col gap-1 text-sm">
-                      <span className="font-medium text-gray-600">
-                        Currency
-                      </span>
-                      <select
-                        value={editValues.currency}
-                        onChange={(event) =>
-                          setEditValues((current) =>
-                            current
-                              ? {
-                                  ...current,
-                                  currency: event.target.value as
-                                    | "JPY"
-                                    | "EUR"
-                                    | "USD",
-                                }
-                              : current,
-                          )
-                        }
-                        className={formFieldClassName}
-                      >
-                        <option value="JPY">JPY</option>
-                        <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                      </select>
-                    </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-gray-600">Currency</span>
+                <select
+                  value={editValues.currency}
+                  onChange={(event) =>
+                    setEditValues((current) =>
+                      current
+                        ? {
+                            ...current,
+                            currency: event.target.value as
+                              | "JPY"
+                              | "EUR"
+                              | "USD",
+                          }
+                        : current,
+                    )
+                  }
+                  className={formFieldClassName}
+                >
+                  <option value="JPY">JPY</option>
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                </select>
+              </label>
 
-                    <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-                      <span className="font-medium text-gray-600">Date</span>
-                      <input
-                        type="date"
-                        value={editValues.date}
-                        onChange={(event) =>
-                          setEditValues((current) =>
-                            current
-                              ? { ...current, date: event.target.value }
-                              : current,
-                          )
-                        }
-                        className={formFieldClassName}
-                      />
-                    </label>
-                  </div>
+              <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+                <span className="font-medium text-gray-600">Date</span>
+                <input
+                  type="date"
+                  value={editValues.date}
+                  onChange={(event) =>
+                    setEditValues((current) =>
+                      current
+                        ? { ...current, date: event.target.value }
+                        : current,
+                    )
+                  }
+                  className={formFieldClassName}
+                />
+              </label>
+            </div>
 
-                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-end">
-                    <Button
-                      type="button"
-                      text="Cancel"
-                      color="neutral"
-                      handleChange={closeDialog}
-                      disabled={isSaving}
-                      className="disabled:cursor-not-allowed disabled:opacity-60"
-                    />
-                    <Button
-                      type="button"
-                      text={
-                        isSaving ? (
-                          <span className="inline-flex items-center gap-2">
-                            <InlineSpinner />
-                            Saving...
-                          </span>
-                        ) : (
-                          "Save Changes"
-                        )
-                      }
-                      color="primary"
-                      handleChange={handleUpdate}
-                      disabled={isSaving}
-                      className="disabled:cursor-not-allowed disabled:opacity-60"
-                    />
-                  </div>
-                </div>
-              )}
+            <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                text="Cancel"
+                color="neutral"
+                handleChange={closeDialog}
+                disabled={isSaving}
+                className="disabled:cursor-not-allowed disabled:opacity-60"
+              />
+              <Button
+                type="button"
+                text={
+                  isSaving ? (
+                    <span className="inline-flex items-center gap-2">
+                      <InlineSpinner />
+                      Saving...
+                    </span>
+                  ) : (
+                    "Save Changes"
+                  )
+                }
+                color="primary"
+                handleChange={handleUpdate}
+                disabled={isSaving}
+                className="disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </div>
+          </div>
+        )}
 
-            {activeDialog?.mode === "delete" && activeTransaction && (
-              <div className="space-y-5">
-                <DialogTitle className="text-xl font-semibold text-red">
-                  Delete Transaction
-                </DialogTitle>
+        {activeDialog?.mode === "delete" && activeTransaction && (
+          <div className="space-y-5">
+            <ModalTitleText className="text-red">
+              Delete Transaction
+            </ModalTitleText>
 
-                <div className="space-y-3 border border-gray-200 bg-gray-50 p-4">
-                  <DetailRow label="Title" value={activeTransaction.title} />
-                  <DetailRow
-                    label="Type"
-                    value={
-                      activeTransaction.type === "income" ? "Income" : "Expense"
-                    }
-                  />
-                  <DetailRow
-                    label="Category"
-                    value={activeTransaction.category_name || "未分類"}
-                  />
-                  <DetailRow
-                    label="Amount"
-                    value={String(activeTransaction.amount)}
-                  />
-                  <DetailRow
-                    label="Currency"
-                    value={String(activeTransaction.currency).toUpperCase()}
-                  />
-                  <DetailRow
-                    label="Date"
-                    value={toInputDate(activeTransaction.date)}
-                  />
-                </div>
+            <div className="space-y-3 border border-gray-200 bg-gray-50 p-4">
+              <DetailRow label="Title" value={activeTransaction.title} />
+              <DetailRow
+                label="Type"
+                value={
+                  activeTransaction.type === "income" ? "Income" : "Expense"
+                }
+              />
+              <DetailRow
+                label="Category"
+                value={activeTransaction.category_name || "未分類"}
+              />
+              <DetailRow
+                label="Amount"
+                value={String(activeTransaction.amount)}
+              />
+              <DetailRow
+                label="Currency"
+                value={String(activeTransaction.currency).toUpperCase()}
+              />
+              <DetailRow
+                label="Date"
+                value={toInputDate(activeTransaction.date)}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">
-                    Type{" "}
-                    <span className="font-semibold">
-                      {activeTransaction.title}
-                    </span>{" "}
-                    to confirm deletion.
-                  </p>
-                  <input
-                    type="text"
-                    value={confirmTitle}
-                    onChange={(event) => setConfirmTitle(event.target.value)}
-                    className={formFieldClassName}
-                    placeholder={activeTransaction.title}
-                  />
-                </div>
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600">
+                Type{" "}
+                <span className="font-semibold">{activeTransaction.title}</span>{" "}
+                to confirm deletion.
+              </p>
+              <input
+                type="text"
+                value={confirmTitle}
+                onChange={(event) => setConfirmTitle(event.target.value)}
+                className={formFieldClassName}
+                placeholder={activeTransaction.title}
+              />
+            </div>
 
-                <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-end">
-                  <Button
-                    type="button"
-                    text="Cancel"
-                    color="neutral"
-                    handleChange={closeDialog}
-                    disabled={isSaving}
-                    className="disabled:cursor-not-allowed disabled:opacity-60"
-                  />
-                  <Button
-                    type="button"
-                    text={
-                      isSaving ? (
-                        <span className="inline-flex items-center gap-2">
-                          <InlineSpinner />
-                          Deleting...
-                        </span>
-                      ) : (
-                        "Delete"
-                      )
-                    }
-                    handleChange={handleDelete}
-                    disabled={isSaving || !canConfirmDelete}
-                    className="disabled:cursor-not-allowed disabled:opacity-60"
-                  />
-                </div>
-              </div>
-            )}
-          </DialogPanel>
-        </div>
-      </Dialog>
+            <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                text="Cancel"
+                color="neutral"
+                handleChange={closeDialog}
+                disabled={isSaving}
+                className="disabled:cursor-not-allowed disabled:opacity-60"
+              />
+              <Button
+                type="button"
+                text={
+                  isSaving ? (
+                    <span className="inline-flex items-center gap-2">
+                      <InlineSpinner />
+                      Deleting...
+                    </span>
+                  ) : (
+                    "Delete"
+                  )
+                }
+                handleChange={handleDelete}
+                disabled={isSaving || !canConfirmDelete}
+                className="disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </div>
+          </div>
+        )}
+      </Modal>
     </>
   );
 }

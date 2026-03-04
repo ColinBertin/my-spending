@@ -65,6 +65,7 @@ export interface MonthlyCategorySummary {
 export interface DashboardAccountSummary {
   account: Account;
   summary: MonthlyCategorySummary;
+  transactionCount: number;
 }
 
 export interface Category {

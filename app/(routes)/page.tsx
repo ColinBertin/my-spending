@@ -26,6 +26,10 @@ type TransactionSummaryRow = {
   category_color: string | null;
 };
 
+type TransactionCountRow = {
+  account_id: string | null;
+};
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const now = new Date();
@@ -66,6 +70,7 @@ export default async function DashboardPage() {
     .filter((id): id is string => Boolean(id));
 
   let summaryRows: TransactionSummaryRow[] = [];
+  let transactionCountRows: TransactionCountRow[] = [];
 
   if (accountIds.length > 0) {
     const { data: transactionData, error: transactionError } = await supabase
@@ -81,6 +86,18 @@ export default async function DashboardPage() {
     if (transactionError) throw transactionError;
 
     summaryRows = (transactionData as TransactionSummaryRow[]) ?? [];
+
+    const { data: transactionCountData, error: transactionCountError } =
+      await supabase
+        .from("transactions")
+        .select("account_id")
+        .in("account_id", accountIds)
+        .eq("created_by", user.id);
+
+    if (transactionCountError) throw transactionCountError;
+
+    transactionCountRows =
+      (transactionCountData as TransactionCountRow[]) ?? [];
   }
 
   const summariesByAccount = new Map<
@@ -146,6 +163,17 @@ export default async function DashboardPage() {
     });
   }
 
+  const transactionCountByAccount = new Map<string, number>();
+
+  for (const row of transactionCountRows) {
+    if (!row.account_id) continue;
+
+    transactionCountByAccount.set(
+      row.account_id,
+      (transactionCountByAccount.get(row.account_id) ?? 0) + 1,
+    );
+  }
+
   const accountSummaries: DashboardAccountSummary[] = accounts.map(
     (account) => {
       const accountId = account.id;
@@ -172,6 +200,9 @@ export default async function DashboardPage() {
           selectedMonth: currentMonth,
           selectedYear: currentYearString,
         },
+        transactionCount: accountId
+          ? (transactionCountByAccount.get(accountId) ?? 0)
+          : 0,
       };
     },
   );
