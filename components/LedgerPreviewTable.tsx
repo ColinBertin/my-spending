@@ -147,6 +147,7 @@ export default function LedgerPreviewTable({
   rows,
   transactions,
   categories,
+  generalLedger,
   headerTitles = HEADER_TITLES,
 }: {
   rows: LedgerPreviewRow[];
