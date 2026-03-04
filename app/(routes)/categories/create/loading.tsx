@@ -4,7 +4,7 @@ import Spinner from "../../../../components/Spinner";
 
 export default function Loading() {
   return (
-    <div className={`w-full h-full flex justify-center items-center`}>
+    <div className="flex min-h-[calc(100vh-8rem)] w-full items-center justify-center">
       <Spinner />
     </div>
   );

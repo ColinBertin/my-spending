@@ -96,11 +96,11 @@ export default function AccountDetails({
   return (
     <div className="w-full px-4 sm:px-6 pt-24 pb-12">
       <div className="mx-auto w-full max-w-5xl flex flex-col items-center">
-        <h1 className="text-3xl font-semibold text-center text-red mb-8">
-          {accountName}
-        </h1>
-
         <div className="w-full rounded-2xl border border-blue-dark/20 bg-white p-4 sm:p-6 shadow-sm">
+          <h1 className="text-3xl font-semibold text-center text-red mb-8">
+            {accountName}
+          </h1>
+
           {chartData.length > 0 && (
             <div className="w-full flex justify-center mb-8">
               <LineChart
