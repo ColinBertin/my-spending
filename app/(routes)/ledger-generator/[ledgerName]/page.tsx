@@ -1,8 +1,8 @@
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DownloadLedgerXlsxButton } from "../../../../components/DownloadLedgerXlsxButton";
 import LedgerPreviewTable from "../../../../components/LedgerPreviewTable";
+import PrintLedgerPdfButton from "../../../../components/PrintLedgerPdfButton";
 import { formatCurrencyIntoYen } from "../../../../helpers";
 import { buildLedgerPreviewRows } from "../../../../lib/ledgerPreviewRows";
 import { Category } from "../../../../types";
@@ -45,10 +45,13 @@ function getLedgerLabel(
 
 export default async function LedgerPreviewPage({
   params,
+  searchParams,
 }: {
   params: { ledgerName: string };
+  searchParams: { download?: string };
 }) {
   const { ledgerName } = await params;
+  const resolvedSearchParams = await searchParams;
   const resolvedLedgerName = (() => {
     try {
       return decodeURIComponent(ledgerName);
@@ -91,18 +94,19 @@ export default async function LedgerPreviewPage({
   );
   const periodLabel = String(previousYear.previousYear);
   const fileName = generalLedger
-    ? `general_ledger_${previousYear.previousYear}.xlsx`
-    : `ledger_${previousYear.previousYear}_${sanitizeFileName(label)}.xlsx`;
+    ? `general_ledger_${previousYear.previousYear}.pdf`
+    : `ledger_${previousYear.previousYear}_${sanitizeFileName(label)}.pdf`;
+  const autoDownload = resolvedSearchParams.download === "1";
 
   return (
-    <div className="w-full px-4 sm:px-6 pt-24 pb-12">
-      <div className="mx-auto w-full max-w-7xl flex flex-col gap-6">
-        <div className="rounded-2xl border border-blue-dark/20 bg-white p-4 sm:p-6 shadow-sm">
+    <div className="ledger-preview-page w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-24 pb-12">
+      <div className="ledger-preview-inner mx-auto w-full max-w-7xl min-w-0 flex flex-col gap-6">
+        <div className="ledger-preview-header rounded-2xl border border-blue-dark/20 bg-white p-4 sm:p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-2">
               <Link
                 href="/ledger-generator"
-                className="inline-flex items-center gap-1 text-sm font-medium text-blue-dark hover:text-blue-light"
+                className="print-hidden inline-flex items-center gap-1 text-sm font-medium text-blue-dark hover:text-blue-light"
               >
                 <ArrowLeftIcon className="h-4 w-4" />
                 Back to Ledger Generator
@@ -136,12 +140,13 @@ export default async function LedgerPreviewPage({
                 </div>
               </div>
               {previewTransactions.length > 0 && (
-                <DownloadLedgerXlsxButton
-                  transactions={previewTransactions}
-                  fileName={fileName}
-                  label="Generate This Excel"
-                  generalLedger={generalLedger}
-                />
+                <div className="print-hidden">
+                  <PrintLedgerPdfButton
+                    documentTitle={fileName}
+                    label="Download PDF"
+                    autoStart={autoDownload}
+                  />
+                </div>
               )}
             </div>
           </div>

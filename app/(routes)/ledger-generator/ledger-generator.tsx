@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { DownloadLedgerXlsxButton } from "../../../components/DownloadLedgerXlsxButton";
 import { FinanceIcon } from "../../../components/FinanceIcon";
 import TransactionFlowIcon from "../../../components/TransactionFlowIcon";
 import { formatCurrencyIntoYen } from "../../../helpers";
@@ -21,12 +20,6 @@ export default function LedgerGenerator({
     a.name.localeCompare(b.name),
   );
 
-  const sanitizeFileName = (value: string) =>
-    value
-      .trim()
-      .replace(/[\\/:*?"<>|]+/g, "-")
-      .replace(/\s+/g, "_");
-  const generalLedgerFileName = `general_ledger_${previousYear}.xlsx`;
   const { totalIncome, totalSpending } = allTransactions.reduce(
     (totals, tx) => {
       const amount = Number(tx.amount) || 0;
@@ -46,8 +39,8 @@ export default function LedgerGenerator({
   const hasGeneralSpending = totalSpending > 0;
 
   return (
-    <div className="w-full px-4 sm:px-6 pt-24 pb-12">
-      <div className="mx-auto w-full max-w-5xl flex flex-col items-center">
+    <div className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-24 pb-12">
+      <div className="mx-auto w-full max-w-5xl min-w-0 flex flex-col items-center">
         <div className="w-full rounded-2xl border border-blue-dark/20 bg-white p-4 sm:p-6 shadow-sm">
           <h1 className="text-3xl font-semibold text-center text-red mb-6">
             Ledger Generator ({previousYear})
@@ -96,22 +89,11 @@ export default function LedgerGenerator({
             {allTransactions.length > 0 && (
               <Link
                 href="/ledger-generator/general-ledger"
-                className="inline-flex justify-center rounded-3xl border border-blue-dark/20 bg-white px-4 py-2 text-sm font-semibold text-blue-dark transition-colors hover:border-blue-dark hover:bg-blue-100"
+                className="inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
               >
-                Preview Excel
+                Preview PDF
               </Link>
             )}
-            <DownloadLedgerXlsxButton
-              transactions={allTransactions}
-              fileName={generalLedgerFileName}
-              label={
-                allTransactions.length > 0
-                  ? "Generate General Ledger"
-                  : "No Transactions"
-              }
-              disabled={allTransactions.length === 0}
-              generalLedger
-            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -138,8 +120,6 @@ export default function LedgerGenerator({
               const total = categoryIncome - categorySpending;
               const hasCategoryIncome = categoryIncome > 0;
               const hasCategorySpending = categorySpending > 0;
-              const fileName = `ledger_${previousYear}_${sanitizeFileName(category.name)}.xlsx`;
-
               return (
                 <div
                   key={category.id}
@@ -196,25 +176,22 @@ export default function LedgerGenerator({
                       </div>
                     )}
                   </div>
-                  {categoryTransactions.length > 0 && (
+                  {categoryTransactions.length > 0 ? (
                     <Link
                       href={`/ledger-generator/${encodeURIComponent(category.name)}`}
-                      className="inline-flex justify-center rounded-3xl border border-blue-dark/20 bg-white px-4 py-2 text-sm font-semibold text-blue-dark transition-colors hover:border-blue-dark hover:bg-blue-100"
+                      className="inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
                     >
-                      Preview Excel
+                      Preview PDF
                     </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="mt-auto rounded-3xl bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 cursor-not-allowed"
+                    >
+                      No Transactions
+                    </button>
                   )}
-
-                  <DownloadLedgerXlsxButton
-                    transactions={categoryTransactions}
-                    fileName={fileName}
-                    label={
-                      categoryTransactions.length > 0
-                        ? "Generate Excel"
-                        : "No Transactions"
-                    }
-                    disabled={categoryTransactions.length === 0}
-                  />
                 </div>
               );
             })}

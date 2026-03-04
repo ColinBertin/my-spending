@@ -45,6 +45,8 @@ const formatNumber = (value?: number) =>
 
 const formFieldClassName =
   "w-full h-10 border border-gray-500 rounded-xl px-3 text-gray-700 font-medium outline-none focus:border-purple-300";
+const FIRST_PRINT_PAGE_ROWS = 24;
+const FOLLOWING_PRINT_PAGE_ROWS = 23;
 
 function toDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
@@ -84,6 +86,50 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <span className="text-gray-800 break-all">{value}</span>
     </div>
   );
+}
+
+function findLastBalance(rows: LedgerPreviewRow[], fallback = 0) {
+  for (let index = rows.length - 1; index >= 0; index--) {
+    const value = rows[index]?.balance;
+    if (typeof value === "number") {
+      return value;
+    }
+  }
+
+  return fallback;
+}
+
+function buildPrintPages(rows: LedgerPreviewRow[]) {
+  const previewRows = rows.filter((row) => row.kind !== "carry");
+
+  if (previewRows.length <= FIRST_PRINT_PAGE_ROWS) {
+    return [previewRows];
+  }
+
+  const pages: LedgerPreviewRow[][] = [];
+  const firstPage = previewRows.slice(0, FIRST_PRINT_PAGE_ROWS);
+  pages.push(firstPage);
+
+  let index = FIRST_PRINT_PAGE_ROWS;
+  let carryBalance = findLastBalance(firstPage);
+
+  while (index < previewRows.length) {
+    const chunk = previewRows.slice(index, index + FOLLOWING_PRINT_PAGE_ROWS);
+    pages.push([
+      {
+        id: `print-carry-${pages.length + 1}`,
+        kind: "carry",
+        description: "前期より繰越",
+        balance: carryBalance,
+        summary: true,
+      },
+      ...chunk,
+    ]);
+    carryBalance = findLastBalance(chunk, carryBalance);
+    index += FOLLOWING_PRINT_PAGE_ROWS;
+  }
+
+  return pages;
 }
 
 function InlineSpinner() {
@@ -229,11 +275,75 @@ export default function LedgerPreviewTable({
   const activeTransaction = activeDialog?.transaction ?? null;
   const canConfirmDelete =
     !!activeTransaction && confirmTitle.trim() === activeTransaction.title;
+  const screenRows = useMemo(
+    () => rows.filter((row) => row.kind !== "carry"),
+    [rows],
+  );
+  const printPages = useMemo(() => buildPrintPages(rows), [rows]);
 
   return (
     <>
-      <div className="overflow-x-auto border border-blue-dark/20 bg-white shadow-sm">
-        <table className="min-w-[1100px] w-full table-fixed border-collapse text-xs sm:text-sm">
+      <div className="print-only space-y-4">
+        {printPages.map((pageRows, pageIndex) => (
+          <div
+            key={`print-page-${pageIndex + 1}`}
+            className="ledger-print-page border border-blue-dark/20 bg-white"
+          >
+            <table className="ledger-preview-table w-full table-fixed border-collapse text-xs">
+              <colgroup>
+                <col className="w-[10%]" />
+                <col className="w-[16%]" />
+                <col className="w-[26%]" />
+                <col className="w-[16%]" />
+                <col className="w-[16%]" />
+                <col className="w-[16%]" />
+              </colgroup>
+              <thead>
+                <tr className="bg-gray-100">
+                  {HEADER_TITLES.map((title) => (
+                    <th
+                      key={`print-${pageIndex + 1}-${title}`}
+                      className="border border-black px-2 py-2 text-center font-semibold whitespace-pre-line"
+                    >
+                      {title}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {pageRows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className={row.summary ? "bg-[#bfbfbf]" : "bg-white"}
+                  >
+                    <td className="border border-black px-2 py-1 align-top whitespace-pre-line break-words">
+                      {row.dateLabel ?? ""}
+                    </td>
+                    <td className="border border-black px-2 py-1 align-top break-words">
+                      {row.accountLabel ?? ""}
+                    </td>
+                    <td className="border border-black px-2 py-1 align-top break-words">
+                      {row.description ?? ""}
+                    </td>
+                    <td className="border border-black px-2 py-1 text-right align-top">
+                      {formatNumber(row.income)}
+                    </td>
+                    <td className="border border-black px-2 py-1 text-right align-top">
+                      {formatNumber(row.expense)}
+                    </td>
+                    <td className="border border-black px-2 py-1 text-right align-top">
+                      {formatNumber(row.balance)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
+
+      <div className="ledger-preview-table-wrap print-hidden min-w-0 max-w-full overflow-x-auto border border-blue-dark/20 bg-white shadow-sm">
+        <table className="ledger-preview-table w-full table-fixed border-collapse text-xs sm:text-sm">
           <colgroup>
             <col className="w-[10%]" />
             <col className="w-[14%]" />
@@ -241,7 +351,7 @@ export default function LedgerPreviewTable({
             <col className="w-[14%]" />
             <col className="w-[14%]" />
             <col className="w-[16%]" />
-            <col className="w-[10%]" />
+            <col className="print-hidden w-[10%]" />
           </colgroup>
           <thead>
             <tr className="bg-gray-100">
@@ -253,13 +363,13 @@ export default function LedgerPreviewTable({
                   {title}
                 </th>
               ))}
-              <th className="border border-black px-2 py-2 text-center font-semibold">
+              <th className="print-hidden border border-black px-2 py-2 text-center font-semibold">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
+            {screenRows.map((row) => {
               const transaction = row.transactionId
                 ? transactionsById.get(row.transactionId)
                 : undefined;
@@ -269,13 +379,13 @@ export default function LedgerPreviewTable({
                   key={row.id}
                   className={row.summary ? "bg-[#bfbfbf]" : "bg-white"}
                 >
-                  <td className="border border-black px-2 py-1 align-top whitespace-pre-line">
+                  <td className="border border-black px-2 py-1 align-top whitespace-pre-line break-words">
                     {row.dateLabel ?? ""}
                   </td>
-                  <td className="border border-black px-2 py-1 align-top">
+                  <td className="border border-black px-2 py-1 align-top break-words">
                     {row.accountLabel ?? ""}
                   </td>
-                  <td className="border border-black px-2 py-1 align-top">
+                  <td className="border border-black px-2 py-1 align-top break-words">
                     {row.description ?? ""}
                   </td>
                   <td className="border border-black px-2 py-1 text-right align-top">
@@ -287,9 +397,9 @@ export default function LedgerPreviewTable({
                   <td className="border border-black px-2 py-1 text-right align-top">
                     {formatNumber(row.balance)}
                   </td>
-                  <td className="border border-black px-2 py-1 align-top">
+                  <td className="print-hidden border border-black px-2 py-1 align-top">
                     {transaction ? (
-                      <div className="flex justify-center gap-2">
+                      <div className="print-hidden flex justify-center gap-2">
                         <button
                           type="button"
                           onClick={() => openUpdateDialog(transaction)}
@@ -321,7 +431,7 @@ export default function LedgerPreviewTable({
       <Dialog
         open={!!activeDialog}
         onClose={closeDialog}
-        className="relative z-50"
+        className="print-hidden relative z-50"
       >
         <DialogBackdrop className="fixed inset-0 bg-black/30" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
