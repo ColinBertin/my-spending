@@ -116,32 +116,51 @@ export default async function LedgerPreviewPage({
   const isSpecialLedger =
     ledgerMeta.kind === "accountsReceivable" ||
     ledgerMeta.kind === "accruedExpenses";
-  const range = isSpecialLedger ? currentJanuary : previousYear;
-  const transactions = await getTransactionsForRange(
+  const yearTransactions = await getTransactionsForRange(
     userId,
     categories,
     professionalAccountId,
-    range,
+    previousYear,
   );
-  const sortedTransactions = sortTransactionsByDate(transactions);
-  const voucherNumbers = new Map(
-    sortedTransactions.map((transaction, index) => [transaction.id, index + 1]),
+  const januaryTransactions =
+    ledgerMeta.kind === "category" || isSpecialLedger
+      ? await getTransactionsForRange(
+          userId,
+          categories,
+          professionalAccountId,
+          currentJanuary,
+        )
+      : [];
+  const yearEndAdjustmentDate = new Date(
+    Date.UTC(previousYear.previousYear, 11, 31, 0, 0, 0),
   );
+  const sortedJanuaryTransactions = sortTransactionsByDate(januaryTransactions);
   const previewTransactions =
     ledgerMeta.kind === "general"
-      ? transactions
+      ? yearTransactions
       : ledgerMeta.kind === "category"
-        ? transactions.filter((tx) => tx.category_name === ledgerMeta.label)
+        ? [
+            ...yearTransactions.filter(
+              (tx) => tx.category_name === ledgerMeta.label,
+            ),
+            ...sortedJanuaryTransactions
+              .filter((tx) => tx.category_name === ledgerMeta.label)
+              .map((tx) => ({
+                ...tx,
+                date: new Date(yearEndAdjustmentDate),
+              })),
+          ]
         : ledgerMeta.kind === "accountsReceivable"
-          ? sortedTransactions.filter((tx) => tx.type === "income")
-          : sortedTransactions.filter(isAccruedExpenseTransaction);
+          ? sortedJanuaryTransactions.filter((tx) => tx.type === "income")
+          : sortedJanuaryTransactions.filter(isAccruedExpenseTransaction);
   const rows =
     ledgerMeta.kind === "accountsReceivable"
       ? buildJournalLedgerPreviewRows(
-          previewTransactions.map((transaction) => ({
+          previewTransactions.map((transaction, index) => ({
             id: `entry-${transaction.id}`,
             transactionId: transaction.id,
-            voucherNo: voucherNumbers.get(transaction.id) ?? 1,
+            date: yearEndAdjustmentDate,
+            voucherNo: index + 1,
             accountLabel: "売上高",
             description: transaction.title,
             debit: Number(transaction.amount) || 0,
@@ -150,10 +169,11 @@ export default async function LedgerPreviewPage({
         )
       : ledgerMeta.kind === "accruedExpenses"
         ? buildJournalLedgerPreviewRows(
-            previewTransactions.map((transaction) => ({
+            previewTransactions.map((transaction, index) => ({
               id: `entry-${transaction.id}`,
               transactionId: transaction.id,
-              voucherNo: voucherNumbers.get(transaction.id) ?? 1,
+              date: yearEndAdjustmentDate,
+              voucherNo: index + 1,
               accountLabel: transaction.category_name || "未分類",
               description: transaction.title,
               credit: Number(transaction.amount) || 0,
@@ -177,9 +197,12 @@ export default async function LedgerPreviewPage({
     },
     { totalIncome: 0, totalExpense: 0 },
   );
-  const periodLabel = isSpecialLedger
-    ? `January ${currentJanuary.currentYear}`
-    : String(previousYear.previousYear);
+  const periodLabel =
+    ledgerMeta.kind === "general"
+      ? String(previousYear.previousYear)
+      : ledgerMeta.kind === "category"
+        ? `${previousYear.previousYear} with January ${currentJanuary.currentYear} adjustments`
+        : `January ${currentJanuary.currentYear}`;
   const fileName =
     ledgerMeta.kind === "general"
       ? `general_ledger_${previousYear.previousYear}.pdf`

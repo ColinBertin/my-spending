@@ -43,9 +43,16 @@ export default async function LedgerGeneratorPage() {
   const januaryAccruedExpenseCount = januaryTransactions.filter(
     isAccruedExpenseTransaction,
   ).length;
+  const categoryPreviewTransactionsByCategory = groupTransactionsByCategory(
+    categories,
+    [...transactions, ...januaryTransactions],
+  );
 
   return (
     <LedgerGenerator
+      categoryPreviewTransactionsByCategory={
+        categoryPreviewTransactionsByCategory
+      }
       categories={categories}
       currentYear={currentYear}
       januaryAccountsReceivableCount={januaryAccountsReceivableCount}

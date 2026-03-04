@@ -5,6 +5,7 @@ import { formatCurrencyIntoYen } from "../../../helpers";
 import { Category, TransactionsByCategory } from "../../../types";
 
 type LedgerGeneratorProps = {
+  categoryPreviewTransactionsByCategory: TransactionsByCategory;
   categories: Category[];
   currentYear: number;
   januaryAccountsReceivableCount: number;
@@ -14,6 +15,7 @@ type LedgerGeneratorProps = {
 };
 
 export default function LedgerGenerator({
+  categoryPreviewTransactionsByCategory,
   categories,
   currentYear,
   januaryAccountsReceivableCount,
@@ -105,7 +107,7 @@ export default function LedgerGenerator({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sortedCategories.map((category) => {
               const categoryTransactions =
-                transactionsByCategory[category.name] ?? [];
+                categoryPreviewTransactionsByCategory[category.name] ?? [];
               const {
                 totalIncome: categoryIncome,
                 totalSpending: categorySpending,

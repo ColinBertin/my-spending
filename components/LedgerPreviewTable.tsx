@@ -88,17 +88,6 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function findLastBalance(rows: LedgerPreviewRow[], fallback = 0) {
-  for (let index = rows.length - 1; index >= 0; index--) {
-    const value = rows[index]?.balance;
-    if (typeof value === "number") {
-      return value;
-    }
-  }
-
-  return fallback;
-}
-
 function countVisualLines(value: string | undefined, charsPerLine: number) {
   if (!value) return 1;
 
@@ -109,11 +98,7 @@ function countVisualLines(value: string | undefined, charsPerLine: number) {
 }
 
 function estimatePrintRowUnits(row: LedgerPreviewRow) {
-  if (
-    row.kind === "carry" ||
-    row.kind === "subtotal" ||
-    row.kind === "footer"
-  ) {
+  if (row.kind === "subtotal" || row.kind === "footer") {
     return 1;
   }
 
@@ -127,38 +112,19 @@ function estimatePrintRowUnits(row: LedgerPreviewRow) {
   return 3;
 }
 
-function buildPrintPages(rows: LedgerPreviewRow[], generalLedger: boolean) {
-  const initialCarryRow = rows.find((row) => row.kind === "carry");
+function buildPrintPages(rows: LedgerPreviewRow[]) {
   const previewRows = rows.filter((row) => row.kind !== "carry");
   const pages: LedgerPreviewRow[][] = [];
-  let currentPage: LedgerPreviewRow[] =
-    !generalLedger && initialCarryRow ? [initialCarryRow] : [];
-  let remainingCapacity =
-    FIRST_PRINT_PAGE_CAPACITY -
-    (!generalLedger && initialCarryRow
-      ? estimatePrintRowUnits(initialCarryRow)
-      : 0);
-  let carryBalance =
-    !generalLedger && typeof initialCarryRow?.balance === "number"
-      ? initialCarryRow.balance
-      : 0;
+  let currentPage: LedgerPreviewRow[] = [];
+  let remainingCapacity = FIRST_PRINT_PAGE_CAPACITY;
 
   for (const row of previewRows) {
     const rowUnits = estimatePrintRowUnits(row);
 
     if (currentPage.length > 0 && rowUnits > remainingCapacity) {
       pages.push(currentPage);
-      carryBalance = findLastBalance(currentPage, carryBalance);
-      currentPage = [
-        {
-          id: `print-carry-${pages.length + 1}`,
-          kind: "carry",
-          description: "前期より繰越",
-          balance: carryBalance,
-          summary: true,
-        },
-      ];
-      remainingCapacity = FOLLOWING_PRINT_PAGE_CAPACITY - 1;
+      currentPage = [];
+      remainingCapacity = FOLLOWING_PRINT_PAGE_CAPACITY;
     }
 
     currentPage.push(row);
@@ -320,13 +286,10 @@ export default function LedgerPreviewTable({
   const canConfirmDelete =
     !!activeTransaction && confirmTitle.trim() === activeTransaction.title;
   const screenRows = useMemo(
-    () => (generalLedger ? rows.filter((row) => row.kind !== "carry") : rows),
-    [generalLedger, rows],
+    () => rows.filter((row) => row.kind !== "carry"),
+    [rows],
   );
-  const printPages = useMemo(
-    () => buildPrintPages(rows, generalLedger),
-    [generalLedger, rows],
-  );
+  const printPages = useMemo(() => buildPrintPages(rows), [rows]);
 
   return (
     <>
