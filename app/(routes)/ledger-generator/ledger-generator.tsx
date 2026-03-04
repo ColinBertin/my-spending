@@ -6,12 +6,18 @@ import { Category, TransactionsByCategory } from "../../../types";
 
 type LedgerGeneratorProps = {
   categories: Category[];
+  currentYear: number;
+  januaryAccountsReceivableCount: number;
+  januaryAccruedExpenseCount: number;
   previousYear: number;
   transactionsByCategory: TransactionsByCategory;
 };
 
 export default function LedgerGenerator({
   categories,
+  currentYear,
+  januaryAccountsReceivableCount,
+  januaryAccruedExpenseCount,
   previousYear,
   transactionsByCategory,
 }: LedgerGeneratorProps) {
@@ -89,7 +95,7 @@ export default function LedgerGenerator({
             {allTransactions.length > 0 && (
               <Link
                 href="/ledger-generator/general-ledger"
-                className="inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
+                className="mt-auto inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
               >
                 Preview PDF
               </Link>
@@ -179,7 +185,7 @@ export default function LedgerGenerator({
                   {categoryTransactions.length > 0 ? (
                     <Link
                       href={`/ledger-generator/${encodeURIComponent(category.name)}`}
-                      className="inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
+                      className="mt-auto inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
                     >
                       Preview PDF
                     </Link>
@@ -195,6 +201,81 @@ export default function LedgerGenerator({
                 </div>
               );
             })}
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-blue-dark/20 bg-white p-4 sm:p-5 shadow-sm">
+            <div className="mb-4">
+              <h2 className="text-base font-semibold text-blue-dark">
+                January {currentYear} Adjustments
+              </h2>
+              <p className="text-sm text-gray-600">
+                Special ledgers listed separately from the general ledger.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-blue-dark/20 bg-gray-50 p-4 flex flex-col gap-3">
+                <div>
+                  <h3 className="text-base font-semibold text-blue-dark leading-6">
+                    売掛金
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    January {currentYear} adjustment
+                  </p>
+                  <p className="mt-2 text-sm text-gray-600">
+                    {januaryAccountsReceivableCount} transaction
+                    {januaryAccountsReceivableCount === 1 ? "" : "s"}
+                  </p>
+                </div>
+                {januaryAccountsReceivableCount > 0 ? (
+                  <Link
+                    href={`/ledger-generator/${encodeURIComponent("売掛金")}`}
+                    className="mt-auto inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
+                  >
+                    Preview PDF
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="mt-auto rounded-3xl bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 cursor-not-allowed"
+                  >
+                    No Transactions
+                  </button>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-blue-dark/20 bg-gray-50 p-4 flex flex-col gap-3">
+                <div>
+                  <h3 className="text-base font-semibold text-blue-dark leading-6">
+                    未払費用
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    January {currentYear} adjustment
+                  </p>
+                  <p className="mt-2 text-sm text-gray-600">
+                    {januaryAccruedExpenseCount} transaction
+                    {januaryAccruedExpenseCount === 1 ? "" : "s"}
+                  </p>
+                </div>
+                {januaryAccruedExpenseCount > 0 ? (
+                  <Link
+                    href={`/ledger-generator/${encodeURIComponent("未払費用")}`}
+                    className="mt-auto inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
+                  >
+                    Preview PDF
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="mt-auto rounded-3xl bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 cursor-not-allowed"
+                  >
+                    No Transactions
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

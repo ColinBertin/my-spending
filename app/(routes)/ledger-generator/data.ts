@@ -15,6 +15,20 @@ type LedgerRange = {
   endIso: string;
 };
 
+const ACCRUED_EXPENSE_CATEGORY_NAMES = new Set([
+  "水道光熱費",
+  "通信費",
+  "Utilities",
+  "Utility",
+  "Communication",
+]);
+const ACCRUED_EXPENSE_TITLE_KEYWORDS = [
+  "gas",
+  "electricity",
+  "internet",
+  "phone",
+];
+
 export type ProfessionalLedgerContext = {
   userId: string;
   professionalAccountId: string | null;
@@ -29,6 +43,18 @@ export function getPreviousYearRange() {
 
   return {
     previousYear,
+    startIso: start.toISOString(),
+    endIso: end.toISOString(),
+  };
+}
+
+export function getCurrentJanuaryRange() {
+  const currentYear = new Date().getUTCFullYear();
+  const start = new Date(Date.UTC(currentYear, 0, 1, 0, 0, 0));
+  const end = new Date(Date.UTC(currentYear, 1, 1, 0, 0, 0));
+
+  return {
+    currentYear,
     startIso: start.toISOString(),
     endIso: end.toISOString(),
   };
@@ -147,4 +173,20 @@ export function groupTransactionsByCategory(
   }
 
   return initialGrouped;
+}
+
+export function isAccruedExpenseTransaction(transaction: Transaction) {
+  if (transaction.type !== "expense") {
+    return false;
+  }
+
+  const categoryName = transaction.category_name.trim();
+  if (ACCRUED_EXPENSE_CATEGORY_NAMES.has(categoryName)) {
+    return true;
+  }
+
+  const normalizedTitle = transaction.title.trim().toLowerCase();
+  return ACCRUED_EXPENSE_TITLE_KEYWORDS.some((keyword) =>
+    normalizedTitle.includes(keyword),
+  );
 }

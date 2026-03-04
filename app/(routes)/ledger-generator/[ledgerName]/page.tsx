@@ -4,13 +4,27 @@ import { notFound } from "next/navigation";
 import LedgerPreviewTable from "../../../../components/LedgerPreviewTable";
 import PrintLedgerPdfButton from "../../../../components/PrintLedgerPdfButton";
 import { formatCurrencyIntoYen } from "../../../../helpers";
-import { buildLedgerPreviewRows } from "../../../../lib/ledgerPreviewRows";
+import {
+  buildJournalLedgerPreviewRows,
+  buildLedgerPreviewRows,
+} from "../../../../lib/ledgerPreviewRows";
 import { Category } from "../../../../types";
 import {
+  getCurrentJanuaryRange,
   getPreviousYearRange,
   getProfessionalLedgerContext,
   getTransactionsForRange,
+  isAccruedExpenseTransaction,
 } from "../data";
+
+const JOURNAL_HEADER_TITLES = [
+  "日          付\n伝票No\n生成元",
+  "相手勘定科目\n相手補助科目",
+  "摘　　要",
+  "補　助　科　目\n\n借　方　金　額",
+  "貸　方　金　額",
+  "残　　高",
+];
 
 export const metadata = {
   title: "Ledger Preview",
@@ -23,12 +37,35 @@ function sanitizeFileName(value: string) {
     .replace(/\s+/g, "_");
 }
 
-function getLedgerLabel(
+function getLedgerMeta(
   ledgerName: string,
   categories: Category[],
-): { generalLedger: boolean; label: string } {
+): {
+  kind: "general" | "category" | "accountsReceivable" | "accruedExpenses";
+  generalLedger: boolean;
+  label: string;
+  headerTitles?: string[];
+} {
   if (ledgerName === "general-ledger") {
-    return { generalLedger: true, label: "General Ledger" };
+    return { kind: "general", generalLedger: true, label: "General Ledger" };
+  }
+
+  if (ledgerName === "売掛金") {
+    return {
+      kind: "accountsReceivable",
+      generalLedger: false,
+      label: "売掛金",
+      headerTitles: JOURNAL_HEADER_TITLES,
+    };
+  }
+
+  if (ledgerName === "未払費用") {
+    return {
+      kind: "accruedExpenses",
+      generalLedger: false,
+      label: "未払費用",
+      headerTitles: JOURNAL_HEADER_TITLES,
+    };
   }
 
   const category = categories.find((item) => item.name === ledgerName);
@@ -38,9 +75,21 @@ function getLedgerLabel(
   }
 
   return {
+    kind: "category",
     generalLedger: false,
     label: category.name,
   };
+}
+
+function sortTransactionsByDate(
+  transactions: Parameters<typeof buildLedgerPreviewRows>[0],
+) {
+  return [...transactions].sort((a, b) => {
+    const aDate = new Date(a.date).getTime();
+    const bDate = new Date(b.date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    return String(a.id).localeCompare(String(b.id));
+  });
 }
 
 export default async function LedgerPreviewPage({
@@ -62,22 +111,58 @@ export default async function LedgerPreviewPage({
   const { userId, professionalAccountId, categories } =
     await getProfessionalLedgerContext();
   const previousYear = getPreviousYearRange();
+  const currentJanuary = getCurrentJanuaryRange();
+  const ledgerMeta = getLedgerMeta(resolvedLedgerName, categories);
+  const isSpecialLedger =
+    ledgerMeta.kind === "accountsReceivable" ||
+    ledgerMeta.kind === "accruedExpenses";
+  const range = isSpecialLedger ? currentJanuary : previousYear;
   const transactions = await getTransactionsForRange(
     userId,
     categories,
     professionalAccountId,
-    previousYear,
+    range,
   );
-  const { generalLedger, label } = getLedgerLabel(
-    resolvedLedgerName,
-    categories,
+  const sortedTransactions = sortTransactionsByDate(transactions);
+  const voucherNumbers = new Map(
+    sortedTransactions.map((transaction, index) => [transaction.id, index + 1]),
   );
-  const previewTransactions = generalLedger
-    ? transactions
-    : transactions.filter((tx) => tx.category_name === label);
-  const rows = buildLedgerPreviewRows(previewTransactions, 0, {
-    generalLedger,
-  });
+  const previewTransactions =
+    ledgerMeta.kind === "general"
+      ? transactions
+      : ledgerMeta.kind === "category"
+        ? transactions.filter((tx) => tx.category_name === ledgerMeta.label)
+        : ledgerMeta.kind === "accountsReceivable"
+          ? sortedTransactions.filter((tx) => tx.type === "income")
+          : sortedTransactions.filter(isAccruedExpenseTransaction);
+  const rows =
+    ledgerMeta.kind === "accountsReceivable"
+      ? buildJournalLedgerPreviewRows(
+          previewTransactions.map((transaction) => ({
+            id: `entry-${transaction.id}`,
+            transactionId: transaction.id,
+            voucherNo: voucherNumbers.get(transaction.id) ?? 1,
+            accountLabel: "売上高",
+            description: transaction.title,
+            debit: Number(transaction.amount) || 0,
+          })),
+          { balanceMode: "debit_increases" },
+        )
+      : ledgerMeta.kind === "accruedExpenses"
+        ? buildJournalLedgerPreviewRows(
+            previewTransactions.map((transaction) => ({
+              id: `entry-${transaction.id}`,
+              transactionId: transaction.id,
+              voucherNo: voucherNumbers.get(transaction.id) ?? 1,
+              accountLabel: transaction.category_name || "未分類",
+              description: transaction.title,
+              credit: Number(transaction.amount) || 0,
+            })),
+            { balanceMode: "credit_increases" },
+          )
+        : buildLedgerPreviewRows(previewTransactions, 0, {
+            generalLedger: ledgerMeta.generalLedger,
+          });
   const { totalIncome, totalExpense } = previewTransactions.reduce(
     (totals, tx) => {
       const amount = Number(tx.amount) || 0;
@@ -92,10 +177,15 @@ export default async function LedgerPreviewPage({
     },
     { totalIncome: 0, totalExpense: 0 },
   );
-  const periodLabel = String(previousYear.previousYear);
-  const fileName = generalLedger
-    ? `general_ledger_${previousYear.previousYear}.pdf`
-    : `ledger_${previousYear.previousYear}_${sanitizeFileName(label)}.pdf`;
+  const periodLabel = isSpecialLedger
+    ? `January ${currentJanuary.currentYear}`
+    : String(previousYear.previousYear);
+  const fileName =
+    ledgerMeta.kind === "general"
+      ? `general_ledger_${previousYear.previousYear}.pdf`
+      : ledgerMeta.kind === "category"
+        ? `ledger_${previousYear.previousYear}_${sanitizeFileName(ledgerMeta.label)}.pdf`
+        : `ledger_${currentJanuary.currentYear}_${sanitizeFileName(ledgerMeta.label)}.pdf`;
   const autoDownload = resolvedSearchParams.download === "1";
 
   return (
@@ -111,11 +201,12 @@ export default async function LedgerPreviewPage({
                 <ArrowLeftIcon className="h-4 w-4" />
                 Back to Ledger Generator
               </Link>
-              <h1 className="text-3xl font-semibold text-red">
-                {label} Preview
+              <h1 className="flex flex-wrap items-center gap-2 text-3xl font-semibold text-red">
+                <span>{ledgerMeta.label} Preview</span>
               </h1>
               <p className="text-sm text-gray-600">
-                Full-year preview for {periodLabel}
+                {isSpecialLedger ? "Adjustment preview" : "Full-year preview"}{" "}
+                for {periodLabel}
               </p>
             </div>
             <div className="w-full max-w-sm space-y-3">
@@ -156,6 +247,8 @@ export default async function LedgerPreviewPage({
           rows={rows}
           transactions={previewTransactions}
           categories={categories}
+          generalLedger={ledgerMeta.generalLedger}
+          headerTitles={ledgerMeta.headerTitles}
         />
       </div>
     </div>

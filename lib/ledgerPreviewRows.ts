@@ -24,6 +24,16 @@ export type LedgerPreviewOptions = {
   generalLedger?: boolean;
 };
 
+export type JournalLedgerEntry = {
+  id: string;
+  transactionId?: string;
+  voucherNo: number;
+  accountLabel: string;
+  description: string;
+  debit?: number;
+  credit?: number;
+};
+
 function toDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
 }
@@ -196,6 +206,81 @@ export function buildLedgerPreviewRows(
     income: totalIncome,
     expense: totalExpense,
     balance: openingBalance + (totalIncome - totalExpense),
+    summary: true,
+  });
+
+  return rows;
+}
+
+export function buildJournalLedgerPreviewRows(
+  entries: JournalLedgerEntry[],
+  options: {
+    openingBalance?: number;
+    monthLabel?: string;
+    balanceMode?: "debit_increases" | "credit_increases";
+  } = {},
+) {
+  const openingBalance = options.openingBalance ?? 0;
+  const monthLabel = options.monthLabel ?? "１２月度　合計";
+  const balanceMode = options.balanceMode ?? "debit_increases";
+
+  const rows: LedgerPreviewRow[] = [
+    {
+      id: "carry",
+      kind: "carry",
+      description: "前期より繰越",
+      balance: openingBalance,
+      summary: true,
+    },
+  ];
+
+  let running = openingBalance;
+  let totalDebit = 0;
+  let totalCredit = 0;
+
+  for (const entry of entries) {
+    const debit = Number(entry.debit) || 0;
+    const credit = Number(entry.credit) || 0;
+
+    totalDebit += debit;
+    totalCredit += credit;
+    running +=
+      balanceMode === "debit_increases" ? debit - credit : credit - debit;
+
+    rows.push({
+      id: entry.id,
+      kind: "entry",
+      transactionId: entry.transactionId,
+      dateLabel: `12/31\n${entry.voucherNo}`,
+      accountLabel: entry.accountLabel,
+      description: entry.description,
+      income: debit || undefined,
+      expense: credit || undefined,
+      balance: running,
+    });
+  }
+
+  rows.push({
+    id: "subtotal-december",
+    kind: "subtotal",
+    description: monthLabel,
+    income: totalDebit,
+    expense: totalCredit,
+    summary: true,
+  });
+  rows.push({
+    id: "footer-period-total",
+    kind: "footer",
+    description: "当期累計",
+    income: totalDebit,
+    expense: totalCredit,
+    summary: true,
+  });
+  rows.push({
+    id: "footer-carry-forward",
+    kind: "footer",
+    description: "翌期へ繰越",
+    balance: running,
     summary: true,
   });
 

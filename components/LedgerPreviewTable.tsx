@@ -45,8 +45,8 @@ const formatNumber = (value?: number) =>
 
 const formFieldClassName =
   "w-full h-10 border border-gray-500 rounded-xl px-3 text-gray-700 font-medium outline-none focus:border-purple-300";
-const FIRST_PRINT_PAGE_ROWS = 24;
-const FOLLOWING_PRINT_PAGE_ROWS = 23;
+const FIRST_PRINT_PAGE_CAPACITY = 38;
+const FOLLOWING_PRINT_PAGE_CAPACITY = 36;
 
 function toDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
@@ -99,34 +99,74 @@ function findLastBalance(rows: LedgerPreviewRow[], fallback = 0) {
   return fallback;
 }
 
-function buildPrintPages(rows: LedgerPreviewRow[]) {
-  const previewRows = rows.filter((row) => row.kind !== "carry");
+function countVisualLines(value: string | undefined, charsPerLine: number) {
+  if (!value) return 1;
 
-  if (previewRows.length <= FIRST_PRINT_PAGE_ROWS) {
-    return [previewRows];
+  return value.split("\n").reduce((total, line) => {
+    const normalizedLength = line.trim().length;
+    return total + Math.max(1, Math.ceil(normalizedLength / charsPerLine));
+  }, 0);
+}
+
+function estimatePrintRowUnits(row: LedgerPreviewRow) {
+  if (
+    row.kind === "carry" ||
+    row.kind === "subtotal" ||
+    row.kind === "footer"
+  ) {
+    return 1;
   }
 
+  const dateLines = countVisualLines(row.dateLabel, 8);
+  const accountLines = countVisualLines(row.accountLabel, 12);
+  const descriptionLines = countVisualLines(row.description, 34);
+  const maxLines = Math.max(1, dateLines, accountLines, descriptionLines);
+
+  if (maxLines <= 2) return 1;
+  if (maxLines <= 4) return 2;
+  return 3;
+}
+
+function buildPrintPages(rows: LedgerPreviewRow[], generalLedger: boolean) {
+  const initialCarryRow = rows.find((row) => row.kind === "carry");
+  const previewRows = rows.filter((row) => row.kind !== "carry");
   const pages: LedgerPreviewRow[][] = [];
-  const firstPage = previewRows.slice(0, FIRST_PRINT_PAGE_ROWS);
-  pages.push(firstPage);
+  let currentPage: LedgerPreviewRow[] =
+    !generalLedger && initialCarryRow ? [initialCarryRow] : [];
+  let remainingCapacity =
+    FIRST_PRINT_PAGE_CAPACITY -
+    (!generalLedger && initialCarryRow
+      ? estimatePrintRowUnits(initialCarryRow)
+      : 0);
+  let carryBalance =
+    !generalLedger && typeof initialCarryRow?.balance === "number"
+      ? initialCarryRow.balance
+      : 0;
 
-  let index = FIRST_PRINT_PAGE_ROWS;
-  let carryBalance = findLastBalance(firstPage);
+  for (const row of previewRows) {
+    const rowUnits = estimatePrintRowUnits(row);
 
-  while (index < previewRows.length) {
-    const chunk = previewRows.slice(index, index + FOLLOWING_PRINT_PAGE_ROWS);
-    pages.push([
-      {
-        id: `print-carry-${pages.length + 1}`,
-        kind: "carry",
-        description: "前期より繰越",
-        balance: carryBalance,
-        summary: true,
-      },
-      ...chunk,
-    ]);
-    carryBalance = findLastBalance(chunk, carryBalance);
-    index += FOLLOWING_PRINT_PAGE_ROWS;
+    if (currentPage.length > 0 && rowUnits > remainingCapacity) {
+      pages.push(currentPage);
+      carryBalance = findLastBalance(currentPage, carryBalance);
+      currentPage = [
+        {
+          id: `print-carry-${pages.length + 1}`,
+          kind: "carry",
+          description: "前期より繰越",
+          balance: carryBalance,
+          summary: true,
+        },
+      ];
+      remainingCapacity = FOLLOWING_PRINT_PAGE_CAPACITY - 1;
+    }
+
+    currentPage.push(row);
+    remainingCapacity -= rowUnits;
+  }
+
+  if (currentPage.length > 0) {
+    pages.push(currentPage);
   }
 
   return pages;
@@ -146,10 +186,14 @@ export default function LedgerPreviewTable({
   rows,
   transactions,
   categories,
+  generalLedger,
+  headerTitles = HEADER_TITLES,
 }: {
   rows: LedgerPreviewRow[];
   transactions: Transaction[];
   categories: Category[];
+  generalLedger: boolean;
+  headerTitles?: string[];
 }) {
   const router = useRouter();
   const showSuccessNotification = useSuccessNotification();
@@ -276,10 +320,13 @@ export default function LedgerPreviewTable({
   const canConfirmDelete =
     !!activeTransaction && confirmTitle.trim() === activeTransaction.title;
   const screenRows = useMemo(
-    () => rows.filter((row) => row.kind !== "carry"),
-    [rows],
+    () => (generalLedger ? rows.filter((row) => row.kind !== "carry") : rows),
+    [generalLedger, rows],
   );
-  const printPages = useMemo(() => buildPrintPages(rows), [rows]);
+  const printPages = useMemo(
+    () => buildPrintPages(rows, generalLedger),
+    [generalLedger, rows],
+  );
 
   return (
     <>
@@ -300,7 +347,7 @@ export default function LedgerPreviewTable({
               </colgroup>
               <thead>
                 <tr className="bg-gray-100">
-                  {HEADER_TITLES.map((title) => (
+                  {headerTitles.map((title) => (
                     <th
                       key={`print-${pageIndex + 1}-${title}`}
                       className="border border-black px-2 py-2 text-center font-semibold whitespace-pre-line"
@@ -355,7 +402,7 @@ export default function LedgerPreviewTable({
           </colgroup>
           <thead>
             <tr className="bg-gray-100">
-              {HEADER_TITLES.map((title) => (
+              {headerTitles.map((title) => (
                 <th
                   key={title}
                   className="border border-black px-2 py-2 text-center font-semibold whitespace-pre-line"

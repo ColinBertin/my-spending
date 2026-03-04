@@ -165,7 +165,9 @@
 
   .ledger-print-page {
     box-shadow: none !important;
+    break-inside: avoid-page;
     break-after: page;
+    page-break-inside: avoid;
     page-break-after: always;
   }
 
