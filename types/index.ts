@@ -47,6 +47,7 @@ export type TransactionsByCategory = Record<string, Transaction[]>;
 
 export interface CategoryTotal {
   category: string;
+  type: TransactionType;
   total: number;
   category_icon?: string;
   category_icon_pack?: string;
@@ -56,6 +57,7 @@ export interface CategoryTotal {
 export interface MonthlyCategorySummary {
   categoryTotals: CategoryTotal[];
   totalSpending: number;
+  totalIncome: number;
   selectedMonth: string;
   selectedYear: string;
 }

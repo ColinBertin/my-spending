@@ -132,7 +132,9 @@ describe("buildLedgerWorkbook", () => {
     const wb = await buildLedgerWorkbook(transactions, 0, {
       generalLedger: true,
     });
-    const ws = wb.Sheets[wb.SheetNames[0]] as Record<string, CellObject>;
+    const ws = wb.Sheets[wb.SheetNames[0]] as Record<string, CellObject> & {
+      "!rows"?: Array<{ hpx?: number }>;
+    };
 
     // Entry row is row 3 (1-indexed): carry row first, then entry row.
     expect(getCellValue(ws, "A3")).toBe("3/5\n1");
@@ -140,5 +142,25 @@ describe("buildLedgerWorkbook", () => {
     expect(getCellValue(ws, "C3")).toBe("Lunch / with client");
     expect(getCellValue(ws, "E3")).toBe(15);
     expect(getCellValue(ws, "F3")).toBe(-15);
+
+    expect(getCellValue(ws, "A5")).toBe("12/31\n2");
+    expect(getCellValue(ws, "B5")).toBe("事業主借");
+    expect(getCellValue(ws, "D5")).toBe(15);
+    expect(getCellValue(ws, "F5")).toBe(0);
+    expect(getCellValue(ws, "C6")).toBe("決算仕訳　合計");
+    expect(getCellValue(ws, "D6")).toBe(15);
+    expect(getCellValue(ws, "E6")).toBe(0);
+    expect(getCellValue(ws, "F6")).toBeUndefined();
+    expect(getCellValue(ws, "C7")).toBe("当期累計");
+    expect(getCellValue(ws, "D7")).toBe(15);
+    expect(getCellValue(ws, "E7")).toBe(15);
+    expect(getCellValue(ws, "F7")).toBeUndefined();
+    expect(getCellValue(ws, "C8")).toBe("翌期へ繰越");
+    expect(getCellValue(ws, "F8")).toBe(0);
+
+    const rows = ws["!rows"] ?? [];
+    expect(rows[5]?.hpx).toBe(16);
+    expect(rows[6]?.hpx).toBe(16);
+    expect(rows[7]?.hpx).toBe(16);
   });
 });

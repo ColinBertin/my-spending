@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { DownloadLedgerXlsxButton } from "../../../components/DownloadLedgerXlsxButton";
 import { FinanceIcon } from "../../../components/FinanceIcon";
+import TransactionFlowIcon from "../../../components/TransactionFlowIcon";
 import { formatCurrencyIntoYen } from "../../../helpers";
 import { Category, TransactionsByCategory } from "../../../types";
 
@@ -25,19 +27,32 @@ export default function LedgerGenerator({
       .replace(/[\\/:*?"<>|]+/g, "-")
       .replace(/\s+/g, "_");
   const generalLedgerFileName = `general_ledger_${previousYear}.xlsx`;
-  const allTransactionsTotal = allTransactions.reduce(
-    (sum, tx) => sum + Number(tx.amount || 0),
-    0,
+  const { totalIncome, totalSpending } = allTransactions.reduce(
+    (totals, tx) => {
+      const amount = Number(tx.amount) || 0;
+
+      if (tx.type === "income") {
+        totals.totalIncome += amount;
+      } else {
+        totals.totalSpending += amount;
+      }
+
+      return totals;
+    },
+    { totalIncome: 0, totalSpending: 0 },
   );
+  const allTransactionsNetTotal = totalIncome - totalSpending;
+  const hasGeneralIncome = totalIncome > 0;
+  const hasGeneralSpending = totalSpending > 0;
 
   return (
     <div className="w-full px-4 sm:px-6 pt-24 pb-12">
       <div className="mx-auto w-full max-w-5xl flex flex-col items-center">
-        <h1 className="text-3xl font-semibold text-center text-red mb-8">
-          Ledger Generator ({previousYear})
-        </h1>
-
         <div className="w-full rounded-2xl border border-blue-dark/20 bg-white p-4 sm:p-6 shadow-sm">
+          <h1 className="text-3xl font-semibold text-center text-red mb-6">
+            Ledger Generator ({previousYear})
+          </h1>
+
           <div className="mb-6">
             <p className="text-sm text-gray-600">
               Categories:{" "}
@@ -57,9 +72,35 @@ export default function LedgerGenerator({
               {allTransactions.length} transaction
               {allTransactions.length === 1 ? "" : "s"}
             </p>
-            <p className="text-sm text-gray-600">
-              {formatCurrencyIntoYen(allTransactionsTotal)}
-            </p>
+            {(hasGeneralIncome || hasGeneralSpending) && (
+              <div className="flex flex-col gap-2 text-sm text-gray-600">
+                {hasGeneralIncome && (
+                  <p className="flex items-center gap-2">
+                    <TransactionFlowIcon type="income" className="h-6 w-6" />
+                    <span>Income: {formatCurrencyIntoYen(totalIncome)}</span>
+                  </p>
+                )}
+                {hasGeneralSpending && (
+                  <p className="flex items-center gap-2">
+                    <TransactionFlowIcon type="expense" className="h-6 w-6" />
+                    <span>
+                      Spending: {formatCurrencyIntoYen(totalSpending)}
+                    </span>
+                  </p>
+                )}
+                <p className="font-semibold text-blue-dark">
+                  Net Total: {formatCurrencyIntoYen(allTransactionsNetTotal)}
+                </p>
+              </div>
+            )}
+            {allTransactions.length > 0 && (
+              <Link
+                href="/ledger-generator/general-ledger"
+                className="inline-flex justify-center rounded-3xl border border-blue-dark/20 bg-white px-4 py-2 text-sm font-semibold text-blue-dark transition-colors hover:border-blue-dark hover:bg-blue-100"
+              >
+                Preview Excel
+              </Link>
+            )}
             <DownloadLedgerXlsxButton
               transactions={allTransactions}
               fileName={generalLedgerFileName}
@@ -77,10 +118,26 @@ export default function LedgerGenerator({
             {sortedCategories.map((category) => {
               const categoryTransactions =
                 transactionsByCategory[category.name] ?? [];
-              const total = categoryTransactions.reduce(
-                (sum, tx) => sum + Number(tx.amount || 0),
-                0,
+              const {
+                totalIncome: categoryIncome,
+                totalSpending: categorySpending,
+              } = categoryTransactions.reduce(
+                (totals, tx) => {
+                  const amount = Number(tx.amount) || 0;
+
+                  if (tx.type === "income") {
+                    totals.totalIncome += amount;
+                  } else {
+                    totals.totalSpending += amount;
+                  }
+
+                  return totals;
+                },
+                { totalIncome: 0, totalSpending: 0 },
               );
+              const total = categoryIncome - categorySpending;
+              const hasCategoryIncome = categoryIncome > 0;
+              const hasCategorySpending = categorySpending > 0;
               const fileName = `ledger_${previousYear}_${sanitizeFileName(category.name)}.xlsx`;
 
               return (
@@ -108,10 +165,45 @@ export default function LedgerGenerator({
                       {categoryTransactions.length} transaction
                       {categoryTransactions.length === 1 ? "" : "s"}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      {formatCurrencyIntoYen(total)}
-                    </p>
+                    {(hasCategoryIncome || hasCategorySpending) && (
+                      <div className="mt-2 flex flex-col gap-1 text-sm text-gray-600">
+                        {hasCategoryIncome && (
+                          <p className="flex items-center gap-2">
+                            <TransactionFlowIcon
+                              type="income"
+                              className="h-6 w-6"
+                            />
+                            <span>
+                              Income: {formatCurrencyIntoYen(categoryIncome)}
+                            </span>
+                          </p>
+                        )}
+                        {hasCategorySpending && (
+                          <p className="flex items-center gap-2">
+                            <TransactionFlowIcon
+                              type="expense"
+                              className="h-6 w-6"
+                            />
+                            <span>
+                              Spending:{" "}
+                              {formatCurrencyIntoYen(categorySpending)}
+                            </span>
+                          </p>
+                        )}
+                        <p className="font-semibold text-blue-dark">
+                          Net Total: {formatCurrencyIntoYen(total)}
+                        </p>
+                      </div>
+                    )}
                   </div>
+                  {categoryTransactions.length > 0 && (
+                    <Link
+                      href={`/ledger-generator/${encodeURIComponent(category.name)}`}
+                      className="inline-flex justify-center rounded-3xl border border-blue-dark/20 bg-white px-4 py-2 text-sm font-semibold text-blue-dark transition-colors hover:border-blue-dark hover:bg-blue-100"
+                    >
+                      Preview Excel
+                    </Link>
+                  )}
 
                   <DownloadLedgerXlsxButton
                     transactions={categoryTransactions}

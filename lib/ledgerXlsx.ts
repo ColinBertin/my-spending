@@ -411,6 +411,35 @@ export async function buildLedgerWorkbook(
     row++;
   };
 
+  const writeGeneralLedgerFooterRow = (
+    label: string,
+    income: number | undefined,
+    expense: number | undefined,
+    balance: number | undefined,
+  ) => {
+    ensureRowMeta(ws, row, rowMetaTemplates.total);
+    setRowHeight(ws, row, rowHeightPx(rowMetaTemplates.carry));
+    setStyledCell(ws, row, 0, rowTemplates.total, undefined, "s", {
+      isSummary: true,
+    });
+    setStyledCell(ws, row, 1, rowTemplates.total, undefined, "s", {
+      isSummary: true,
+    });
+    setStyledCell(ws, row, 2, rowTemplates.total, label, "s", {
+      isSummary: true,
+    });
+    setStyledCell(ws, row, 3, rowTemplates.total, income, "n", {
+      isSummary: true,
+    });
+    setStyledCell(ws, row, 4, rowTemplates.total, expense, "n", {
+      isSummary: true,
+    });
+    setStyledCell(ws, row, 5, rowTemplates.total, balance, "n", {
+      isSummary: true,
+    });
+    row++;
+  };
+
   const writeEntryRow = (
     tx: Transaction,
     voucherNo: number,
@@ -430,6 +459,23 @@ export async function buildLedgerWorkbook(
     setStyledCell(ws, row, 0, rowTemplates.entry, left, "s");
     setStyledCell(ws, row, 1, rowTemplates.entry, accountLabel, "s");
     setStyledCell(ws, row, 2, rowTemplates.entry, description, "s");
+    setStyledCell(ws, row, 3, rowTemplates.entry, income || undefined, "n");
+    setStyledCell(ws, row, 4, rowTemplates.entry, expense || undefined, "n");
+    setStyledCell(ws, row, 5, rowTemplates.entry, running, "n");
+    row++;
+  };
+
+  const writeClosingEntryRow = (
+    voucherNo: number,
+    income: number,
+    expense: number,
+  ) => {
+    ensureRowMeta(ws, row, rowMetaTemplates.entry);
+    const accountLabel = income > 0 ? "事業主借" : "事業主貸";
+
+    setStyledCell(ws, row, 0, rowTemplates.entry, `12/31\n${voucherNo}`, "s");
+    setStyledCell(ws, row, 1, rowTemplates.entry, accountLabel, "s");
+    setStyledCell(ws, row, 2, rowTemplates.entry, undefined, "s");
     setStyledCell(ws, row, 3, rowTemplates.entry, income || undefined, "n");
     setStyledCell(ws, row, 4, rowTemplates.entry, expense || undefined, "n");
     setStyledCell(ws, row, 5, rowTemplates.entry, running, "n");
@@ -471,38 +517,42 @@ export async function buildLedgerWorkbook(
     writeSubtotalRow(txs[txs.length - 1].date);
   }
 
-  const previousRowInfo = ws["!rows"]?.[row - 1];
-  ensureRowMeta(ws, row, rowMetaTemplates.total);
-  setRowHeight(
-    ws,
-    row,
-    rowHeightPx(previousRowInfo, rowHeightPx(rowMetaTemplates.carry)),
-  );
-  setStyledCell(ws, row, 0, rowTemplates.total, undefined, "s", {
-    isSummary: true,
-  });
-  setStyledCell(ws, row, 1, rowTemplates.total, undefined, "s", {
-    isSummary: true,
-  });
-  setStyledCell(ws, row, 2, rowTemplates.total, "当期累計", "s", {
-    isSummary: true,
-  });
-  setStyledCell(ws, row, 3, rowTemplates.total, totalIncome, "n", {
-    isSummary: true,
-  });
-  setStyledCell(ws, row, 4, rowTemplates.total, totalExpense, "n", {
-    isSummary: true,
-  });
-  setStyledCell(
-    ws,
-    row,
-    5,
-    rowTemplates.total,
-    openingBalance + (totalIncome - totalExpense),
-    "n",
-    { isSummary: true },
-  );
-  row++;
+  if (options.generalLedger) {
+    const periodNet = totalIncome - totalExpense;
+    const closingIncome = periodNet < 0 ? Math.abs(periodNet) : 0;
+    const closingExpense = periodNet > 0 ? periodNet : 0;
+
+    if (txs.length > 0 && periodNet !== 0) {
+      running = openingBalance;
+      writeClosingEntryRow(txs.length + 1, closingIncome, closingExpense);
+    }
+
+    writeGeneralLedgerFooterRow(
+      "決算仕訳　合計",
+      closingIncome,
+      closingExpense,
+      undefined,
+    );
+    writeGeneralLedgerFooterRow(
+      "当期累計",
+      totalIncome + closingIncome,
+      totalExpense + closingExpense,
+      undefined,
+    );
+    writeGeneralLedgerFooterRow(
+      "翌期へ繰越",
+      undefined,
+      undefined,
+      openingBalance,
+    );
+  } else {
+    writeGeneralLedgerFooterRow(
+      "当期累計",
+      totalIncome,
+      totalExpense,
+      openingBalance + (totalIncome - totalExpense),
+    );
+  }
 
   const finalLastRow = Math.max(templateLastRow, row - 1);
   ws["!ref"] = XLSX.utils.encode_range({

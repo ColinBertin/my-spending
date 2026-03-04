@@ -25,6 +25,7 @@ describe("TransactionCard", () => {
 
     expect(html).toContain("Groceries");
     expect(html).toContain("1,200");
+    expect(html).toContain('aria-label="Expense"');
   });
 
   it("renders category icon when icon data exists", () => {
@@ -40,5 +41,18 @@ describe("TransactionCard", () => {
     );
 
     expect(html).toContain("MockIcon");
+  });
+
+  it("renders the income direction icon for income transactions", () => {
+    const html = renderToStaticMarkup(
+      <TransactionCard
+        transaction={{
+          ...baseTransaction,
+          type: "income",
+        }}
+      />,
+    );
+
+    expect(html).toContain('aria-label="Income"');
   });
 });
