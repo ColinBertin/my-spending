@@ -1,16 +1,16 @@
 "use client";
 
-import Select from "../../../../components/Select";
+import Select from "@/components/Select";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Loading from "../loading";
-import Button from "../../../../components/Button";
-import { Account } from "../../../../types";
+import Button from "@/components/Button";
+import { Account } from "@/types";
 import { useState, useTransition } from "react";
 import {
   useErrorNotification,
   useSuccessNotification,
-} from "../../../../components/ui/NotificationProvider";
+} from "@/components/ui/NotificationProvider";
 
 export default function CreateAccount() {
   const router = useRouter();

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { FinanceIcon } from "../../../components/FinanceIcon";
-import TransactionFlowIcon from "../../../components/TransactionFlowIcon";
-import { formatCurrencyIntoYen } from "../../../helpers";
-import { Category, TransactionsByCategory } from "../../../types";
+import { FinanceIcon } from "@/components/FinanceIcon";
+import TransactionFlowIcon from "@/components/TransactionFlowIcon";
+import { formatCurrencyIntoYen } from "@/helpers";
+import { Category, TransactionsByCategory } from "@/types";
 
 type LedgerGeneratorProps = {
   categoryPreviewTransactionsByCategory: TransactionsByCategory;

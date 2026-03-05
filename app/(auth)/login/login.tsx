@@ -3,15 +3,15 @@
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
-import Button from "../../../components/Button";
-import { signInWithPassword } from "../../../utils/authClient";
-import { emailRegex } from "../../../helpers";
+import Button from "@/components/Button";
+import { signInWithPassword } from "@/utils/authClient";
+import { emailRegex } from "@/helpers";
 import {
   useErrorNotification,
   useSuccessNotification,
-} from "../../../components/ui/NotificationProvider";
+} from "@/components/ui/NotificationProvider";
 import { useState, useTransition } from "react";
-import Spinner from "../../../components/Spinner";
+import Spinner from "@/components/Spinner";
 
 type SignupInput = {
   username: string;

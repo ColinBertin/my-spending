@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Transaction } from "../types";
+import type { Transaction } from "@/types";
 import { buildLedgerPreviewRows } from "./ledgerPreviewRows";
 
 describe("buildLedgerPreviewRows", () => {

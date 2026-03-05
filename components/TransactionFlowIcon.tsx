@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { TransactionType } from "../types";
+import { TransactionType } from "@/types";
 
 type TransactionFlowIconProps = {
   type: TransactionType;

@@ -1,10 +1,10 @@
 "use client";
 
-import { Account, CategoryTotal, MonthlyCategorySummary } from "../types";
+import { Account, CategoryTotal, MonthlyCategorySummary } from "@/types";
 import DoughnutChart from "./Doughnut";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatCurrencyIntoYen, months } from "../helpers";
+import { formatCurrencyIntoYen, months } from "@/helpers";
 import MonthlyTransactions from "./MonthlyTransactions";
 import Button from "./Button";
 import Select from "./Select";

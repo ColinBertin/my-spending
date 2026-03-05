@@ -1,20 +1,20 @@
 "use client";
 
-import { Category } from "../../../../types";
+import { Category } from "@/types";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import Loading from "./loading";
-import Button from "../../../../components/Button";
-import { FinanceIconPicker } from "../../../../components/FinanceIconPicker";
-import ColorPicker from "../../../../components/ColorPicker";
-import { colorCodes } from "../../../../helpers";
-import Label from "../../../../components/Label";
+import Button from "@/components/Button";
+import { FinanceIconPicker } from "@/components/FinanceIconPicker";
+import ColorPicker from "@/components/ColorPicker";
+import { colorCodes } from "@/helpers";
+import Label from "@/components/Label";
 import { useState, useTransition } from "react";
-import Select from "../../../../components/Select";
+import Select from "@/components/Select";
 import {
   useErrorNotification,
   useSuccessNotification,
-} from "../../../../components/ui/NotificationProvider";
+} from "@/components/ui/NotificationProvider";
 
 export default function CreateCategory() {
   const router = useRouter();

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "../../../utils/supabase/server";
-import { Category, Transaction, TransactionsByCategory } from "../../../types";
+import { createClient } from "@/utils/supabase/server";
+import { Category, Transaction, TransactionsByCategory } from "@/types";
 
 type AccountMemberWithAccount = {
   account_id?: string;
@@ -22,12 +22,21 @@ const ACCRUED_EXPENSE_CATEGORY_NAMES = new Set([
   "Utility",
   "Communication",
 ]);
+export const CATEGORY_LEDGER_JANUARY_ADJUSTMENT_TARGETS = new Set([
+  "売上高",
+  "水道光熱費",
+  "通信費",
+]);
 const ACCRUED_EXPENSE_TITLE_KEYWORDS = [
   "gas",
   "electricity",
   "internet",
   "phone",
 ];
+
+export function isJanuaryAdjustmentCategoryLedgerName(categoryName: string) {
+  return CATEGORY_LEDGER_JANUARY_ADJUSTMENT_TARGETS.has(categoryName.trim());
+}
 
 export type ProfessionalLedgerContext = {
   userId: string;

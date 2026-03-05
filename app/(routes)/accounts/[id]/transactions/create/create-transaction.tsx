@@ -1,20 +1,16 @@
 "use client";
 
-import Select from "../../../../../../components/Select";
-import {
-  Category,
-  Transaction,
-  TransactionType,
-} from "../../../../../../types";
+import Select from "@/components/Select";
+import { Category, Transaction, TransactionType } from "@/types";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import Loading from "./loading";
-import Calendar from "../../../../../../components/Calendar";
-import Button from "../../../../../../components/Button";
+import Calendar from "@/components/Calendar";
+import Button from "@/components/Button";
 import {
   useErrorNotification,
   useSuccessNotification,
-} from "../../../../../../components/ui/NotificationProvider";
+} from "@/components/ui/NotificationProvider";
 import { useState, useTransition } from "react";
 
 export default function CreateTransaction({

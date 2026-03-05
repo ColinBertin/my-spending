@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import Layout, { metadata } from "./layout";
 
-vi.mock("../../components/layout/Navbar", () => ({
+vi.mock("@/components/layout/Navbar", () => ({
   default: () => <div>Mock Navbar</div>,
 }));
 
-vi.mock("../../components/ui/NotificationProvider", () => ({
+vi.mock("@/components/ui/NotificationProvider", () => ({
   default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 

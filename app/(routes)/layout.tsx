@@ -1,5 +1,5 @@
-import Footer from "../../components/layout/Footer";
-import Navbar from "../../components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
 import { Metadata } from "next/types";
 import { ReactNode } from "react";
 

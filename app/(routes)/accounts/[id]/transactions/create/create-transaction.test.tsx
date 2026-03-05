@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Category } from "../../../../../../types";
+import type { Category } from "@/types";
 import CreateTransaction from "./create-transaction";
 
 vi.mock("react", async () => {
@@ -30,7 +30,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("../../../../../../components/ui/NotificationProvider", () => ({
+vi.mock("@/components/ui/NotificationProvider", () => ({
   useSuccessNotification: () => showSuccessNotificationMock,
   useErrorNotification: () => showErrorNotificationMock,
 }));
@@ -61,7 +61,7 @@ vi.mock("react-hook-form", () => ({
     }),
 }));
 
-vi.mock("../../../../../../components/Calendar", () => ({
+vi.mock("@/components/Calendar", () => ({
   default: () => <div>Mock Calendar</div>,
 }));
 

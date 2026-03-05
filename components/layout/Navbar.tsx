@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import logo from "../../public/images/yen-icon.png";
+import logo from "@/public/images/yen-icon.png";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoCloseOutline } from "react-icons/io5";
 import Menu from "../Menu";

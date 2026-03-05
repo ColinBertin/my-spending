@@ -26,7 +26,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("../../../../components/ui/NotificationProvider", () => ({
+vi.mock("@/components/ui/NotificationProvider", () => ({
   useSuccessNotification: () => showSuccessNotificationMock,
   useErrorNotification: () => showErrorNotificationMock,
 }));
@@ -58,11 +58,11 @@ vi.mock("react-hook-form", () => ({
     }),
 }));
 
-vi.mock("../../../../components/ColorPicker", () => ({
+vi.mock("@/components/ColorPicker", () => ({
   default: () => <div>Mock ColorPicker</div>,
 }));
 
-vi.mock("../../../../components/FinanceIconPicker", () => ({
+vi.mock("@/components/FinanceIconPicker", () => ({
   FinanceIconPicker: () => <div>Mock FinanceIconPicker</div>,
 }));
 

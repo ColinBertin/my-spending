@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CellObject } from "xlsx";
-import type { Transaction } from "../types";
+import type { Transaction } from "@/types";
 
 function getCellValue(ws: Record<string, CellObject>, addr: string) {
   return ws[addr]?.v;

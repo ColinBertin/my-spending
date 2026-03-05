@@ -1,6 +1,6 @@
-import { Transaction } from "../types";
+import { Transaction } from "@/types";
 import { FinanceIcon } from "./FinanceIcon";
-import { formatCurrencyIntoYen } from "../helpers";
+import { formatCurrencyIntoYen } from "@/helpers";
 import TransactionFlowIcon from "./TransactionFlowIcon";
 
 type TransactionCardProps = {

@@ -1,19 +1,20 @@
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import LedgerPreviewTable from "../../../../components/LedgerPreviewTable";
-import PrintLedgerPdfButton from "../../../../components/PrintLedgerPdfButton";
-import { formatCurrencyIntoYen } from "../../../../helpers";
+import LedgerPreviewTable from "@/components/LedgerPreviewTable";
+import PrintLedgerPdfButton from "@/components/PrintLedgerPdfButton";
+import { formatCurrencyIntoYen } from "@/helpers";
 import {
   buildJournalLedgerPreviewRows,
   buildLedgerPreviewRows,
-} from "../../../../lib/ledgerPreviewRows";
-import { Category } from "../../../../types";
+} from "@/lib/ledgerPreviewRows";
+import { Category } from "@/types";
 import {
   getCurrentJanuaryRange,
   getPreviousYearRange,
   getProfessionalLedgerContext,
   getTransactionsForRange,
+  isJanuaryAdjustmentCategoryLedgerName,
   isAccruedExpenseTransaction,
 } from "../data";
 
@@ -25,7 +26,6 @@ const JOURNAL_HEADER_TITLES = [
   "貸　方　金　額",
   "残　　高",
 ];
-
 export const metadata = {
   title: "Ledger Preview",
 };
@@ -116,6 +116,9 @@ export default async function LedgerPreviewPage({
   const isSpecialLedger =
     ledgerMeta.kind === "accountsReceivable" ||
     ledgerMeta.kind === "accruedExpenses";
+  const shouldIncludeNextJanuaryForCategoryLedger =
+    ledgerMeta.kind === "category" &&
+    isJanuaryAdjustmentCategoryLedgerName(ledgerMeta.label);
   const yearTransactions = await getTransactionsForRange(
     userId,
     categories,
@@ -123,7 +126,7 @@ export default async function LedgerPreviewPage({
     previousYear,
   );
   const januaryTransactions =
-    ledgerMeta.kind === "category" || isSpecialLedger
+    shouldIncludeNextJanuaryForCategoryLedger || isSpecialLedger
       ? await getTransactionsForRange(
           userId,
           categories,
@@ -139,17 +142,21 @@ export default async function LedgerPreviewPage({
     ledgerMeta.kind === "general"
       ? yearTransactions
       : ledgerMeta.kind === "category"
-        ? [
-            ...yearTransactions.filter(
+        ? shouldIncludeNextJanuaryForCategoryLedger
+          ? [
+              ...yearTransactions.filter(
+                (tx) => tx.category_name === ledgerMeta.label,
+              ),
+              ...sortedJanuaryTransactions
+                .filter((tx) => tx.category_name === ledgerMeta.label)
+                .map((tx) => ({
+                  ...tx,
+                  date: new Date(yearEndAdjustmentDate),
+                })),
+            ]
+          : yearTransactions.filter(
               (tx) => tx.category_name === ledgerMeta.label,
-            ),
-            ...sortedJanuaryTransactions
-              .filter((tx) => tx.category_name === ledgerMeta.label)
-              .map((tx) => ({
-                ...tx,
-                date: new Date(yearEndAdjustmentDate),
-              })),
-          ]
+            )
         : ledgerMeta.kind === "accountsReceivable"
           ? sortedJanuaryTransactions.filter((tx) => tx.type === "income")
           : sortedJanuaryTransactions.filter(isAccruedExpenseTransaction);
@@ -201,7 +208,9 @@ export default async function LedgerPreviewPage({
     ledgerMeta.kind === "general"
       ? String(previousYear.previousYear)
       : ledgerMeta.kind === "category"
-        ? `${previousYear.previousYear} with January ${currentJanuary.currentYear} adjustments`
+        ? shouldIncludeNextJanuaryForCategoryLedger
+          ? `${previousYear.previousYear} with January ${currentJanuary.currentYear} adjustments`
+          : String(previousYear.previousYear)
         : `January ${currentJanuary.currentYear}`;
   const fileName =
     ledgerMeta.kind === "general"

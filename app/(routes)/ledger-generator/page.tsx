@@ -5,6 +5,7 @@ import {
   getProfessionalLedgerContext,
   getTransactionsForRange,
   groupTransactionsByCategory,
+  isJanuaryAdjustmentCategoryLedgerName,
   isAccruedExpenseTransaction,
 } from "./data";
 
@@ -43,9 +44,13 @@ export default async function LedgerGeneratorPage() {
   const januaryAccruedExpenseCount = januaryTransactions.filter(
     isAccruedExpenseTransaction,
   ).length;
+  const januaryCategoryPreviewTransactions = januaryTransactions.filter(
+    (transaction) =>
+      isJanuaryAdjustmentCategoryLedgerName(transaction.category_name),
+  );
   const categoryPreviewTransactionsByCategory = groupTransactionsByCategory(
     categories,
-    [...transactions, ...januaryTransactions],
+    [...transactions, ...januaryCategoryPreviewTransactions],
   );
 
   return (

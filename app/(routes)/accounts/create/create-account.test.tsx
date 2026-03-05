@@ -25,7 +25,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("../../../../components/ui/NotificationProvider", () => ({
+vi.mock("@/components/ui/NotificationProvider", () => ({
   useSuccessNotification: () => showSuccessNotificationMock,
   useErrorNotification: () => showErrorNotificationMock,
 }));
