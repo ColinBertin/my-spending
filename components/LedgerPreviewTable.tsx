@@ -40,8 +40,14 @@ const formatNumber = (value?: number) =>
 
 const formFieldClassName =
   "w-full h-10 border border-gray-500 rounded-xl px-3 text-gray-700 font-medium outline-none focus:border-purple-300";
-const FIRST_PRINT_PAGE_CAPACITY = 38;
-const FOLLOWING_PRINT_PAGE_CAPACITY = 36;
+const CARRY_OVER_DESCRIPTIONS = new Set(["前頁より繰越", "前期より繰越"]);
+
+function isCarryOverRow(row: LedgerPreviewRow) {
+  return (
+    row.kind === "carry" ||
+    CARRY_OVER_DESCRIPTIONS.has((row.description ?? "").trim())
+  );
+}
 
 function toDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
@@ -81,56 +87,6 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <span className="text-gray-800 break-all">{value}</span>
     </div>
   );
-}
-
-function countVisualLines(value: string | undefined, charsPerLine: number) {
-  if (!value) return 1;
-
-  return value.split("\n").reduce((total, line) => {
-    const normalizedLength = line.trim().length;
-    return total + Math.max(1, Math.ceil(normalizedLength / charsPerLine));
-  }, 0);
-}
-
-function estimatePrintRowUnits(row: LedgerPreviewRow) {
-  if (row.kind === "subtotal" || row.kind === "footer") {
-    return 1;
-  }
-
-  const dateLines = countVisualLines(row.dateLabel, 8);
-  const accountLines = countVisualLines(row.accountLabel, 12);
-  const descriptionLines = countVisualLines(row.description, 34);
-  const maxLines = Math.max(1, dateLines, accountLines, descriptionLines);
-
-  if (maxLines <= 2) return 1;
-  if (maxLines <= 4) return 2;
-  return 3;
-}
-
-function buildPrintPages(rows: LedgerPreviewRow[]) {
-  const previewRows = rows.filter((row) => row.kind !== "carry");
-  const pages: LedgerPreviewRow[][] = [];
-  let currentPage: LedgerPreviewRow[] = [];
-  let remainingCapacity = FIRST_PRINT_PAGE_CAPACITY;
-
-  for (const row of previewRows) {
-    const rowUnits = estimatePrintRowUnits(row);
-
-    if (currentPage.length > 0 && rowUnits > remainingCapacity) {
-      pages.push(currentPage);
-      currentPage = [];
-      remainingCapacity = FOLLOWING_PRINT_PAGE_CAPACITY;
-    }
-
-    currentPage.push(row);
-    remainingCapacity -= rowUnits;
-  }
-
-  if (currentPage.length > 0) {
-    pages.push(currentPage);
-  }
-
-  return pages;
 }
 
 function InlineSpinner() {
@@ -281,70 +237,62 @@ export default function LedgerPreviewTable({
   const canConfirmDelete =
     !!activeTransaction && confirmTitle.trim() === activeTransaction.title;
   const screenRows = useMemo(
-    () => rows.filter((row) => row.kind !== "carry"),
+    () => rows.filter((row) => !isCarryOverRow(row)),
     [rows],
   );
-  const printPages = useMemo(() => buildPrintPages(rows), [rows]);
 
   return (
     <>
-      <div className="print-only space-y-4">
-        {printPages.map((pageRows, pageIndex) => (
-          <div
-            key={`print-page-${pageIndex + 1}`}
-            className="ledger-print-page border border-blue-dark/20 bg-white"
-          >
-            <table className="ledger-preview-table w-full table-fixed border-collapse text-xs">
-              <colgroup>
-                <col className="w-[10%]" />
-                <col className="w-[16%]" />
-                <col className="w-[26%]" />
-                <col className="w-[16%]" />
-                <col className="w-[16%]" />
-                <col className="w-[16%]" />
-              </colgroup>
-              <thead>
-                <tr className="bg-gray-100">
-                  {headerTitles.map((title) => (
-                    <th
-                      key={`print-${pageIndex + 1}-${title}`}
-                      className="border border-black px-2 py-2 text-center font-semibold whitespace-pre-line"
-                    >
-                      {title}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pageRows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className={row.summary ? "bg-[#bfbfbf]" : "bg-white"}
-                  >
-                    <td className="border border-black px-2 py-1 align-top whitespace-pre-line break-words">
-                      {row.dateLabel ?? ""}
-                    </td>
-                    <td className="border border-black px-2 py-1 align-top break-words">
-                      {row.accountLabel ?? ""}
-                    </td>
-                    <td className="border border-black px-2 py-1 align-top break-words">
-                      {row.description ?? ""}
-                    </td>
-                    <td className="border border-black px-2 py-1 text-right align-top">
-                      {formatNumber(row.income)}
-                    </td>
-                    <td className="border border-black px-2 py-1 text-right align-top">
-                      {formatNumber(row.expense)}
-                    </td>
-                    <td className="border border-black px-2 py-1 text-right align-top">
-                      {formatNumber(row.balance)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ))}
+      <div className="print-only border border-blue-dark/20 bg-white">
+        <table className="ledger-preview-table w-full table-fixed border-collapse text-xs">
+          <colgroup>
+            <col className="w-[10%]" />
+            <col className="w-[16%]" />
+            <col className="w-[26%]" />
+            <col className="w-[16%]" />
+            <col className="w-[16%]" />
+            <col className="w-[16%]" />
+          </colgroup>
+          <thead>
+            <tr className="bg-gray-100">
+              {headerTitles.map((title) => (
+                <th
+                  key={`print-${title}`}
+                  className="border border-black px-2 py-2 text-center font-semibold whitespace-pre-line"
+                >
+                  {title}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {screenRows.map((row) => (
+              <tr
+                key={row.id}
+                className={row.summary ? "bg-[#bfbfbf]" : "bg-white"}
+              >
+                <td className="border border-black px-2 py-1 align-top whitespace-pre-line break-words">
+                  {row.dateLabel ?? ""}
+                </td>
+                <td className="border border-black px-2 py-1 align-top break-words">
+                  {row.accountLabel ?? ""}
+                </td>
+                <td className="border border-black px-2 py-1 align-top break-words">
+                  {row.description ?? ""}
+                </td>
+                <td className="border border-black px-2 py-1 text-right align-top">
+                  {formatNumber(row.income)}
+                </td>
+                <td className="border border-black px-2 py-1 text-right align-top">
+                  {formatNumber(row.expense)}
+                </td>
+                <td className="border border-black px-2 py-1 text-right align-top">
+                  {formatNumber(row.balance)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="ledger-preview-table-wrap print-hidden min-w-0 max-w-full overflow-x-auto border border-blue-dark/20 bg-white shadow-sm">

@@ -206,9 +206,11 @@ export default async function LedgerPreviewPage({
   const fileName =
     ledgerMeta.kind === "general"
       ? `general_ledger_${previousYear.previousYear}.pdf`
-      : ledgerMeta.kind === "category"
-        ? `ledger_${previousYear.previousYear}_${sanitizeFileName(ledgerMeta.label)}.pdf`
-        : `ledger_${currentJanuary.currentYear}_${sanitizeFileName(ledgerMeta.label)}.pdf`;
+      : `${sanitizeFileName(ledgerMeta.label)}_ledger_${
+          ledgerMeta.kind === "category"
+            ? previousYear.previousYear
+            : currentJanuary.currentYear
+        }.pdf`;
   const autoDownload = resolvedSearchParams.download === "1";
 
   return (
