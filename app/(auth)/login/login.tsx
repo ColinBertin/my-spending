@@ -2,10 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 import Button from "@/components/Button";
+import FormInputField from "@/components/FormInputField";
 import { signInWithPassword } from "@/utils/authClient";
 import { emailRegex } from "@/helpers";
+import logo from "@/public/images/yen-icon.png";
 import {
   useErrorNotification,
   useSuccessNotification,
@@ -71,42 +74,45 @@ export default function Login() {
         className="flex flex-col justify-center h-1/2"
         onSubmit={handleSubmit(handleLogin)}
       >
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <Image
+            src={logo}
+            alt="My Spending logo"
+            className="h-16 w-16 sm:h-20 sm:w-20"
+            priority
+          />
+          <h1 className="text-4xl sm:text-5xl font-bold text-blue-dark text-center">
+            My Spending
+          </h1>
+        </div>
         <h1 className="text-3xl font-semibold text-center text-red mb-10">
           Login
         </h1>
 
-        <div className="relative flex flex-col justify-around mb-8">
-          <input
-            type="email"
-            placeholder="Email"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium"
-            {...register("email", {
-              required: "Email is required",
-              validate: (email) =>
-                emailRegex.test(email) ? true : "Invalid email format",
-            })}
-          />
-          {errors.email && (
-            <small className="absolute top-11 left-2 text-red-300">
-              {errors.email.message}
-            </small>
-          )}
-        </div>
+        <FormInputField
+          type="email"
+          placeholder="Email"
+          containerClassName="relative flex flex-col justify-around mb-8"
+          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          registration={register("email", {
+            required: "Email is required",
+            validate: (email) =>
+              emailRegex.test(email) ? true : "Invalid email format",
+          })}
+          error={errors.email?.message}
+        />
 
-        <div className="relative flex flex-col justify-around mb-8">
-          <input
-            type="password"
-            placeholder="Password"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700"
-            {...register("password", { required: "Password is required" })}
-          />
-          {errors.password && (
-            <small className="absolute top-11 left-2 text-red-300">
-              {errors.password.message}
-            </small>
-          )}
-        </div>
-        <div className="flex flex-col sm:flex-row justify-between">
+        <FormInputField
+          type="password"
+          placeholder="Password"
+          containerClassName="relative flex flex-col justify-around mb-8"
+          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          registration={register("password", {
+            required: "Password is required",
+          })}
+          error={errors.password?.message}
+        />
+        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
           <Button color="primary" type="submit" text="Log in" />
           <Button
             color="secondary"
