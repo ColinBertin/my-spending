@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import {
+  deleteMockAccountForUser,
+  getMockAccountById,
+  hasMockAccountAccess,
+  MOCK_USER_ID,
+} from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -60,15 +67,6 @@ async function getAuthorizedAccount(accountId: string, userId: string) {
 }
 
 export async function DELETE(req: Request, context: RouteContext) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { id } = await context.params;
 
   let body: unknown = {};
@@ -88,6 +86,39 @@ export async function DELETE(req: Request, context: RouteContext) {
       { error: "confirmName is required" },
       { status: 400 },
     );
+  }
+
+  if (isMockEnabled()) {
+    if (!hasMockAccountAccess(id, MOCK_USER_ID)) {
+      return NextResponse.json(
+        { error: "You do not have access to this account" },
+        { status: 403 },
+      );
+    }
+
+    const account = getMockAccountById(id);
+    if (!account) {
+      return NextResponse.json({ error: "Account not found" }, { status: 404 });
+    }
+
+    if (account.name !== confirmName.trim()) {
+      return NextResponse.json(
+        { error: "Confirmation name does not match" },
+        { status: 400 },
+      );
+    }
+
+    deleteMockAccountForUser(id, MOCK_USER_ID);
+    return NextResponse.json({ ok: true }, { status: 200 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const authorized = await getAuthorizedAccount(id, user.id);

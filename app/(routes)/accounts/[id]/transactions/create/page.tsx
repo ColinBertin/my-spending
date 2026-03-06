@@ -1,6 +1,8 @@
 import CreateTransaction from "./create-transaction";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { listMockCategoriesForUser, MOCK_USER_ID } from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 
 export const metadata = {
   title: "Add Transaction",
@@ -12,6 +14,11 @@ export default async function CreateTransactions({
   params: { id: string };
 }) {
   const { id } = await params;
+
+  if (isMockEnabled()) {
+    const categories = listMockCategoriesForUser(MOCK_USER_ID);
+    return <CreateTransaction accountId={id} categories={categories} />;
+  }
 
   const supabase = await createClient();
 

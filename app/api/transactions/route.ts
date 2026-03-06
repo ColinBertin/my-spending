@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import {
+  createMockTransactionForUser,
+  getMockCategoryByIdForUser,
+  hasMockAccountAccess,
+  listMockTransactionsForAccount,
+  MOCK_USER_ID,
+} from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 import { CategoryTotal, TransactionType } from "@/types";
 
 const TRANSACTION_TYPES = new Set(["income", "expense"]);
@@ -27,15 +35,102 @@ function getMonthRange(
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
+function buildSummary(
+  transactions: Array<{
+    type: string | null;
+    category_name: string | null;
+    amount: number;
+    category_icon?: string | null;
+    category_icon_pack?: string | null;
+    category_color?: string | null;
+  }>,
+): {
+  categoryTotals: CategoryTotal[];
+  totalSpending: number;
+  totalIncome: number;
+} {
+  const categoryTotalsMap = new Map<string, CategoryTotal>();
+  let totalSpending = 0;
+  let totalIncome = 0;
+
+  for (const transaction of transactions) {
+    const amount = Number(transaction.amount) || 0;
+    const transactionType = transaction.type as TransactionType;
+
+    if (transactionType === "income") {
+      totalIncome += amount;
+    } else {
+      totalSpending += amount;
+    }
+
+    if (!transaction.category_name) continue;
+
+    const categoryKey = `${transactionType}:${transaction.category_name}`;
+    const existingCategory = categoryTotalsMap.get(categoryKey);
+
+    if (existingCategory) {
+      existingCategory.total += amount;
+
+      if (!existingCategory.category_icon && transaction.category_icon) {
+        existingCategory.category_icon = transaction.category_icon;
+      }
+      if (
+        !existingCategory.category_icon_pack &&
+        transaction.category_icon_pack
+      ) {
+        existingCategory.category_icon_pack = transaction.category_icon_pack;
+      }
+      if (!existingCategory.category_color && transaction.category_color) {
+        existingCategory.category_color = transaction.category_color;
+      }
+
+      continue;
+    }
+
+    categoryTotalsMap.set(categoryKey, {
+      category: transaction.category_name,
+      total: amount,
+      category_icon: transaction.category_icon ?? undefined,
+      category_icon_pack: transaction.category_icon_pack ?? undefined,
+      category_color: transaction.category_color ?? undefined,
+      type: transactionType,
+    });
+  }
+
+  const categoryTotals = Array.from(categoryTotalsMap.values()).sort((a, b) => {
+    if (a.type !== b.type) {
+      return a.type === "income" ? -1 : 1;
+    }
+
+    return a.category.localeCompare(b.category);
+  });
+
+  return {
+    categoryTotals,
+    totalSpending,
+    totalIncome,
+  };
+}
+
+function buildSummaryFromTransactions(
+  transactions: Array<{
+    type?: string | null;
+    category_name: string | null;
+    amount: number;
+    category_icon?: string | null;
+    category_icon_pack?: string | null;
+    category_color?: string | null;
+  }>,
+) {
+  return buildSummary(
+    transactions.map((transaction) => ({
+      ...transaction,
+      type: transaction.type ?? "expense",
+    })),
+  );
+}
+
 export async function GET(req: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { searchParams } = new URL(req.url);
 
   const accountId = searchParams.get("accountId")?.trim();
@@ -55,6 +150,55 @@ export async function GET(req: Request) {
       { status: 400 },
     );
   }
+
+  let monthRange: { start: string; end: string } | null = null;
+  if (selectedMonthStr && selectedYearStr) {
+    const maybeRange = getMonthRange(selectedMonthStr, selectedYearStr);
+    if ("error" in maybeRange) {
+      return NextResponse.json({ error: maybeRange.error }, { status: 400 });
+    }
+    monthRange = maybeRange;
+  }
+
+  if (isMockEnabled()) {
+    if (!hasMockAccountAccess(accountId, MOCK_USER_ID)) {
+      return NextResponse.json(
+        { error: "You do not have access to this account" },
+        { status: 403 },
+      );
+    }
+
+    const transactions = listMockTransactionsForAccount({
+      accountId,
+      userId: MOCK_USER_ID,
+      selectedMonth: selectedMonthStr ?? undefined,
+      selectedYear: selectedYearStr ?? undefined,
+    });
+
+    if (summary) {
+      const { categoryTotals, totalSpending, totalIncome } =
+        buildSummaryFromTransactions(transactions);
+
+      return NextResponse.json(
+        {
+          categoryTotals,
+          totalSpending,
+          totalIncome,
+        },
+        { status: 200 },
+      );
+    }
+
+    return NextResponse.json({ transactions }, { status: 200 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: membership, error: membershipError } = await supabase
     .from("account_members")
@@ -77,15 +221,6 @@ export async function GET(req: Request) {
     );
   }
 
-  let monthRange: { start: string; end: string } | null = null;
-  if (selectedMonthStr && selectedYearStr) {
-    const maybeRange = getMonthRange(selectedMonthStr, selectedYearStr);
-    if ("error" in maybeRange) {
-      return NextResponse.json({ error: maybeRange.error }, { status: 400 });
-    }
-    monthRange = maybeRange;
-  }
-
   const admin = createAdminClient();
   if (summary) {
     let query = admin
@@ -105,62 +240,8 @@ export async function GET(req: Request) {
     if (error)
       return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const categoryTotalsMap = new Map<string, CategoryTotal>();
-    let totalSpending = 0;
-    let totalIncome = 0;
-
-    for (const transaction of transactions ?? []) {
-      const amount = Number(transaction.amount) || 0;
-      const transactionType = transaction.type as TransactionType;
-
-      if (transactionType === "income") {
-        totalIncome += amount;
-      } else {
-        totalSpending += amount;
-      }
-      if (!transaction.category_name) continue;
-
-      const categoryKey = `${transactionType}:${transaction.category_name}`;
-      const existingCategory = categoryTotalsMap.get(categoryKey);
-
-      if (existingCategory) {
-        existingCategory.total += amount;
-
-        if (!existingCategory.category_icon && transaction.category_icon) {
-          existingCategory.category_icon = transaction.category_icon;
-        }
-        if (
-          !existingCategory.category_icon_pack &&
-          transaction.category_icon_pack
-        ) {
-          existingCategory.category_icon_pack = transaction.category_icon_pack;
-        }
-        if (!existingCategory.category_color && transaction.category_color) {
-          existingCategory.category_color = transaction.category_color;
-        }
-
-        continue;
-      }
-
-      categoryTotalsMap.set(categoryKey, {
-        category: transaction.category_name,
-        type: transactionType,
-        total: amount,
-        category_icon: transaction.category_icon ?? undefined,
-        category_icon_pack: transaction.category_icon_pack ?? undefined,
-        category_color: transaction.category_color ?? undefined,
-      });
-    }
-
-    const categoryTotals = Array.from(categoryTotalsMap.values()).sort(
-      (a, b) => {
-        if (a.type !== b.type) {
-          return a.type === "income" ? -1 : 1;
-        }
-
-        return a.category.localeCompare(b.category);
-      },
-    );
+    const { categoryTotals, totalSpending, totalIncome } =
+      buildSummaryFromTransactions(transactions ?? []);
 
     return NextResponse.json(
       {
@@ -198,13 +279,6 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   let body: unknown;
   try {
     body = await req.json();
@@ -352,6 +426,64 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
+
+  if (isMockEnabled()) {
+    if (!hasMockAccountAccess(account_id.trim(), MOCK_USER_ID)) {
+      return NextResponse.json(
+        { error: "You do not have access to this account" },
+        { status: 403 },
+      );
+    }
+
+    if (typeof category_id === "string" && category_id.trim()) {
+      const category = getMockCategoryByIdForUser(
+        category_id.trim(),
+        MOCK_USER_ID,
+      );
+      if (!category) {
+        return NextResponse.json(
+          { error: "Invalid category_id for this user" },
+          { status: 400 },
+        );
+      }
+    }
+
+    const { id } = createMockTransactionForUser(
+      {
+        category_id:
+          typeof category_id === "string" && category_id.trim()
+            ? category_id.trim()
+            : null,
+        category_name:
+          typeof category_name === "string" ? category_name.trim() : null,
+        title: title.trim(),
+        type: normalizedType as "income" | "expense",
+        currency: normalizedCurrency,
+        amount: numericAmount,
+        note: typeof note === "string" ? note.trim() : undefined,
+        date: parsedDate,
+        account_id: account_id.trim(),
+        category_icon:
+          typeof category_icon === "string" ? category_icon.trim() : null,
+        category_icon_pack:
+          typeof category_icon_pack === "string"
+            ? category_icon_pack.trim()
+            : null,
+        category_color:
+          typeof category_color === "string" ? category_color.trim() : null,
+      },
+      MOCK_USER_ID,
+    );
+
+    return NextResponse.json({ id }, { status: 201 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: membership, error: membershipError } = await supabase
     .from("account_members")

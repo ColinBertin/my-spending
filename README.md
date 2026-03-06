@@ -18,6 +18,23 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Mock Mode (local + staging)
+
+Set this environment variable to run without Supabase auth/DB calls:
+
+```bash
+NEXT_PUBLIC_USE_MOCK=true
+```
+
+When mock mode is enabled:
+
+- Login/signup/logout run against a local mocked auth session.
+- API routes (`/api/accounts`, `/api/categories`, `/api/transactions`) use in-memory mock data.
+- Server-rendered dashboard/account pages read from the same mock dataset.
+- Seeded mock data lives in `utils/mock/data.ts`.
+
+For staging, set `NEXT_PUBLIC_USE_MOCK=true` in your staging environment variables.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
