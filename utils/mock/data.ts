@@ -23,6 +23,8 @@ type MockState = {
 export { MOCK_USER_ID } from "./constants";
 
 const GLOBAL_MOCK_STATE_KEY = "__MY_SPENDING_MOCK_STATE__";
+const GLOBAL_MOCK_STATE_VERSION_KEY = "__MY_SPENDING_MOCK_STATE_VERSION__";
+const MOCK_STATE_VERSION = 3;
 
 function createSeedState(): MockState {
   const now = new Date();
@@ -35,11 +37,14 @@ function createSeedState(): MockState {
     minute = 0,
     second = 0,
   ) => new Date(Date.UTC(year, month + monthOffset, day, hour, minute, second));
+  const prevYearMonthOffset = (monthIndex: number) => monthIndex - month - 12;
+  const currentYearMonthOffset = (monthIndex: number) => monthIndex - month;
 
   const categories: Category[] = [
     {
       id: "mock-cat-food",
       user_id: MOCK_USER_ID,
+      type: "normal",
       name: "Food",
       color: "#ef4444",
       icon: "UtensilsCrossed",
@@ -49,6 +54,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-transport",
       user_id: MOCK_USER_ID,
+      type: "normal",
       name: "Transport",
       color: "#3b82f6",
       icon: "Bus",
@@ -58,6 +64,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-salary",
       user_id: MOCK_USER_ID,
+      type: "normal",
       name: "Salary",
       color: "#10b981",
       icon: "Wallet",
@@ -67,6 +74,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-rent",
       user_id: MOCK_USER_ID,
+      type: "normal",
       name: "Rent",
       color: "#6366f1",
       icon: "Home",
@@ -76,6 +84,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-utilities",
       user_id: MOCK_USER_ID,
+      type: "normal",
       name: "Utilities",
       color: "#0ea5e9",
       icon: "Lightbulb",
@@ -85,6 +94,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-entertainment",
       user_id: MOCK_USER_ID,
+      type: "normal",
       name: "Entertainment",
       color: "#f59e0b",
       icon: "Film",
@@ -94,6 +104,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-health",
       user_id: MOCK_USER_ID,
+      type: "normal",
       name: "Health",
       color: "#22c55e",
       icon: "HeartPulse",
@@ -103,6 +114,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-household",
       user_id: MOCK_USER_ID,
+      type: "normal",
       name: "Household",
       color: "#f97316",
       icon: "Package",
@@ -112,6 +124,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-client-income",
       user_id: MOCK_USER_ID,
+      type: "professional",
       name: "Client Income",
       color: "#14b8a6",
       icon: "BriefcaseBusiness",
@@ -121,6 +134,7 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-business-tools",
       user_id: MOCK_USER_ID,
+      type: "professional",
       name: "Business Tools",
       color: "#a855f7",
       icon: "Laptop",
@@ -130,11 +144,42 @@ function createSeedState(): MockState {
     {
       id: "mock-cat-business-travel",
       user_id: MOCK_USER_ID,
+      type: "professional",
       name: "Business Travel",
       color: "#06b6d4",
       icon: "Plane",
       icon_pack: "lucide",
       created_at: d(-2, 18),
+    },
+    {
+      id: "mock-cat-sales-ja",
+      user_id: MOCK_USER_ID,
+      type: "professional",
+      name: "売上高",
+      color: "#14b8a6",
+      icon: "TrendingUp",
+      icon_pack: "lucide",
+      created_at: d(-2, 19),
+    },
+    {
+      id: "mock-cat-utilities-ja",
+      user_id: MOCK_USER_ID,
+      type: "professional",
+      name: "水道光熱費",
+      color: "#0284c7",
+      icon: "Bolt",
+      icon_pack: "lucide",
+      created_at: d(-2, 20),
+    },
+    {
+      id: "mock-cat-communication-ja",
+      user_id: MOCK_USER_ID,
+      type: "professional",
+      name: "通信費",
+      color: "#0ea5e9",
+      icon: "Wifi",
+      icon_pack: "lucide",
+      created_at: d(-2, 21),
     },
   ];
 
@@ -143,7 +188,7 @@ function createSeedState(): MockState {
       id: "mock-acc-main",
       name: "Main Account",
       type: "single",
-      currency: "USD",
+      currency: "EUR",
       created_at: d(-3, 1).toISOString(),
       updated_at: d(0, 1).toISOString(),
       account_members: [{ user_id: MOCK_USER_ID }],
@@ -161,7 +206,7 @@ function createSeedState(): MockState {
       id: "mock-acc-business",
       name: "Pro Account",
       type: "professional",
-      currency: "USD",
+      currency: "EUR",
       created_at: d(-3, 15).toISOString(),
       updated_at: d(0, 3).toISOString(),
       account_members: [{ user_id: MOCK_USER_ID }],
@@ -177,6 +222,351 @@ function createSeedState(): MockState {
       user_id: MOCK_USER_ID,
     }));
 
+  const monthLabels = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ] as const;
+
+  const professionalYearPlan = [
+    {
+      sales: 4900,
+      clientIncome: 2100,
+      utilities: 132,
+      communication: 74,
+      tools: 62,
+      travel: 88,
+    },
+    {
+      sales: 4200,
+      clientIncome: 1750,
+      utilities: 118,
+      communication: 69,
+      tools: 58,
+      travel: 36,
+    },
+    {
+      sales: 5300,
+      clientIncome: 1900,
+      utilities: 126,
+      communication: 71,
+      tools: 79,
+      travel: 94,
+    },
+    {
+      sales: 4600,
+      clientIncome: 1600,
+      utilities: 121,
+      communication: 68,
+      tools: 64,
+      travel: 42,
+    },
+    {
+      sales: 5750,
+      clientIncome: 1850,
+      utilities: 138,
+      communication: 77,
+      tools: 86,
+      travel: 105,
+    },
+    {
+      sales: 5100,
+      clientIncome: 1700,
+      utilities: 129,
+      communication: 73,
+      tools: 69,
+      travel: 58,
+    },
+    {
+      sales: 6200,
+      clientIncome: 2400,
+      utilities: 141,
+      communication: 79,
+      tools: 92,
+      travel: 122,
+    },
+    {
+      sales: 5600,
+      clientIncome: 2000,
+      utilities: 134,
+      communication: 75,
+      tools: 74,
+      travel: 66,
+    },
+    {
+      sales: 6400,
+      clientIncome: 2300,
+      utilities: 146,
+      communication: 82,
+      tools: 98,
+      travel: 137,
+    },
+    {
+      sales: 5900,
+      clientIncome: 1950,
+      utilities: 136,
+      communication: 76,
+      tools: 81,
+      travel: 84,
+    },
+    {
+      sales: 6800,
+      clientIncome: 2600,
+      utilities: 149,
+      communication: 85,
+      tools: 104,
+      travel: 151,
+    },
+    {
+      sales: 7300,
+      clientIncome: 2800,
+      utilities: 153,
+      communication: 88,
+      tools: 112,
+      travel: 168,
+    },
+  ] as const;
+
+  const professionalHistoricalTransactions: Transaction[] =
+    professionalYearPlan.flatMap((plan, monthIndex) => {
+      const monthOffset = prevYearMonthOffset(monthIndex);
+      const monthLabel = monthLabels[monthIndex];
+
+      return [
+        {
+          id: `mock-tx-ledger-sales-${monthIndex + 1}`,
+          title: `${monthLabel} Advisory Revenue`,
+          account_id: "mock-acc-business",
+          created_by: MOCK_USER_ID,
+          type: "income",
+          category_id: "mock-cat-sales-ja",
+          category_name: "売上高",
+          category_icon: "TrendingUp",
+          category_icon_pack: "lucide",
+          category_color: "#14b8a6",
+          amount: plan.sales,
+          currency: "EUR",
+          date: d(monthOffset, 5, 10, 20, 0),
+          note: "Consulting and delivery work",
+          created_at: d(monthOffset, 5, 10, 24, 0),
+          updated_at: d(monthOffset, 5, 10, 24, 0),
+        },
+        {
+          id: `mock-tx-ledger-client-${monthIndex + 1}`,
+          title: `${monthLabel} Client Maintenance`,
+          account_id: "mock-acc-business",
+          created_by: MOCK_USER_ID,
+          type: "income",
+          category_id: "mock-cat-client-income",
+          category_name: "Client Income",
+          category_icon: "BriefcaseBusiness",
+          category_icon_pack: "lucide",
+          category_color: "#14b8a6",
+          amount: plan.clientIncome,
+          currency: "EUR",
+          date: d(monthOffset, 12, 11, 10, 0),
+          note: "Recurring support contracts",
+          created_at: d(monthOffset, 12, 11, 14, 0),
+          updated_at: d(monthOffset, 12, 11, 14, 0),
+        },
+        {
+          id: `mock-tx-ledger-utilities-${monthIndex + 1}`,
+          title: `${monthLabel} Electricity and Gas`,
+          account_id: "mock-acc-business",
+          created_by: MOCK_USER_ID,
+          type: "expense",
+          category_id: "mock-cat-utilities-ja",
+          category_name: "水道光熱費",
+          category_icon: "Bolt",
+          category_icon_pack: "lucide",
+          category_color: "#0284c7",
+          amount: plan.utilities,
+          currency: "EUR",
+          date: d(monthOffset, 20, 9, 5, 0),
+          note: "Studio utilities",
+          created_at: d(monthOffset, 20, 9, 8, 0),
+          updated_at: d(monthOffset, 20, 9, 8, 0),
+        },
+        {
+          id: `mock-tx-ledger-comm-${monthIndex + 1}`,
+          title: `${monthLabel} Internet and Phone`,
+          account_id: "mock-acc-business",
+          created_by: MOCK_USER_ID,
+          type: "expense",
+          category_id: "mock-cat-communication-ja",
+          category_name: "通信費",
+          category_icon: "Wifi",
+          category_icon_pack: "lucide",
+          category_color: "#0ea5e9",
+          amount: plan.communication,
+          currency: "EUR",
+          date: d(monthOffset, 22, 8, 40, 0),
+          note: "Fiber and mobile plan",
+          created_at: d(monthOffset, 22, 8, 43, 0),
+          updated_at: d(monthOffset, 22, 8, 43, 0),
+        },
+        {
+          id: `mock-tx-ledger-tools-${monthIndex + 1}`,
+          title: `${monthLabel} Tooling Stack`,
+          account_id: "mock-acc-business",
+          created_by: MOCK_USER_ID,
+          type: "expense",
+          category_id: "mock-cat-business-tools",
+          category_name: "Business Tools",
+          category_icon: "Laptop",
+          category_icon_pack: "lucide",
+          category_color: "#a855f7",
+          amount: plan.tools,
+          currency: "EUR",
+          date: d(monthOffset, 9, 7, 55, 0),
+          note: "SaaS subscriptions",
+          created_at: d(monthOffset, 9, 7, 58, 0),
+          updated_at: d(monthOffset, 9, 7, 58, 0),
+        },
+        {
+          id: `mock-tx-ledger-travel-${monthIndex + 1}`,
+          title: `${monthLabel} Client Visit`,
+          account_id: "mock-acc-business",
+          created_by: MOCK_USER_ID,
+          type: "expense",
+          category_id: "mock-cat-business-travel",
+          category_name: "Business Travel",
+          category_icon: "Plane",
+          category_icon_pack: "lucide",
+          category_color: "#06b6d4",
+          amount: plan.travel,
+          currency: "EUR",
+          date: d(monthOffset, 26, 14, 25, 0),
+          note: "Train and local transport",
+          created_at: d(monthOffset, 26, 14, 29, 0),
+          updated_at: d(monthOffset, 26, 14, 29, 0),
+        },
+      ];
+    });
+
+  const januaryAdjustmentTransactions: Transaction[] = [
+    {
+      id: "mock-tx-adjust-jan-1",
+      title: "January Year-End Receivable Settlement",
+      account_id: "mock-acc-business",
+      created_by: MOCK_USER_ID,
+      type: "income",
+      category_id: "mock-cat-sales-ja",
+      category_name: "売上高",
+      category_icon: "TrendingUp",
+      category_icon_pack: "lucide",
+      category_color: "#14b8a6",
+      amount: 2650,
+      currency: "EUR",
+      date: d(currentYearMonthOffset(0), 6, 10, 45, 0),
+      note: "Payment for December close",
+      created_at: d(currentYearMonthOffset(0), 6, 10, 49, 0),
+      updated_at: d(currentYearMonthOffset(0), 6, 10, 49, 0),
+    },
+    {
+      id: "mock-tx-adjust-jan-2",
+      title: "January Electricity and Gas Closing",
+      account_id: "mock-acc-business",
+      created_by: MOCK_USER_ID,
+      type: "expense",
+      category_id: "mock-cat-utilities-ja",
+      category_name: "水道光熱費",
+      category_icon: "Bolt",
+      category_icon_pack: "lucide",
+      category_color: "#0284c7",
+      amount: 164,
+      currency: "EUR",
+      date: d(currentYearMonthOffset(0), 20, 9, 20, 0),
+      note: "Accrued utility payment",
+      created_at: d(currentYearMonthOffset(0), 20, 9, 23, 0),
+      updated_at: d(currentYearMonthOffset(0), 20, 9, 23, 0),
+    },
+    {
+      id: "mock-tx-adjust-jan-3",
+      title: "January Internet and Phone Charges",
+      account_id: "mock-acc-business",
+      created_by: MOCK_USER_ID,
+      type: "expense",
+      category_id: "mock-cat-communication-ja",
+      category_name: "通信費",
+      category_icon: "Wifi",
+      category_icon_pack: "lucide",
+      category_color: "#0ea5e9",
+      amount: 93,
+      currency: "EUR",
+      date: d(currentYearMonthOffset(0), 21, 8, 30, 0),
+      note: "Accrued communication expense",
+      created_at: d(currentYearMonthOffset(0), 21, 8, 33, 0),
+      updated_at: d(currentYearMonthOffset(0), 21, 8, 33, 0),
+    },
+  ];
+
+  const additionalRealisticTransactions: Transaction[] = [
+    {
+      id: "mock-tx-current-main-extra-1",
+      title: "Weekend Brunch",
+      account_id: "mock-acc-main",
+      created_by: MOCK_USER_ID,
+      type: "expense",
+      category_id: "mock-cat-food",
+      category_name: "Food",
+      category_icon: "UtensilsCrossed",
+      category_icon_pack: "lucide",
+      category_color: "#ef4444",
+      amount: 34.2,
+      currency: "EUR",
+      date: d(0, 23, 11, 50, 0),
+      note: "Cafe with friends",
+      created_at: d(0, 23, 11, 53, 0),
+      updated_at: d(0, 23, 11, 53, 0),
+    },
+    {
+      id: "mock-tx-current-main-extra-2",
+      title: "Electricity Bill",
+      account_id: "mock-acc-main",
+      created_by: MOCK_USER_ID,
+      type: "expense",
+      category_id: "mock-cat-utilities",
+      category_name: "Utilities",
+      category_icon: "Lightbulb",
+      category_icon_pack: "lucide",
+      category_color: "#0ea5e9",
+      amount: 134.6,
+      currency: "EUR",
+      date: d(0, 25, 9, 10, 0),
+      note: "",
+      created_at: d(0, 25, 9, 13, 0),
+      updated_at: d(0, 25, 9, 13, 0),
+    },
+    {
+      id: "mock-tx-current-joint-extra-1",
+      title: "House Cleaning Service",
+      account_id: "mock-acc-joint",
+      created_by: MOCK_USER_ID,
+      type: "expense",
+      category_id: "mock-cat-household",
+      category_name: "Household",
+      category_icon: "Package",
+      category_icon_pack: "lucide",
+      category_color: "#f97316",
+      amount: 89,
+      currency: "EUR",
+      date: d(0, 24, 15, 20, 0),
+      note: "Monthly deep clean",
+      created_at: d(0, 24, 15, 23, 0),
+      updated_at: d(0, 24, 15, 23, 0),
+    },
+  ];
+
   const transactions: Transaction[] = [
     // Previous month (single account)
     {
@@ -191,7 +581,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#10b981",
       amount: 3850,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 1, 8, 30, 0),
       note: "Employer payroll",
       created_at: d(-1, 1, 8, 35, 0),
@@ -209,7 +599,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#6366f1",
       amount: 1450,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 2, 9, 10, 0),
       note: "Apartment rent",
       created_at: d(-1, 2, 9, 12, 0),
@@ -227,7 +617,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#0ea5e9",
       amount: 128.3,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 5, 10, 15, 0),
       note: "",
       created_at: d(-1, 5, 10, 20, 0),
@@ -245,7 +635,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#ef4444",
       amount: 96.4,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 9, 18, 40, 0),
       note: "Groceries and household basics",
       created_at: d(-1, 9, 18, 45, 0),
@@ -263,7 +653,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#3b82f6",
       amount: 42,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 12, 7, 35, 0),
       note: "",
       created_at: d(-1, 12, 7, 38, 0),
@@ -281,7 +671,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#f59e0b",
       amount: 29.5,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 18, 20, 0, 0),
       note: "Two tickets",
       created_at: d(-1, 18, 20, 2, 0),
@@ -299,7 +689,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#22c55e",
       amount: 38,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 20, 9, 0, 0),
       note: "",
       created_at: d(-1, 20, 9, 2, 0),
@@ -375,7 +765,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#14b8a6",
       amount: 2200,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 3, 9, 0, 0),
       note: "Monthly retainer",
       created_at: d(-1, 3, 9, 5, 0),
@@ -393,7 +783,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#a855f7",
       amount: 49,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 4, 8, 10, 0),
       note: "",
       created_at: d(-1, 4, 8, 12, 0),
@@ -411,7 +801,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#06b6d4",
       amount: 32,
-      currency: "USD",
+      currency: "EUR",
       date: d(-1, 15, 9, 40, 0),
       note: "",
       created_at: d(-1, 15, 9, 42, 0),
@@ -431,7 +821,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#10b981",
       amount: 3850,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 1, 8, 30, 0),
       note: "Employer payroll",
       created_at: d(0, 1, 8, 35, 0),
@@ -449,7 +839,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#6366f1",
       amount: 1450,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 2, 9, 10, 0),
       note: "Apartment rent",
       created_at: d(0, 2, 9, 12, 0),
@@ -467,7 +857,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#ef4444",
       amount: 112.9,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 6, 18, 35, 0),
       note: "",
       created_at: d(0, 6, 18, 38, 0),
@@ -485,7 +875,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#ef4444",
       amount: 24.6,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 10, 12, 20, 0),
       note: "Office day",
       created_at: d(0, 10, 12, 24, 0),
@@ -503,7 +893,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#3b82f6",
       amount: 18.75,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 13, 19, 10, 0),
       note: "",
       created_at: d(0, 13, 19, 12, 0),
@@ -521,7 +911,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#f59e0b",
       amount: 15.99,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 16, 7, 45, 0),
       note: "",
       created_at: d(0, 16, 7, 47, 0),
@@ -539,7 +929,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#22c55e",
       amount: 27.4,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 21, 13, 0, 0),
       note: "",
       created_at: d(0, 21, 13, 4, 0),
@@ -633,7 +1023,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#14b8a6",
       amount: 2200,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 3, 9, 0, 0),
       note: "Monthly retainer",
       created_at: d(0, 3, 9, 5, 0),
@@ -651,7 +1041,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#14b8a6",
       amount: 1450,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 14, 14, 10, 0),
       note: "",
       created_at: d(0, 14, 14, 15, 0),
@@ -669,7 +1059,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#a855f7",
       amount: 49,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 4, 8, 10, 0),
       note: "",
       created_at: d(0, 4, 8, 12, 0),
@@ -687,7 +1077,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#a855f7",
       amount: 36,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 9, 9, 15, 0),
       note: "",
       created_at: d(0, 9, 9, 17, 0),
@@ -705,7 +1095,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#06b6d4",
       amount: 22.5,
-      currency: "USD",
+      currency: "EUR",
       date: d(0, 18, 7, 50, 0),
       note: "",
       created_at: d(0, 18, 7, 53, 0),
@@ -725,7 +1115,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#10b981",
       amount: 3850,
-      currency: "USD",
+      currency: "EUR",
       date: d(1, 1, 8, 30, 0),
       note: "Expected payroll",
       created_at: d(0, 26, 11, 0, 0),
@@ -743,7 +1133,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#6366f1",
       amount: 1450,
-      currency: "USD",
+      currency: "EUR",
       date: d(1, 2, 9, 10, 0),
       note: "Expected charge",
       created_at: d(0, 26, 11, 5, 0),
@@ -779,7 +1169,7 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#14b8a6",
       amount: 2200,
-      currency: "USD",
+      currency: "EUR",
       date: d(1, 3, 9, 0, 0),
       note: "Expected invoice payment",
       created_at: d(0, 26, 11, 15, 0),
@@ -797,12 +1187,15 @@ function createSeedState(): MockState {
       category_icon_pack: "lucide",
       category_color: "#a855f7",
       amount: 49,
-      currency: "USD",
+      currency: "EUR",
       date: d(1, 4, 8, 10, 0),
       note: "",
       created_at: d(0, 26, 11, 20, 0),
       updated_at: d(0, 26, 11, 20, 0),
     },
+    ...professionalHistoricalTransactions,
+    ...januaryAdjustmentTransactions,
+    ...additionalRealisticTransactions,
   ];
 
   return { accounts, accountMembers, categories, transactions };
@@ -811,10 +1204,15 @@ function createSeedState(): MockState {
 function getState(): MockState {
   const globalScope = globalThis as typeof globalThis & {
     [GLOBAL_MOCK_STATE_KEY]?: MockState;
+    [GLOBAL_MOCK_STATE_VERSION_KEY]?: number;
   };
 
-  if (!globalScope[GLOBAL_MOCK_STATE_KEY]) {
+  if (
+    !globalScope[GLOBAL_MOCK_STATE_KEY] ||
+    globalScope[GLOBAL_MOCK_STATE_VERSION_KEY] !== MOCK_STATE_VERSION
+  ) {
     globalScope[GLOBAL_MOCK_STATE_KEY] = createSeedState();
+    globalScope[GLOBAL_MOCK_STATE_VERSION_KEY] = MOCK_STATE_VERSION;
   }
 
   return globalScope[GLOBAL_MOCK_STATE_KEY];
@@ -1111,4 +1509,96 @@ export function createMockTransactionForUser(
   });
 
   return { id };
+}
+
+export function getMockTransactionByIdForUser(
+  transactionId: string,
+  userId: string,
+): Transaction | null {
+  const state = getState();
+  return (
+    state.transactions.find(
+      (transaction) =>
+        transaction.id === transactionId && transaction.created_by === userId,
+    ) ?? null
+  );
+}
+
+export function updateMockTransactionForUser(
+  transactionId: string,
+  input: {
+    title: string;
+    type: "income" | "expense";
+    currency: string;
+    amount: number;
+    date: Date;
+    category_id: string;
+    category_name: string;
+    category_icon?: string | null;
+    category_icon_pack?: string | null;
+    category_color?: string | null;
+  },
+  userId: string,
+): boolean {
+  const state = getState();
+  const transactionIndex = state.transactions.findIndex(
+    (transaction) =>
+      transaction.id === transactionId && transaction.created_by === userId,
+  );
+
+  if (transactionIndex === -1) {
+    return false;
+  }
+
+  const existingTransaction = state.transactions[transactionIndex];
+  state.transactions[transactionIndex] = {
+    ...existingTransaction,
+    title: input.title,
+    type: input.type,
+    currency: input.currency,
+    amount: input.amount,
+    date: input.date,
+    category_id: input.category_id,
+    category_name: input.category_name,
+    category_icon: input.category_icon ?? undefined,
+    category_icon_pack: input.category_icon_pack ?? undefined,
+    category_color: input.category_color ?? undefined,
+    updated_at: new Date(),
+  };
+
+  return true;
+}
+
+export function deleteMockTransactionForUser(
+  transactionId: string,
+  userId: string,
+): boolean {
+  const state = getState();
+  const before = state.transactions.length;
+  state.transactions = state.transactions.filter(
+    (transaction) =>
+      !(transaction.id === transactionId && transaction.created_by === userId),
+  );
+  return state.transactions.length < before;
+}
+
+export function deleteMockAccountForUser(
+  accountId: string,
+  userId: string,
+): boolean {
+  const state = getState();
+
+  if (!hasMockAccountAccess(accountId, userId)) {
+    return false;
+  }
+
+  state.transactions = state.transactions.filter(
+    (transaction) => transaction.account_id !== accountId,
+  );
+  state.accountMembers = state.accountMembers.filter(
+    (member) => member.account_id !== accountId,
+  );
+  state.accounts = state.accounts.filter((account) => account.id !== accountId);
+
+  return true;
 }
