@@ -1,4 +1,4 @@
-import CreateCategory from "@/app/(routes)/categories/create/create-category";
+import CreateCategory from "./create-category";
 
 export const metadata = {
   title: "Add Category",

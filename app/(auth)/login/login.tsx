@@ -2,12 +2,19 @@
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
-import { emailRegex } from "@/helpers";
 import Button from "@/components/Button";
+import FormInputField from "@/components/FormInputField";
 import { signInWithPassword } from "@/utils/authClient";
-// import { useState } from "react";
-// import Spinner from "@/components/ui/Spinner";
+import { emailRegex } from "@/helpers";
+import logo from "@/public/images/yen-icon.png";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "@/components/ui/NotificationProvider";
+import { useState, useTransition } from "react";
+import Spinner from "@/components/Spinner";
 
 type SignupInput = {
   username: string;
@@ -19,14 +26,13 @@ type SignupInput = {
 export default function Login() {
   const router = useRouter();
 
-  // const showErrorNotification = useErrorNotification();
-  // const showSuccessNotification = useSuccessNotification();
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
 
-  // const [isPending, startTransition] = useTransition();
-  // const [isFetching, setIsFetching] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [isFetching, setIsFetching] = useState(false);
 
-  // const isMutating = isFetching || isPending;
+  const isMutating = isFetching || isPending;
 
   const {
     register,
@@ -36,57 +42,31 @@ export default function Login() {
 
   async function handleLogin(data: SignupInput) {
     try {
+      setIsFetching(true);
       const { error } = await signInWithPassword(data.email, data.password);
+      setIsFetching(false);
       if (error) {
         console.error("Login error:", error);
+        showErrorNotification(error as string);
         return;
       }
-      router.push("/");
+      startTransition(() => {
+        router.push("/");
+        showSuccessNotification("Login successful !");
+      });
     } catch (err: unknown) {
+      setIsFetching(false);
       console.error("Login error:", err);
-      // setError(err.message);
     }
   }
 
-  // const onSubmit: SubmitHandler<SignupInput> = async (data) => {
-  //   setIsFetching(true);
-  //   const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT_URL}/signup/`, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       username: data.username,
-  //       email: data.email,
-  //       password: data.password,
-  //     }),
-  //   });
-
-  //   if (res.ok) {
-  //     await signIn("credentials", {
-  //       redirect: false,
-  //       username: data.username,
-  //       password: data.password,
-  //     });
-  //     startTransition(() => {
-  //       setIsFetching(false);
-  //       router.push("/");
-  //       showSuccessNotification("Signed up successfully.");
-  //     });
-  //   } else {
-  //     const error = await res.json();
-  //     startTransition(() => {
-  //       setIsFetching(false);
-  //       showErrorNotification(error.detail);
-  //     });
-  //   }
-  // };
-
-  // if (isMutating) {
-  //   return (
-  //     <div className="flex flex-col h-full w-full justify-center items-center">
-  //       <Spinner />
-  //     </div>
-  //   );
-  // }
+  if (isMutating) {
+    return (
+      <div className="flex flex-col h-full w-full justify-center items-center">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="">
@@ -94,42 +74,45 @@ export default function Login() {
         className="flex flex-col justify-center h-1/2"
         onSubmit={handleSubmit(handleLogin)}
       >
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <Image
+            src={logo}
+            alt="My Spending logo"
+            className="h-16 w-16 sm:h-20 sm:w-20"
+            priority
+          />
+          <h1 className="text-4xl sm:text-5xl font-bold text-blue-dark text-center">
+            My Spending
+          </h1>
+        </div>
         <h1 className="text-3xl font-semibold text-center text-red mb-10">
           Login
         </h1>
 
-        <div className="relative flex flex-col justify-around mb-8">
-          <input
-            type="email"
-            placeholder="Email"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700 font-medium"
-            {...register("email", {
-              required: "Email is required",
-              validate: (email) =>
-                emailRegex.test(email) ? true : "Invalid email format",
-            })}
-          />
-          {errors.email && (
-            <small className="absolute top-11 left-2 text-red-300">
-              {errors.email.message}
-            </small>
-          )}
-        </div>
+        <FormInputField
+          type="email"
+          placeholder="Email"
+          containerClassName="relative flex flex-col justify-around mb-8"
+          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          registration={register("email", {
+            required: "Email is required",
+            validate: (email) =>
+              emailRegex.test(email) ? true : "Invalid email format",
+          })}
+          error={errors.email?.message}
+        />
 
-        <div className="relative flex flex-col justify-around mb-8">
-          <input
-            type="password"
-            placeholder="Password"
-            className="border border-gray-500 rounded-xl w-56 sm:w-80 p-2 text-gray-700"
-            {...register("password", { required: "Password is required" })}
-          />
-          {errors.password && (
-            <small className="absolute top-11 left-2 text-red-300">
-              {errors.password.message}
-            </small>
-          )}
-        </div>
-        <div className="flex flex-col sm:flex-row justify-between">
+        <FormInputField
+          type="password"
+          placeholder="Password"
+          containerClassName="relative flex flex-col justify-around mb-8"
+          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          registration={register("password", {
+            required: "Password is required",
+          })}
+          error={errors.password?.message}
+        />
+        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
           <Button color="primary" type="submit" text="Log in" />
           <Button
             color="secondary"

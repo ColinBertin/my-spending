@@ -43,8 +43,11 @@ export interface Transaction {
   updated_at?: Date;
 }
 
+export type TransactionsByCategory = Record<string, Transaction[]>;
+
 export interface CategoryTotal {
   category: string;
+  type: TransactionType;
   total: number;
   category_icon?: string;
   category_icon_pack?: string;
@@ -54,6 +57,7 @@ export interface CategoryTotal {
 export interface MonthlyCategorySummary {
   categoryTotals: CategoryTotal[];
   totalSpending: number;
+  totalIncome: number;
   selectedMonth: string;
   selectedYear: string;
 }
@@ -61,14 +65,16 @@ export interface MonthlyCategorySummary {
 export interface DashboardAccountSummary {
   account: Account;
   summary: MonthlyCategorySummary;
+  transactionCount: number;
 }
 
 export interface Category {
   id: string;
+  type?: "normal" | "professional";
   user_id?: string;
   name: string;
-  color: string;
-  created_at: Date;
+  color?: string;
+  created_at?: Date;
   icon?: string;
   icon_pack?: string;
 }

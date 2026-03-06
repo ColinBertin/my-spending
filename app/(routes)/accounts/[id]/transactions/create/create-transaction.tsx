@@ -7,7 +7,12 @@ import { Controller, useForm } from "react-hook-form";
 import Loading from "./loading";
 import Calendar from "@/components/Calendar";
 import Button from "@/components/Button";
-import { useAuthUser } from "@/utils/useAuthUser";
+import FormInputField from "@/components/FormInputField";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "@/components/ui/NotificationProvider";
+import { useState, useTransition } from "react";
 
 export default function CreateTransaction({
   accountId,
@@ -17,41 +22,24 @@ export default function CreateTransaction({
   categories: Category[];
 }) {
   const router = useRouter();
-  const { user } = useAuthUser();
+  const [isPending, startTransition] = useTransition();
+  const [isFetching, setIsFetching] = useState(false);
+
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
+
+  const isMutating = isPending || isFetching;
 
   const {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<Transaction>({ mode: "onChange" });
 
-  // async function handleCreateAccount(data: Transaction) {
-  //   const id = data.categoryId;
-  //   const category = categories.find((cat) => cat.id === id);
-
-  //   const nextTransaction = {
-  //     ...data,
-  //     categoryName: category?.name || "",
-  //     categoryIcon: category?.icon || "",
-  //     categoryIconPack: category?.icon_pack || "",
-  //     categoryColor: category?.color || "",
-  //     type: data.type.toLowerCase() as TransactionType,
-  //     currency: data.currency.toLowerCase(),
-  //     userId: user?.id as string,
-  //     accountId,
-  //   };
-
-  //   try {
-  //     const newTransaction = await createTransaction(nextTransaction);
-  //     console.log("Transaction created with ID:", newTransaction);
-  //     router.push(`/accounts/${accountId}/details`);
-  //   } catch (err: unknown) {
-  //     console.error(err);
-  //   }
-  // }
-
   const onSubmit = async (values: Transaction) => {
+    setIsFetching(true);
     const id = values.category_id;
     const category = categories.find((cat) => cat.id === id);
 
@@ -71,29 +59,24 @@ export default function CreateTransaction({
     });
 
     const json = await res.json().catch(() => ({}));
+    setIsFetching(false);
 
     if (!res.ok) {
-      throw new Error(json.error ?? "Failed to create account");
+      showErrorNotification("Failed to add transaction");
+      console.error(json.error);
+      return;
     }
 
-    router.push("/");
+    startTransition(() => {
+      reset();
+      router.refresh();
+    });
+    showSuccessNotification("Transaction added !");
   };
 
-  // useEffect(() => {
-  //   if (typeof window === "undefined") return;
-  //   getCategories().then((categories) => {
-  //     const formatted = categories.map((category) => ({
-  //       id: category.id,
-  //       name: category.name,
-  //       icon: category.icon || "",
-  //       iconPack: category.iconPack || "",
-  //       iconColor: category.color,
-  //     }));
-  //     setCategories(formatted);
-  //   });
-  // }, []);
-
-  if (!user) return <Loading />;
+  if (isMutating) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full px-4 sm:px-6 pt-24 pb-12">
@@ -106,19 +89,12 @@ export default function CreateTransaction({
             New Transaction
           </h1>
 
-          <div className="relative w-full max-w-md mb-6">
-            <input
-              type="text"
-              placeholder="Title"
-              className="border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300"
-              {...register("title", { required: "Title is required" })}
-            />
-            {errors.title && (
-              <small className="absolute top-11 left-2 text-red-300">
-                {errors.title.message}
-              </small>
-            )}
-          </div>
+          <FormInputField
+            type="text"
+            placeholder="Title"
+            registration={register("title", { required: "Title is required" })}
+            error={errors.title?.message}
+          />
 
           <div className="w-full max-w-md flex flex-col gap-4 mb-6">
             <div className="relative">
@@ -155,19 +131,14 @@ export default function CreateTransaction({
             </div>
           </div>
 
-          <div className="relative w-full max-w-md mb-6">
-            <input
-              type="number"
-              placeholder="Amount"
-              className="border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300"
-              {...register("amount", { required: "Amount is required" })}
-            />
-            {errors.amount && (
-              <small className="absolute top-11 left-2 text-red-300">
-                {errors.amount.message}
-              </small>
-            )}
-          </div>
+          <FormInputField
+            type="number"
+            placeholder="Amount"
+            registration={register("amount", {
+              required: "Amount is required",
+            })}
+            error={errors.amount?.message}
+          />
 
           <div className="relative w-full max-w-md mb-6">
             <textarea

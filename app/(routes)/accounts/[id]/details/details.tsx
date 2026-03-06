@@ -53,13 +53,11 @@ export default function AccountDetails({
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        `/api/transactions?accountId=${encodeURIComponent(accountId)}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      const url = `/api/transactions?accountId=${encodeURIComponent(accountId)}&selectedMonth=${selectedMonth}&selectedYear=${selectedYear}`;
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
@@ -98,11 +96,11 @@ export default function AccountDetails({
   return (
     <div className="w-full px-4 sm:px-6 pt-24 pb-12">
       <div className="mx-auto w-full max-w-5xl flex flex-col items-center">
-        <h1 className="text-3xl font-semibold text-center text-red mb-8">
-          {accountName}
-        </h1>
-
         <div className="w-full rounded-2xl border border-blue-dark/20 bg-white p-4 sm:p-6 shadow-sm">
+          <h1 className="text-3xl font-semibold text-center text-red mb-8">
+            {accountName}
+          </h1>
+
           {chartData.length > 0 && (
             <div className="w-full flex justify-center mb-8">
               <LineChart
@@ -129,6 +127,7 @@ export default function AccountDetails({
             <Button
               type="button"
               color="secondary"
+              disabled={isFetching}
               text={isFetching ? "Loading..." : "Filter"}
               handleChange={getFilteredTransactions}
             />
@@ -140,6 +139,17 @@ export default function AccountDetails({
             </p>
           )}
 
+          <div className="mb-6 flex justify-center">
+            <Button
+              type="button"
+              handleChange={() =>
+                router.push(`/accounts/${accountId}/transactions/create`)
+              }
+              color="primary"
+              text="Add Transaction"
+            />
+          </div>
+
           <div className="w-full flex justify-center">
             {selectedTransactions && selectedTransactions.length > 0 ? (
               <TransactionList transactions={selectedTransactions} />
@@ -147,17 +157,6 @@ export default function AccountDetails({
               <p className="font-bold text-center">No transactions found.</p>
             )}
           </div>
-        </div>
-
-        <div className="mt-6">
-          <Button
-            type="button"
-            handleChange={() =>
-              router.push(`/accounts/${accountId}/transactions/create`)
-            }
-            color="primary"
-            text="Add Transaction"
-          />
         </div>
       </div>
     </div>

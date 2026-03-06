@@ -1,4 +1,9 @@
-import { Account, CategoryTotal, DashboardAccountSummary } from "@/types";
+import {
+  Account,
+  CategoryTotal,
+  DashboardAccountSummary,
+  TransactionType,
+} from "@/types";
 import Dashboard from "./dashboard";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -14,6 +19,20 @@ export const metadata = {
 
 type AccountMemberRow = {
   account: Account;
+};
+
+type TransactionSummaryRow = {
+  account_id: string | null;
+  type: "income" | "expense" | null;
+  category_name: string | null;
+  amount: number;
+  category_icon: string | null;
+  category_icon_pack: string | null;
+  category_color: string | null;
+};
+
+type TransactionCountRow = {
+  account_id: string | null;
 };
 
 export default async function DashboardPage() {
@@ -43,7 +62,9 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) {
+    redirect("/login");
+  }
 
   const { data, error } = await supabase
     .from("account_members")
@@ -52,31 +73,26 @@ export default async function DashboardPage() {
     )
     .eq("user_id", user.id);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   const accounts = (data as unknown as AccountMemberRow[]).map(
     (r) => r.account,
   );
+
   const accountIds = accounts
     .map((account) => account.id)
     .filter((id): id is string => Boolean(id));
 
-  type TransactionSummaryRow = {
-    account_id: string | null;
-    category_name: string | null;
-    amount: number;
-    category_icon: string | null;
-    category_icon_pack: string | null;
-    category_color: string | null;
-  };
-
   let summaryRows: TransactionSummaryRow[] = [];
+  let transactionCountRows: TransactionCountRow[] = [];
 
   if (accountIds.length > 0) {
     const { data: transactionData, error: transactionError } = await supabase
       .from("transactions")
       .select(
-        "account_id,category_name,amount,category_icon,category_icon_pack,category_color",
+        "account_id,type,category_name,amount,category_icon,category_icon_pack,category_color",
       )
       .in("account_id", accountIds)
       .eq("created_by", user.id)
@@ -86,32 +102,59 @@ export default async function DashboardPage() {
     if (transactionError) throw transactionError;
 
     summaryRows = (transactionData as TransactionSummaryRow[]) ?? [];
+
+    const { data: transactionCountData, error: transactionCountError } =
+      await supabase
+        .from("transactions")
+        .select("account_id")
+        .in("account_id", accountIds)
+        .eq("created_by", user.id);
+
+    if (transactionCountError) throw transactionCountError;
+
+    transactionCountRows =
+      (transactionCountData as TransactionCountRow[]) ?? [];
   }
 
-  const summariesByAccountAndCategory = new Map<
+  const summariesByAccount = new Map<
     string,
-    Map<string, CategoryTotal>
+    {
+      categoryTotals: Map<string, CategoryTotal>;
+      totalIncome: number;
+      totalSpending: number;
+    }
   >();
 
   for (const row of summaryRows) {
-    if (!row.account_id || !row.category_name) continue;
+    if (!row.account_id) continue;
 
-    if (!summariesByAccountAndCategory.has(row.account_id)) {
-      summariesByAccountAndCategory.set(
-        row.account_id,
-        new Map<string, CategoryTotal>(),
-      );
+    if (!summariesByAccount.has(row.account_id)) {
+      summariesByAccount.set(row.account_id, {
+        categoryTotals: new Map<string, CategoryTotal>(),
+        totalIncome: 0,
+        totalSpending: 0,
+      });
     }
 
-    const accountCategorySummaries = summariesByAccountAndCategory.get(
-      row.account_id,
-    );
-    if (!accountCategorySummaries) continue;
+    const accountSummary = summariesByAccount.get(row.account_id);
+    if (!accountSummary) continue;
 
-    const existingCategory = accountCategorySummaries.get(row.category_name);
+    const amount = Number(row.amount) || 0;
+
+    if (!row.type) continue;
+
+    if (row.type === "income") {
+      accountSummary.totalIncome += amount;
+    } else {
+      accountSummary.totalSpending += amount;
+    }
+    if (!row.category_name) continue;
+
+    const categoryKey = `${row.type as TransactionType}:${row.category_name}`;
+    const existingCategory = accountSummary.categoryTotals.get(categoryKey);
 
     if (existingCategory) {
-      existingCategory.total += Number(row.amount);
+      existingCategory.total += amount;
 
       if (!existingCategory.category_icon && row.category_icon) {
         existingCategory.category_icon = row.category_icon;
@@ -126,39 +169,56 @@ export default async function DashboardPage() {
       continue;
     }
 
-    accountCategorySummaries.set(row.category_name, {
+    accountSummary.categoryTotals.set(categoryKey, {
       category: row.category_name,
-      total: Number(row.amount),
+      type: row.type as TransactionType,
+      total: amount,
       category_icon: row.category_icon ?? undefined,
       category_icon_pack: row.category_icon_pack ?? undefined,
       category_color: row.category_color ?? undefined,
     });
   }
 
+  const transactionCountByAccount = new Map<string, number>();
+
+  for (const row of transactionCountRows) {
+    if (!row.account_id) continue;
+
+    transactionCountByAccount.set(
+      row.account_id,
+      (transactionCountByAccount.get(row.account_id) ?? 0) + 1,
+    );
+  }
+
   const accountSummaries: DashboardAccountSummary[] = accounts.map(
     (account) => {
       const accountId = account.id;
-      const accountCategoryTotals = accountId
-        ? summariesByAccountAndCategory.get(accountId)
+      const accountSummary = accountId
+        ? summariesByAccount.get(accountId)
         : undefined;
 
-      const categoryTotals = accountCategoryTotals
-        ? Array.from(accountCategoryTotals.values()).sort((a, b) =>
-            a.category.localeCompare(b.category),
-          )
+      const categoryTotals = accountSummary
+        ? Array.from(accountSummary.categoryTotals.values()).sort((a, b) => {
+            if (a.type !== b.type) {
+              return a.type === "income" ? -1 : 1;
+            }
+
+            return a.category.localeCompare(b.category);
+          })
         : [];
 
       return {
         account,
         summary: {
           categoryTotals,
-          totalSpending: categoryTotals.reduce(
-            (acc, item) => acc + item.total,
-            0,
-          ),
+          totalSpending: accountSummary?.totalSpending ?? 0,
+          totalIncome: accountSummary?.totalIncome ?? 0,
           selectedMonth: currentMonth,
           selectedYear: currentYearString,
         },
+        transactionCount: accountId
+          ? (transactionCountByAccount.get(accountId) ?? 0)
+          : 0,
       };
     },
   );

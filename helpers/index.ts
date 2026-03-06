@@ -1,3 +1,7 @@
+import { EditFormState } from "@/components/LedgerPreviewTable";
+import { LedgerPreviewRow } from "@/lib/ledgerPreviewRows";
+import { Transaction } from "@/types";
+
 export const emailRegex = /^\w+([+.-]\w+)*@\w+([.-]\w+)*\.\w{2,4}$/;
 
 export const formatCurrencyIntoYen = (amount: number) => {
@@ -48,6 +52,52 @@ export function getTimeOfDayGreeting() {
   } else {
     return "Good evening, ";
   }
+}
+
+export const formatNumber = (value?: number) =>
+  typeof value === "number" ? new Intl.NumberFormat("ja-JP").format(value) : "";
+
+export const CARRY_OVER_DESCRIPTIONS = new Set([
+  "前頁より繰越",
+  "前期より繰越",
+]);
+
+export function isCarryOverRow(row: LedgerPreviewRow) {
+  return (
+    row.kind === "carry" ||
+    CARRY_OVER_DESCRIPTIONS.has((row.description ?? "").trim())
+  );
+}
+
+export function toDate(value: Date | string) {
+  return value instanceof Date ? value : new Date(value);
+}
+
+export function toInputDate(value: Date | string) {
+  const date = toDate(value);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+export function toIsoDateStart(value: string) {
+  return `${value}T00:00:00.000Z`;
+}
+
+export function buildInitialEditState(transaction: Transaction): EditFormState {
+  return {
+    title: transaction.title,
+    type: transaction.type,
+    categoryId: transaction.category_id ?? "",
+    amount: String(transaction.amount),
+    date: toInputDate(transaction.date),
+    currency: (transaction.currency || "JPY").toUpperCase() as
+      | "JPY"
+      | "EUR"
+      | "USD",
+  };
 }
 
 export const colorCodes = {

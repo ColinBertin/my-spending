@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { CategoryTotal } from "@/types";
 import {
   createMockTransactionForUser,
   getMockCategoryByIdForUser,
@@ -10,6 +9,7 @@ import {
   MOCK_USER_ID,
 } from "@/utils/mock/data";
 import { isMockEnabled } from "@/utils/mock/env";
+import { CategoryTotal, TransactionType } from "@/types";
 
 const TRANSACTION_TYPES = new Set(["income", "expense"]);
 const CURRENCIES = new Set(["JPY", "EUR", "USD"]);
@@ -35,24 +35,41 @@ function getMonthRange(
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
-function buildCategoryTotals(
+function buildSummary(
   transactions: Array<{
+    type: string | null;
     category_name: string | null;
     amount: number;
     category_icon?: string | null;
     category_icon_pack?: string | null;
     category_color?: string | null;
   }>,
-): CategoryTotal[] {
+): {
+  categoryTotals: CategoryTotal[];
+  totalSpending: number;
+  totalIncome: number;
+} {
   const categoryTotalsMap = new Map<string, CategoryTotal>();
+  let totalSpending = 0;
+  let totalIncome = 0;
 
   for (const transaction of transactions) {
+    const amount = Number(transaction.amount) || 0;
+    const transactionType = transaction.type as TransactionType;
+
+    if (transactionType === "income") {
+      totalIncome += amount;
+    } else {
+      totalSpending += amount;
+    }
+
     if (!transaction.category_name) continue;
 
-    const existingCategory = categoryTotalsMap.get(transaction.category_name);
+    const categoryKey = `${transactionType}:${transaction.category_name}`;
+    const existingCategory = categoryTotalsMap.get(categoryKey);
 
     if (existingCategory) {
-      existingCategory.total += Number(transaction.amount);
+      existingCategory.total += amount;
 
       if (!existingCategory.category_icon && transaction.category_icon) {
         existingCategory.category_icon = transaction.category_icon;
@@ -70,17 +87,46 @@ function buildCategoryTotals(
       continue;
     }
 
-    categoryTotalsMap.set(transaction.category_name, {
+    categoryTotalsMap.set(categoryKey, {
       category: transaction.category_name,
-      total: Number(transaction.amount),
+      total: amount,
       category_icon: transaction.category_icon ?? undefined,
       category_icon_pack: transaction.category_icon_pack ?? undefined,
       category_color: transaction.category_color ?? undefined,
+      type: transactionType,
     });
   }
 
-  return Array.from(categoryTotalsMap.values()).sort((a, b) =>
-    a.category.localeCompare(b.category),
+  const categoryTotals = Array.from(categoryTotalsMap.values()).sort((a, b) => {
+    if (a.type !== b.type) {
+      return a.type === "income" ? -1 : 1;
+    }
+
+    return a.category.localeCompare(b.category);
+  });
+
+  return {
+    categoryTotals,
+    totalSpending,
+    totalIncome,
+  };
+}
+
+function buildSummaryFromTransactions(
+  transactions: Array<{
+    type?: string | null;
+    category_name: string | null;
+    amount: number;
+    category_icon?: string | null;
+    category_icon_pack?: string | null;
+    category_color?: string | null;
+  }>,
+) {
+  return buildSummary(
+    transactions.map((transaction) => ({
+      ...transaction,
+      type: transaction.type ?? "expense",
+    })),
   );
 }
 
@@ -130,15 +176,14 @@ export async function GET(req: Request) {
     });
 
     if (summary) {
-      const categoryTotals = buildCategoryTotals(transactions);
+      const { categoryTotals, totalSpending, totalIncome } =
+        buildSummaryFromTransactions(transactions);
 
       return NextResponse.json(
         {
           categoryTotals,
-          totalSpending: categoryTotals.reduce(
-            (acc, item) => acc + item.total,
-            0,
-          ),
+          totalSpending,
+          totalIncome,
         },
         { status: 200 },
       );
@@ -181,7 +226,7 @@ export async function GET(req: Request) {
     let query = admin
       .from("transactions")
       .select(
-        "category_name,amount,category_icon,category_icon_pack,category_color",
+        "type,category_name,amount,category_icon,category_icon_pack,category_color",
       )
       .eq("account_id", accountId)
       .eq("created_by", user.id);
@@ -195,15 +240,14 @@ export async function GET(req: Request) {
     if (error)
       return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const categoryTotals = buildCategoryTotals(transactions ?? []);
+    const { categoryTotals, totalSpending, totalIncome } =
+      buildSummaryFromTransactions(transactions ?? []);
 
     return NextResponse.json(
       {
         categoryTotals,
-        totalSpending: categoryTotals.reduce(
-          (acc, item) => acc + item.total,
-          0,
-        ),
+        totalSpending,
+        totalIncome,
       },
       { status: 200 },
     );

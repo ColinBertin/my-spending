@@ -19,11 +19,12 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, color, icon, icon_pack } = body as {
+  const { name, color, icon, icon_pack, type } = body as {
     name?: unknown;
     color?: unknown;
     icon?: unknown;
     icon_pack?: unknown;
+    type?: unknown;
   };
 
   if (typeof name !== "string" || !name.trim()) {
@@ -43,6 +44,13 @@ export async function POST(req: Request) {
     (typeof icon_pack !== "string" || !icon_pack.trim())
   ) {
     return NextResponse.json({ error: "Invalid icon pack" }, { status: 400 });
+  }
+
+  if (
+    type !== undefined &&
+    (typeof type !== "string" || (type !== "normal" && type !== "professional"))
+  ) {
+    return NextResponse.json({ error: "Invalid type" }, { status: 400 });
   }
 
   const hasIcon = typeof icon === "string" && icon.trim().length > 0;
@@ -86,6 +94,7 @@ export async function POST(req: Request) {
     color: typeof color === "string" ? color.trim() : null,
     icon: typeof icon === "string" ? icon.trim() : null,
     icon_pack: typeof icon_pack === "string" ? icon_pack.trim() : null,
+    type,
     user_id: user.id,
   });
   if (accErr)

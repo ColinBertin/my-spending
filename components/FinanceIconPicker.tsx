@@ -1,4 +1,4 @@
-import { colorCodes, financeIcons } from "@/helpers";
+import { colorCodes, financeIcons } from "../helpers";
 import { useMemo, useState } from "react";
 import * as HiIcons from "react-icons/hi";
 import * as FaIcons from "react-icons/fa";

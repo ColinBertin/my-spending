@@ -10,11 +10,20 @@ import ColorPicker from "@/components/ColorPicker";
 import { colorCodes } from "@/helpers";
 import Label from "@/components/Label";
 import { useState, useTransition } from "react";
+import Select from "@/components/Select";
+import FormInputField from "@/components/FormInputField";
+import {
+  useErrorNotification,
+  useSuccessNotification,
+} from "@/components/ui/NotificationProvider";
 
 export default function CreateCategory() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isFetching, setIsFetching] = useState(false);
+
+  const showErrorNotification = useErrorNotification();
+  const showSuccessNotification = useSuccessNotification();
 
   const isMutating = isPending || isFetching;
 
@@ -35,13 +44,18 @@ export default function CreateCategory() {
     });
     const json = await res.json().catch(() => ({}));
 
-    if (!res.ok) {
-      throw new Error(json.error ?? "Failed to create account");
-    }
     setIsFetching(false);
+
+    if (!res.ok) {
+      showErrorNotification("Failed to create account");
+      console.error(json.error);
+      return;
+    }
+
     startTransition(() => {
       router.push("/");
     });
+    showSuccessNotification("Category created !");
   };
 
   const color = useWatch({
@@ -64,18 +78,21 @@ export default function CreateCategory() {
             New Category
           </h1>
 
-          <div className="relative w-full max-w-md mb-6">
-            <input
-              type="text"
-              placeholder="Name"
-              className="border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300"
-              {...register("name", { required: "Name is required" })}
+          <FormInputField
+            type="text"
+            placeholder="Name"
+            registration={register("name", { required: "Name is required" })}
+            error={errors.name?.message}
+          />
+          <div className="relative">
+            <Select
+              defaultValue={"normal"}
+              options={[
+                { id: "normal", name: "Normal" },
+                { id: "professional", name: "Professional" },
+              ]}
+              {...register("type", { required: "Type is required" })}
             />
-            {errors.name && (
-              <small className="absolute top-11 left-2 text-red-300">
-                {errors.name.message}
-              </small>
-            )}
           </div>
 
           <div className="relative w-full flex flex-col items-center px-2 mb-6">
@@ -85,7 +102,7 @@ export default function CreateCategory() {
               control={control}
               render={({ field }) => (
                 <ColorPicker
-                  value={field.value}
+                  value={field.value as string}
                   onChange={field.onChange}
                   colors={colorCodes}
                 />

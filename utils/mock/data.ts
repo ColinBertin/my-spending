@@ -852,8 +852,10 @@ function buildCategoryTotals(transactions: Transaction[]): CategoryTotal[] {
   for (const transaction of transactions) {
     const categoryName = transaction.category_name?.trim();
     if (!categoryName) continue;
+    const categoryType = transaction.type;
 
-    const existing = totalsByCategory.get(categoryName);
+    const categoryKey = `${categoryType}:${categoryName}`;
+    const existing = totalsByCategory.get(categoryKey);
 
     if (existing) {
       existing.total += Number(transaction.amount);
@@ -870,8 +872,9 @@ function buildCategoryTotals(transactions: Transaction[]): CategoryTotal[] {
       continue;
     }
 
-    totalsByCategory.set(categoryName, {
+    totalsByCategory.set(categoryKey, {
       category: categoryName,
+      type: categoryType,
       total: Number(transaction.amount),
       category_icon: transaction.category_icon,
       category_icon_pack: transaction.category_icon_pack,
@@ -965,9 +968,21 @@ export function getMockMonthlySummaryForAccount(params: {
 }): MonthlyCategorySummary {
   const transactions = listMockTransactionsForAccount(params);
   const categoryTotals = buildCategoryTotals(transactions);
+  const totalIncome = transactions.reduce(
+    (sum, transaction) =>
+      transaction.type === "income" ? sum + Number(transaction.amount) : sum,
+    0,
+  );
+  const totalSpending = transactions.reduce(
+    (sum, transaction) =>
+      transaction.type === "expense" ? sum + Number(transaction.amount) : sum,
+    0,
+  );
+
   return {
     categoryTotals,
-    totalSpending: categoryTotals.reduce((sum, item) => sum + item.total, 0),
+    totalSpending,
+    totalIncome,
     selectedMonth: params.selectedMonth,
     selectedYear: params.selectedYear,
   };
@@ -980,15 +995,23 @@ export function getMockDashboardAccountSummaries(params: {
 }): DashboardAccountSummary[] {
   const accounts = listMockAccountsForUser(params.userId);
 
-  return accounts.map((account) => ({
-    account,
-    summary: getMockMonthlySummaryForAccount({
+  return accounts.map((account) => {
+    const transactionCount = listMockTransactionsForAccount({
       accountId: account.id,
       userId: params.userId,
-      selectedMonth: params.selectedMonth,
-      selectedYear: params.selectedYear,
-    }),
-  }));
+    }).length;
+
+    return {
+      account,
+      summary: getMockMonthlySummaryForAccount({
+        accountId: account.id,
+        userId: params.userId,
+        selectedMonth: params.selectedMonth,
+        selectedYear: params.selectedYear,
+      }),
+      transactionCount,
+    };
+  });
 }
 
 export function createMockAccountForUser(

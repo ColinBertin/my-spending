@@ -125,3 +125,75 @@
     @apply bg-background text-foreground;
   }
 }
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .ledger-preview-page {
+    padding: 0 !important;
+  }
+
+  .ledger-preview-inner {
+    max-width: none !important;
+    gap: 0 !important;
+  }
+
+  .ledger-preview-header,
+  .ledger-preview-table-wrap {
+    display: none !important;
+  }
+
+  .ledger-print-page {
+    box-shadow: none !important;
+    break-inside: avoid-page;
+    break-after: page;
+    page-break-inside: avoid;
+    page-break-after: always;
+  }
+
+  .ledger-print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .ledger-preview-table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .ledger-preview-table tr,
+  .ledger-preview-table td,
+  .ledger-preview-table th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .ledger-preview-table thead {
+    display: table-header-group;
+  }
+
+  .ledger-preview-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
