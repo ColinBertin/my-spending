@@ -3,13 +3,18 @@ import { FinanceIcon } from "@/components/FinanceIcon";
 import TransactionFlowIcon from "@/components/TransactionFlowIcon";
 import { formatCurrencyIntoYen } from "@/helpers";
 import { Category, TransactionsByCategory } from "@/types";
+import AdjustmentCard from "@/components/AdjustmentCard";
 
 type LedgerGeneratorProps = {
   categoryPreviewTransactionsByCategory: TransactionsByCategory;
   categories: Category[];
   currentYear: number;
   januaryAccountsReceivableCount: number;
+  januaryAccountsReceivableIncome: number;
+  januaryAccountsReceivableSpending: number;
   januaryAccruedExpenseCount: number;
+  januaryAccruedExpenseIncome: number;
+  januaryAccruedExpenseSpending: number;
   previousYear: number;
   transactionsByCategory: TransactionsByCategory;
 };
@@ -19,7 +24,11 @@ export default function LedgerGenerator({
   categories,
   currentYear,
   januaryAccountsReceivableCount,
+  januaryAccountsReceivableIncome,
+  januaryAccountsReceivableSpending,
   januaryAccruedExpenseCount,
+  januaryAccruedExpenseIncome,
+  januaryAccruedExpenseSpending,
   previousYear,
   transactionsByCategory,
 }: LedgerGeneratorProps) {
@@ -45,6 +54,37 @@ export default function LedgerGenerator({
   const allTransactionsNetTotal = totalIncome - totalSpending;
   const hasGeneralIncome = totalIncome > 0;
   const hasGeneralSpending = totalSpending > 0;
+  const januaryAccountsReceivableNetTotal =
+    januaryAccountsReceivableIncome - januaryAccountsReceivableSpending;
+  const januaryAccruedExpenseNetTotal =
+    januaryAccruedExpenseIncome - januaryAccruedExpenseSpending;
+  const hasJanuaryAccountsReceivableIncome =
+    januaryAccountsReceivableIncome > 0;
+  const hasJanuaryAccountsReceivableSpending =
+    januaryAccountsReceivableSpending > 0;
+  const hasJanuaryAccruedExpenseIncome = januaryAccruedExpenseIncome > 0;
+  const hasJanuaryAccruedExpenseSpending = januaryAccruedExpenseSpending > 0;
+
+  const adjustments = [
+    {
+      categoryName: "売掛金",
+      receivableCount: januaryAccountsReceivableCount,
+      hasIncome: hasJanuaryAccountsReceivableIncome,
+      hasSpending: hasJanuaryAccountsReceivableSpending,
+      income: januaryAccountsReceivableIncome,
+      spending: januaryAccountsReceivableSpending,
+      netTotal: januaryAccountsReceivableNetTotal,
+    },
+    {
+      categoryName: "未払費用",
+      receivableCount: januaryAccruedExpenseCount,
+      hasIncome: hasJanuaryAccruedExpenseIncome,
+      hasSpending: hasJanuaryAccruedExpenseSpending,
+      income: januaryAccruedExpenseIncome,
+      spending: januaryAccruedExpenseSpending,
+      netTotal: januaryAccruedExpenseNetTotal,
+    },
+  ];
 
   return (
     <div className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-24 pb-12">
@@ -216,67 +256,28 @@ export default function LedgerGenerator({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-blue-dark/20 bg-gray-50 p-4 flex flex-col gap-3">
-                <div>
-                  <h3 className="text-base font-semibold text-blue-dark leading-6">
-                    売掛金
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    January {currentYear} adjustment
-                  </p>
-                  <p className="mt-2 text-sm text-gray-600">
-                    {januaryAccountsReceivableCount} transaction
-                    {januaryAccountsReceivableCount === 1 ? "" : "s"}
-                  </p>
-                </div>
-                {januaryAccountsReceivableCount > 0 ? (
-                  <Link
-                    href={`/ledger-generator/${encodeURIComponent("売掛金")}`}
-                    className="mt-auto inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
-                  >
-                    Preview PDF
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    disabled
-                    className="mt-auto rounded-3xl bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 cursor-not-allowed"
-                  >
-                    No Transactions
-                  </button>
-                )}
-              </div>
-
-              <div className="rounded-xl border border-blue-dark/20 bg-gray-50 p-4 flex flex-col gap-3">
-                <div>
-                  <h3 className="text-base font-semibold text-blue-dark leading-6">
-                    未払費用
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    January {currentYear} adjustment
-                  </p>
-                  <p className="mt-2 text-sm text-gray-600">
-                    {januaryAccruedExpenseCount} transaction
-                    {januaryAccruedExpenseCount === 1 ? "" : "s"}
-                  </p>
-                </div>
-                {januaryAccruedExpenseCount > 0 ? (
-                  <Link
-                    href={`/ledger-generator/${encodeURIComponent("未払費用")}`}
-                    className="mt-auto inline-flex justify-center rounded-3xl bg-blue-dark px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-light"
-                  >
-                    Preview PDF
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    disabled
-                    className="mt-auto rounded-3xl bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 cursor-not-allowed"
-                  >
-                    No Transactions
-                  </button>
-                )}
-              </div>
+              {adjustments.map(
+                ({
+                  categoryName,
+                  receivableCount,
+                  hasIncome,
+                  hasSpending,
+                  income,
+                  spending,
+                  netTotal,
+                }) => (
+                  <AdjustmentCard
+                    key={categoryName}
+                    categoryName={categoryName}
+                    receivableCount={receivableCount}
+                    hasIncome={hasIncome}
+                    hasSpending={hasSpending}
+                    income={income}
+                    spending={spending}
+                    netTotal={netTotal}
+                  />
+                ),
+              )}
             </div>
           </div>
         </div>

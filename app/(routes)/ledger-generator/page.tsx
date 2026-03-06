@@ -13,6 +13,25 @@ export const metadata = {
   title: "Ledger Generator",
 };
 
+function sumIncomeAndSpending(
+  transactions: Awaited<ReturnType<typeof getTransactionsForRange>>,
+) {
+  return transactions.reduce(
+    (totals, transaction) => {
+      const amount = Number(transaction.amount) || 0;
+
+      if (transaction.type === "income") {
+        totals.totalIncome += amount;
+      } else {
+        totals.totalSpending += amount;
+      }
+
+      return totals;
+    },
+    { totalIncome: 0, totalSpending: 0 },
+  );
+}
+
 export default async function LedgerGeneratorPage() {
   const { previousYear, startIso, endIso } = getPreviousYearRange();
   const {
@@ -41,9 +60,21 @@ export default async function LedgerGeneratorPage() {
   const januaryAccountsReceivableCount = januaryTransactions.filter(
     (transaction) => transaction.type === "income",
   ).length;
+  const januaryAccountsReceivableTransactions = januaryTransactions.filter(
+    (transaction) => transaction.type === "income",
+  );
   const januaryAccruedExpenseCount = januaryTransactions.filter(
     isAccruedExpenseTransaction,
   ).length;
+  const januaryAccruedExpenseTransactions = januaryTransactions.filter(
+    isAccruedExpenseTransaction,
+  );
+  const januaryAccountsReceivableTotals = sumIncomeAndSpending(
+    januaryAccountsReceivableTransactions,
+  );
+  const januaryAccruedExpenseTotals = sumIncomeAndSpending(
+    januaryAccruedExpenseTransactions,
+  );
   const januaryCategoryPreviewTransactions = januaryTransactions.filter(
     (transaction) =>
       isJanuaryAdjustmentCategoryLedgerName(transaction.category_name),
@@ -61,7 +92,15 @@ export default async function LedgerGeneratorPage() {
       categories={categories}
       currentYear={currentYear}
       januaryAccountsReceivableCount={januaryAccountsReceivableCount}
+      januaryAccountsReceivableIncome={
+        januaryAccountsReceivableTotals.totalIncome
+      }
+      januaryAccountsReceivableSpending={
+        januaryAccountsReceivableTotals.totalSpending
+      }
       januaryAccruedExpenseCount={januaryAccruedExpenseCount}
+      januaryAccruedExpenseIncome={januaryAccruedExpenseTotals.totalIncome}
+      januaryAccruedExpenseSpending={januaryAccruedExpenseTotals.totalSpending}
       previousYear={previousYear}
       transactionsByCategory={transactionsByCategory}
     />
