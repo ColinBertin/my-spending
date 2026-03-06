@@ -8,7 +8,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AccountCard from "@/components/AccountCard";
-import Button from "@/components/Button";
+import ModalDetailsContent from "@/components/ModalDetailsContent";
 import Modal, { ModalTitleText } from "@/components/Modal";
 import Loading from "../loading";
 import { DashboardAccountSummary } from "@/types";
@@ -25,16 +25,6 @@ type DeletableAccount = {
   name: string;
   transactionCount: number;
 };
-
-function InlineSpinner() {
-  return (
-    <span
-      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
-      role="status"
-      aria-hidden="true"
-    />
-  );
-}
 
 export default function Dashboard({
   accountSummaries,
@@ -74,11 +64,6 @@ export default function Dashboard({
     setConfirmAccountName("");
     setHasConfirmedWarning(false);
   };
-
-  const canConfirmDelete =
-    !!activeDeleteAccount &&
-    confirmAccountName.trim() === activeDeleteAccount.name &&
-    hasConfirmedWarning;
 
   const handleDeleteAccount = async () => {
     if (!activeDeleteAccount) return;
@@ -132,6 +117,15 @@ export default function Dashboard({
       Icon: DocumentChartBarIcon,
     },
   ];
+  const deleteRows = activeDeleteAccount
+    ? [
+        { label: "Account", value: activeDeleteAccount.name },
+        {
+          label: "Transactions",
+          value: String(activeDeleteAccount.transactionCount),
+        },
+      ]
+    : [];
 
   return (
     <div className="pt-24 sm:pt-30 pb-20 px-4 sm:px-6 flex flex-col justify-center items-center gap-10">
@@ -165,77 +159,22 @@ export default function Dashboard({
             <ModalTitleText className="text-blue-dark">
               Delete Account
             </ModalTitleText>
-
-            <div className="space-y-2 text-sm">
-              <p className="font-medium text-gray-500">Account</p>
-              <p className="break-all text-gray-800">
-                {activeDeleteAccount.name}
-              </p>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <p className="font-medium text-gray-500">Transactions</p>
-              <p className="text-gray-800">
-                {activeDeleteAccount.transactionCount}
-              </p>
-            </div>
-
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-gray-600">
-                Type the account name to confirm
-              </span>
-              <input
-                type="text"
-                value={confirmAccountName}
-                onChange={(event) => setConfirmAccountName(event.target.value)}
-                className="w-full h-10 border border-gray-500 rounded-xl px-3 text-gray-700 font-medium outline-none focus:border-purple-300"
-              />
-            </label>
-
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <p>
-                Warning: This account can&apos;t be recovered. Deleting it will
-                also permanently remove all transactions related to this
-                account.
-              </p>
-              <label className="mt-3 flex items-start gap-2 text-sm text-red-700">
-                <input
-                  type="checkbox"
-                  checked={hasConfirmedWarning}
-                  onChange={(event) =>
-                    setHasConfirmedWarning(event.target.checked)
-                  }
-                  className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-300"
-                />
-                <span>I understand this action is permanent.</span>
-              </label>
-            </div>
-
-            <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                color="neutral"
-                text="Cancel"
-                handleChange={closeDeleteDialog}
-                disabled={isDeleting}
-              />
-              <Button
-                type="button"
-                text={
-                  isDeleting ? (
-                    <span className="inline-flex items-center gap-2">
-                      <InlineSpinner />
-                      <span>Delete</span>
-                    </span>
-                  ) : (
-                    "Delete"
-                  )
-                }
-                handleChange={handleDeleteAccount}
-                disabled={!canConfirmDelete || isDeleting}
-                className="disabled:cursor-not-allowed disabled:opacity-60"
-              />
-            </div>
+            <ModalDetailsContent
+              rows={deleteRows}
+              confirmValue={confirmAccountName}
+              setConfirmValue={setConfirmAccountName}
+              confirmTarget={activeDeleteAccount.name}
+              closeDialog={closeDeleteDialog}
+              isSaving={isDeleting}
+              handleDelete={handleDeleteAccount}
+              warning={{
+                message:
+                  "Warning: This account can't be recovered. Deleting it will also permanently remove all transactions related to this account.",
+                checkboxLabel: "I understand this action is permanent.",
+                checked: hasConfirmedWarning,
+                onChange: setHasConfirmedWarning,
+              }}
+            />
           </div>
         )}
       </Modal>

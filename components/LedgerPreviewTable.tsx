@@ -3,7 +3,6 @@
 import { ClipboardPen, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import Button from "./Button";
 import Modal, { ModalTitleText } from "./Modal";
 import { Category, Transaction, TransactionType } from "../types";
 import {
@@ -11,6 +10,15 @@ import {
   useSuccessNotification,
 } from "./ui/NotificationProvider";
 import { LedgerPreviewRow } from "../lib/ledgerPreviewRows";
+import ModalDetailsContent from "./ModalDetailsContent";
+import ModalInputForm from "./ModalInputForm";
+import {
+  buildInitialEditState,
+  formatNumber,
+  isCarryOverRow,
+  toInputDate,
+  toIsoDateStart,
+} from "@/helpers";
 
 const HEADER_TITLES = [
   "日          付\n伝票No\n生成元",
@@ -21,7 +29,7 @@ const HEADER_TITLES = [
   "残　　高",
 ];
 
-type EditFormState = {
+export type EditFormState = {
   title: string;
   type: TransactionType;
   categoryId: string;
@@ -35,81 +43,15 @@ type ActiveDialog =
   | { mode: "delete"; transaction: Transaction }
   | null;
 
-const formatNumber = (value?: number) =>
-  typeof value === "number" ? new Intl.NumberFormat("ja-JP").format(value) : "";
-
-const formFieldClassName =
-  "w-full h-10 border border-gray-500 rounded-xl px-3 text-gray-700 font-medium outline-none focus:border-purple-300";
-const CARRY_OVER_DESCRIPTIONS = new Set(["前頁より繰越", "前期より繰越"]);
-
-function isCarryOverRow(row: LedgerPreviewRow) {
-  return (
-    row.kind === "carry" ||
-    CARRY_OVER_DESCRIPTIONS.has((row.description ?? "").trim())
-  );
-}
-
-function toDate(value: Date | string) {
-  return value instanceof Date ? value : new Date(value);
-}
-
-function toInputDate(value: Date | string) {
-  const date = toDate(value);
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function toIsoDateStart(value: string) {
-  return `${value}T00:00:00.000Z`;
-}
-
-function buildInitialEditState(transaction: Transaction): EditFormState {
-  return {
-    title: transaction.title,
-    type: transaction.type,
-    categoryId: transaction.category_id ?? "",
-    amount: String(transaction.amount),
-    date: toInputDate(transaction.date),
-    currency: (transaction.currency || "JPY").toUpperCase() as
-      | "JPY"
-      | "EUR"
-      | "USD",
-  };
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[110px_1fr] gap-3 text-sm">
-      <span className="font-medium text-gray-500">{label}</span>
-      <span className="text-gray-800 break-all">{value}</span>
-    </div>
-  );
-}
-
-function InlineSpinner() {
-  return (
-    <span
-      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
-      role="status"
-      aria-hidden="true"
-    />
-  );
-}
-
 export default function LedgerPreviewTable({
   rows,
   transactions,
   categories,
-  generalLedger,
   headerTitles = HEADER_TITLES,
 }: {
   rows: LedgerPreviewRow[];
   transactions: Transaction[];
   categories: Category[];
-  generalLedger: boolean;
   headerTitles?: string[];
 }) {
   const router = useRouter();
@@ -234,12 +176,39 @@ export default function LedgerPreviewTable({
   };
 
   const activeTransaction = activeDialog?.transaction ?? null;
-  const canConfirmDelete =
-    !!activeTransaction && confirmTitle.trim() === activeTransaction.title;
   const screenRows = useMemo(
     () => rows.filter((row) => !isCarryOverRow(row)),
     [rows],
   );
+
+  const deleteRows = activeTransaction
+    ? [
+        {
+          label: "Title",
+          value: activeTransaction.title,
+        },
+        {
+          label: "Type",
+          value: activeTransaction.type === "income" ? "Income" : "Expense",
+        },
+        {
+          label: "Category",
+          value: activeTransaction.category_name || "未分類",
+        },
+        {
+          label: "Amount",
+          value: String(activeTransaction.amount),
+        },
+        {
+          label: "Currency",
+          value: String(activeTransaction.currency).toUpperCase(),
+        },
+        {
+          label: "Date",
+          value: toInputDate(activeTransaction.date),
+        },
+      ]
+    : [];
 
   return (
     <>
@@ -391,154 +360,14 @@ export default function LedgerPreviewTable({
             <ModalTitleText className="text-blue-dark">
               Update Transaction
             </ModalTitleText>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-gray-600">Title</span>
-                <input
-                  type="text"
-                  value={editValues.title}
-                  onChange={(event) =>
-                    setEditValues((current) =>
-                      current
-                        ? { ...current, title: event.target.value }
-                        : current,
-                    )
-                  }
-                  className={formFieldClassName}
-                />
-              </label>
-
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-gray-600">Type</span>
-                <select
-                  value={editValues.type}
-                  onChange={(event) =>
-                    setEditValues((current) =>
-                      current
-                        ? {
-                            ...current,
-                            type: event.target.value as TransactionType,
-                          }
-                        : current,
-                    )
-                  }
-                  className={formFieldClassName}
-                >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
-                </select>
-              </label>
-
-              <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-                <span className="font-medium text-gray-600">Category</span>
-                <select
-                  value={editValues.categoryId}
-                  onChange={(event) =>
-                    setEditValues((current) =>
-                      current
-                        ? { ...current, categoryId: event.target.value }
-                        : current,
-                    )
-                  }
-                  className={formFieldClassName}
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-gray-600">Amount</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={editValues.amount}
-                  onChange={(event) =>
-                    setEditValues((current) =>
-                      current
-                        ? { ...current, amount: event.target.value }
-                        : current,
-                    )
-                  }
-                  className={formFieldClassName}
-                />
-              </label>
-
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-gray-600">Currency</span>
-                <select
-                  value={editValues.currency}
-                  onChange={(event) =>
-                    setEditValues((current) =>
-                      current
-                        ? {
-                            ...current,
-                            currency: event.target.value as
-                              | "JPY"
-                              | "EUR"
-                              | "USD",
-                          }
-                        : current,
-                    )
-                  }
-                  className={formFieldClassName}
-                >
-                  <option value="JPY">JPY</option>
-                  <option value="EUR">EUR</option>
-                  <option value="USD">USD</option>
-                </select>
-              </label>
-
-              <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-                <span className="font-medium text-gray-600">Date</span>
-                <input
-                  type="date"
-                  value={editValues.date}
-                  onChange={(event) =>
-                    setEditValues((current) =>
-                      current
-                        ? { ...current, date: event.target.value }
-                        : current,
-                    )
-                  }
-                  className={formFieldClassName}
-                />
-              </label>
-            </div>
-
-            <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                text="Cancel"
-                color="neutral"
-                handleChange={closeDialog}
-                disabled={isSaving}
-                className="disabled:cursor-not-allowed disabled:opacity-60"
-              />
-              <Button
-                type="button"
-                text={
-                  isSaving ? (
-                    <span className="inline-flex items-center gap-2">
-                      <InlineSpinner />
-                      Saving...
-                    </span>
-                  ) : (
-                    "Save Changes"
-                  )
-                }
-                color="primary"
-                handleChange={handleUpdate}
-                disabled={isSaving}
-                className="disabled:cursor-not-allowed disabled:opacity-60"
-              />
-            </div>
+            <ModalInputForm
+              values={editValues}
+              setValues={setEditValues}
+              categories={categories}
+              isSaving={isSaving}
+              closeDialog={closeDialog}
+              handleSave={handleUpdate}
+            />
           </div>
         )}
 
@@ -547,74 +376,15 @@ export default function LedgerPreviewTable({
             <ModalTitleText className="text-red">
               Delete Transaction
             </ModalTitleText>
-
-            <div className="space-y-3 border border-gray-200 bg-gray-50 p-4">
-              <DetailRow label="Title" value={activeTransaction.title} />
-              <DetailRow
-                label="Type"
-                value={
-                  activeTransaction.type === "income" ? "Income" : "Expense"
-                }
-              />
-              <DetailRow
-                label="Category"
-                value={activeTransaction.category_name || "未分類"}
-              />
-              <DetailRow
-                label="Amount"
-                value={String(activeTransaction.amount)}
-              />
-              <DetailRow
-                label="Currency"
-                value={String(activeTransaction.currency).toUpperCase()}
-              />
-              <DetailRow
-                label="Date"
-                value={toInputDate(activeTransaction.date)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                Type{" "}
-                <span className="font-semibold">{activeTransaction.title}</span>{" "}
-                to confirm deletion.
-              </p>
-              <input
-                type="text"
-                value={confirmTitle}
-                onChange={(event) => setConfirmTitle(event.target.value)}
-                className={formFieldClassName}
-                placeholder={activeTransaction.title}
-              />
-            </div>
-
-            <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                text="Cancel"
-                color="neutral"
-                handleChange={closeDialog}
-                disabled={isSaving}
-                className="disabled:cursor-not-allowed disabled:opacity-60"
-              />
-              <Button
-                type="button"
-                text={
-                  isSaving ? (
-                    <span className="inline-flex items-center gap-2">
-                      <InlineSpinner />
-                      Deleting...
-                    </span>
-                  ) : (
-                    "Delete"
-                  )
-                }
-                handleChange={handleDelete}
-                disabled={isSaving || !canConfirmDelete}
-                className="disabled:cursor-not-allowed disabled:opacity-60"
-              />
-            </div>
+            <ModalDetailsContent
+              rows={deleteRows}
+              confirmValue={confirmTitle}
+              setConfirmValue={setConfirmTitle}
+              confirmTarget={activeTransaction.title}
+              closeDialog={closeDialog}
+              isSaving={isSaving}
+              handleDelete={handleDelete}
+            />
           </div>
         )}
       </Modal>

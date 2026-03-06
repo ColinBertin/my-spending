@@ -281,7 +281,6 @@ export default async function LedgerPreviewPage({
           rows={rows}
           transactions={previewTransactions}
           categories={categories}
-          generalLedger={ledgerMeta.generalLedger}
           headerTitles={ledgerMeta.headerTitles}
         />
       </div>
