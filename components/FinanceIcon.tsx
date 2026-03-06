@@ -3,7 +3,7 @@ import * as FaIcons from "react-icons/fa";
 import * as MdIcons from "react-icons/md";
 import * as BiIcons from "react-icons/bi";
 import type { FC } from "react";
-import { colorCodes } from "@/helpers";
+import { colorCodes } from "../helpers";
 
 interface FinanceIconProps {
   icon: string;

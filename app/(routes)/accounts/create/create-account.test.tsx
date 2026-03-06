@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CreateAccount from "./create-account";
 
 vi.mock("react", async () => {

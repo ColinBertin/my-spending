@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import logo from "../../public/images/yen-icon.png";
+import logo from "@/public/images/yen-icon.png";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoCloseOutline } from "react-icons/io5";
 import Menu from "../Menu";
@@ -48,7 +48,7 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="w-full fixed top-0 left-0 bg-blue-dark flex justify-between px-6 py-4 z-1">
+      <nav className="print-hidden fixed inset-x-0 top-0 box-border max-w-full bg-blue-dark flex justify-between px-6 py-4 z-1">
         {/* LOGO */}
         <Link href="/" className="flex items-center space-x-2">
           <h2 className="flex items-center gap-2 text-white text-2xl font-bold">
@@ -84,7 +84,7 @@ export default function NavBar() {
             navbar
               ? "fixed md:top-10 md:right-2 h-screen w-screen md:w-52 md:h-auto"
               : "hidden",
-            "flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-blue-dark md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded",
+            "print-hidden flex flex-col justify-center px-20 md:px-6 md:pt-2 md:pb-6 bg-blue-dark md:mt-8 z-40 md:shadow-[0_4px_50px_5px_rgba(100,100,100,0.1)] md:rounded",
           )}
         >
           <Menu onItemClick={closeNavbar} />

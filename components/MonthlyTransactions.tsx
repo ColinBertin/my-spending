@@ -1,6 +1,7 @@
 import { CategoryTotal } from "@/types";
 import { formatCurrencyIntoYen } from "@/helpers";
 import { FinanceIcon } from "./FinanceIcon";
+import TransactionFlowIcon from "./TransactionFlowIcon";
 
 export default function MonthlyTransactions({
   categoryTotals,
@@ -13,9 +14,10 @@ export default function MonthlyTransactions({
         <ul className="w-full max-w-sm flex flex-col items-center">
           {categoryTotals.map((item) => (
             <li
-              key={item.category}
-              className="py-1.5 flex w-full space-x-4 items-center bg-gray-50 rounded-xl px-3 mb-2"
+              key={`${item.type}-${item.category}`}
+              className="mb-2 flex w-full items-center gap-3 rounded-xl bg-gray-50 px-3 py-2"
             >
+              <TransactionFlowIcon type={item.type} className="h-7 w-7" />
               {item.category_icon && item.category_icon_pack && (
                 <FinanceIcon
                   icon={item.category_icon}
@@ -23,9 +25,17 @@ export default function MonthlyTransactions({
                   iconColor={item.category_color || ""}
                 />
               )}
-              <div className="flex flex-col">
+              <div className="flex min-w-0 flex-col">
                 <p>{item.category}</p>
-                <p>{formatCurrencyIntoYen(item.total)}</p>
+                <p
+                  className={`font-medium ${
+                    item.type === "income"
+                      ? "text-emerald-700"
+                      : "text-rose-700"
+                  }`}
+                >
+                  {formatCurrencyIntoYen(item.total)}
+                </p>
               </div>
             </li>
           ))}

@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import Loading from "./loading";
 import Calendar from "@/components/Calendar";
 import Button from "@/components/Button";
+import FormInputField from "@/components/FormInputField";
 import {
   useErrorNotification,
   useSuccessNotification,
@@ -33,6 +34,7 @@ export default function CreateTransaction({
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<Transaction>({ mode: "onChange" });
 
@@ -66,7 +68,8 @@ export default function CreateTransaction({
     }
 
     startTransition(() => {
-      router.push("/");
+      reset();
+      router.refresh();
     });
     showSuccessNotification("Transaction added !");
   };
@@ -86,19 +89,12 @@ export default function CreateTransaction({
             New Transaction
           </h1>
 
-          <div className="relative w-full max-w-md mb-6">
-            <input
-              type="text"
-              placeholder="Title"
-              className="border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300"
-              {...register("title", { required: "Title is required" })}
-            />
-            {errors.title && (
-              <small className="absolute top-11 left-2 text-red-300">
-                {errors.title.message}
-              </small>
-            )}
-          </div>
+          <FormInputField
+            type="text"
+            placeholder="Title"
+            registration={register("title", { required: "Title is required" })}
+            error={errors.title?.message}
+          />
 
           <div className="w-full max-w-md flex flex-col gap-4 mb-6">
             <div className="relative">
@@ -135,19 +131,14 @@ export default function CreateTransaction({
             </div>
           </div>
 
-          <div className="relative w-full max-w-md mb-6">
-            <input
-              type="number"
-              placeholder="Amount"
-              className="border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300"
-              {...register("amount", { required: "Amount is required" })}
-            />
-            {errors.amount && (
-              <small className="absolute top-11 left-2 text-red-300">
-                {errors.amount.message}
-              </small>
-            )}
-          </div>
+          <FormInputField
+            type="number"
+            placeholder="Amount"
+            registration={register("amount", {
+              required: "Amount is required",
+            })}
+            error={errors.amount?.message}
+          />
 
           <div className="relative w-full max-w-md mb-6">
             <textarea

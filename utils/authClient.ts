@@ -1,7 +1,7 @@
 import type { User } from "@supabase/supabase-js";
-import { createClient } from "@/utils/supabase/client";
-// import { isMockEnabled, mockAuth } from "@/utils/mockData";
-import type { AuthUser } from "@/utils/authTypes";
+import { createClient } from "./supabase/client";
+// import { isMockEnabled, mockAuth } from "./mockData";
+import type { AuthUser } from "./authTypes";
 
 function toAuthUser(user: User): AuthUser {
   return {

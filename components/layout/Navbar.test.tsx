@@ -1,4 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import type { ReactNode } from "react";
+import { describe, expect, it, vi } from "vitest";
 import Navbar from "./Navbar";
 
 vi.mock("next/image", () => ({
@@ -6,13 +8,9 @@ vi.mock("next/image", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 vi.mock("../Menu", () => ({
@@ -20,13 +18,8 @@ vi.mock("../Menu", () => ({
 }));
 
 vi.mock("@headlessui/react", () => ({
-  Transition: ({
-    show,
-    children,
-  }: {
-    show: boolean;
-    children: React.ReactNode;
-  }) => (show ? <>{children}</> : null),
+  Transition: ({ show, children }: { show: boolean; children: ReactNode }) =>
+    show ? <>{children}</> : null,
 }));
 
 describe("Navbar", () => {

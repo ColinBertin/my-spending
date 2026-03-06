@@ -1,4 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import type { ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CreateCategory from "./create-category";
 
 vi.mock("react", async () => {
@@ -46,7 +48,7 @@ vi.mock("react-hook-form", () => ({
   }: {
     render: (params: {
       field: { value: string; onChange: (...event: unknown[]) => void };
-    }) => React.ReactNode;
+    }) => ReactNode;
   }) =>
     render({
       field: {

@@ -23,7 +23,6 @@ export default function Notification({
   timeout,
   closeNotification,
 }: NotificationProps) {
-  const [isHovered, setIsHovered] = useState<boolean>(false);
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -31,13 +30,13 @@ export default function Notification({
   }, []);
 
   useEffect(() => {
-    if (show && !isHovered) {
+    if (show) {
       const timer = setTimeout(() => {
         closeNotification();
-      }, timeout || 10_000);
+      }, timeout || 8_000);
       return () => clearTimeout(timer);
     }
-  }, [show, isHovered, closeNotification, timeout]);
+  }, [show, closeNotification, timeout]);
 
   if (!isMounted) {
     return null;
@@ -64,8 +63,6 @@ export default function Notification({
           >
             <div
               className={`w-full max-w-sm ${bgColor} pointer-events-auto rounded-lg shadow-lg ring-1 ring-black/5`}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
             >
               <div className="p-4">
                 <div className="flex items-start">

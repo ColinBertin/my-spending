@@ -7,6 +7,7 @@ import Loading from "../loading";
 import Button from "@/components/Button";
 import { Account } from "@/types";
 import { useState, useTransition } from "react";
+import FormInputField from "@/components/FormInputField";
 import {
   useErrorNotification,
   useSuccessNotification,
@@ -66,19 +67,12 @@ export default function CreateAccount() {
             New Account
           </h1>
 
-          <div className="relative w-full max-w-md mb-6">
-            <input
-              type="text"
-              placeholder="Name"
-              className="border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300"
-              {...register("name", { required: "Name is required" })}
-            />
-            {errors.name && (
-              <small className="absolute top-11 left-2 text-red-300">
-                {errors.name.message}
-              </small>
-            )}
-          </div>
+          <FormInputField
+            type="text"
+            placeholder="Name"
+            registration={register("name", { required: "Name is required" })}
+            error={errors.name?.message}
+          />
 
           <div className="w-full max-w-md flex flex-col gap-4 mb-6">
             <div className="relative">

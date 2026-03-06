@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { CategoryTotal } from "@/types";
+import { CategoryTotal, TransactionType } from "@/types";
 
 const TRANSACTION_TYPES = new Set(["income", "expense"]);
 const CURRENCIES = new Set(["JPY", "EUR", "USD"]);
@@ -91,7 +91,7 @@ export async function GET(req: Request) {
     let query = admin
       .from("transactions")
       .select(
-        "category_name,amount,category_icon,category_icon_pack,category_color",
+        "type,category_name,amount,category_icon,category_icon_pack,category_color",
       )
       .eq("account_id", accountId)
       .eq("created_by", user.id);
@@ -106,14 +106,25 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
 
     const categoryTotalsMap = new Map<string, CategoryTotal>();
+    let totalSpending = 0;
+    let totalIncome = 0;
 
     for (const transaction of transactions ?? []) {
+      const amount = Number(transaction.amount) || 0;
+      const transactionType = transaction.type as TransactionType;
+
+      if (transactionType === "income") {
+        totalIncome += amount;
+      } else {
+        totalSpending += amount;
+      }
       if (!transaction.category_name) continue;
 
-      const existingCategory = categoryTotalsMap.get(transaction.category_name);
+      const categoryKey = `${transactionType}:${transaction.category_name}`;
+      const existingCategory = categoryTotalsMap.get(categoryKey);
 
       if (existingCategory) {
-        existingCategory.total += Number(transaction.amount);
+        existingCategory.total += amount;
 
         if (!existingCategory.category_icon && transaction.category_icon) {
           existingCategory.category_icon = transaction.category_icon;
@@ -131,26 +142,31 @@ export async function GET(req: Request) {
         continue;
       }
 
-      categoryTotalsMap.set(transaction.category_name, {
+      categoryTotalsMap.set(categoryKey, {
         category: transaction.category_name,
-        total: Number(transaction.amount),
+        type: transactionType,
+        total: amount,
         category_icon: transaction.category_icon ?? undefined,
         category_icon_pack: transaction.category_icon_pack ?? undefined,
         category_color: transaction.category_color ?? undefined,
       });
     }
 
-    const categoryTotals = Array.from(categoryTotalsMap.values()).sort((a, b) =>
-      a.category.localeCompare(b.category),
+    const categoryTotals = Array.from(categoryTotalsMap.values()).sort(
+      (a, b) => {
+        if (a.type !== b.type) {
+          return a.type === "income" ? -1 : 1;
+        }
+
+        return a.category.localeCompare(b.category);
+      },
     );
 
     return NextResponse.json(
       {
         categoryTotals,
-        totalSpending: categoryTotals.reduce(
-          (acc, item) => acc + item.total,
-          0,
-        ),
+        totalSpending,
+        totalIncome,
       },
       { status: 200 },
     );

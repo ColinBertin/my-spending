@@ -23,10 +23,26 @@ export default async function CreateTransactions({
     redirect("/login");
   }
 
+  const { data: account, error: accountError } = await supabase
+    .from("accounts")
+    .select("type")
+    .eq("id", id)
+    .single();
+
+  if (accountError) {
+    throw accountError;
+  }
+
+  const accountType =
+    account.type === "single" || account.type === "shared"
+      ? "normal"
+      : "professional";
+
   const { data: categories, error } = await supabase
     .from("categories")
     .select("*")
     .eq("user_id", user.id)
+    .eq("type", accountType)
     .order("created_at", { ascending: true });
 
   if (error) {
