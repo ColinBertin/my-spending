@@ -16,6 +16,11 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./test/setup.ts"],
     include: ["**/*.{test,spec}.{ts,tsx}"],
-    exclude: ["node_modules", ".next"],
+    exclude: [
+      "node_modules",
+      ".next",
+      "e2e/**",
+      "playwright.config.{ts,js,mts,mjs}",
+    ],
   },
 });
