@@ -15,7 +15,7 @@ Track your finances from daily entries to accounting-style ledger exports in one
 ### 1) Clone the project
 
 ```bash
-git clone <your-repo-url>
+gh repo clone ColinBertin/my-spending
 cd my-spending
 ```
 
