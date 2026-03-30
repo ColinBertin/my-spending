@@ -30,9 +30,9 @@ npm install
 Create a `.env.local` file at the project root:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SUPABASE_URL=****
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=****
+SUPABASE_SERVICE_ROLE_KEY=****
 ```
 
 ### 4) Run the app
@@ -75,7 +75,6 @@ npm run type-check
 
 ## What Users Can Do
 
-- Sign up, log in, and log out.
 - Create accounts with:
   - Type: `single`, `shared`, `professional`
   - Currency: `JPY`, `EUR`, `USD`
@@ -103,8 +102,6 @@ npm run type-check
 6. Preview and export ledger documents.
 
 ## Screenshots
-
-Add screenshots below when ready.
 
 ### Dashboard
 
