@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My Spending
 
-## Getting Started
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3fcf8e?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Tests](https://img.shields.io/badge/Tests-Vitest-6e9f18?logo=vitest&logoColor=white)](https://vitest.dev/)
 
-First, run the development server:
+My Spending is a finance tracking app to manage accounts, record transactions, monitor monthly activity, and generate accounting-ready ledger previews.
+
+Track your finances from daily entries to accounting-style ledger exports in one workflow.
+
+## Quick Start
+
+### 1) Clone the project
+
+```bash
+git clone <your-repo-url>
+cd my-spending
+```
+
+### 2) Install dependencies
+
+```bash
+npm install
+```
+
+### 3) Configure environment variables
+
+Create a `.env.local` file at the project root:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+### 4) Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5) Run tests (recommended)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run test
+```
 
-## Learn More
+`npm run test` runs the full test suite once using Vitest (good for CI and quick verification before pushing).
 
-To learn more about Next.js, take a look at the following resources:
+For local development, use watch mode:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run test:watch
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`npm run test:watch` re-runs related tests when files change, which is useful while implementing features or fixing bugs.
 
-## Deploy on Vercel
+### 6) Run quality checks (recommended)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run lint
+npm run type-check
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## What This App Does
+
+- Provides authenticated personal/business finance tracking.
+- Organizes money data by accounts, categories, and transactions.
+- Gives monthly and category-based summaries.
+- Offers a professional ledger generation flow for reporting and accounting tasks.
+
+## What Users Can Do
+
+- Sign up, log in, and log out.
+- Create accounts with:
+  - Type: `single`, `shared`, `professional`
+  - Currency: `JPY`, `EUR`, `USD`
+- Create categories (normal/professional) with custom icon and color.
+- Add transactions with title, amount, type (`income`/`expense`), date, note, and category.
+- Filter transactions by month/year on account details.
+- View transaction charts and lists.
+- Update or delete transactions from the ledger preview.
+- Delete accounts with confirmation safeguards.
+
+## What Users Can Generate
+
+- General ledger preview for the previous year.
+- Category-based ledger previews.
+- January adjustment ledgers for special accounting cases.
+- PDF output through print-ready ledger pages.
+
+## Typical User Flow
+
+1. Create one or more accounts.
+2. Create categories.
+3. Add income and expense transactions.
+4. Review monthly account activity.
+5. Open **Pro: Generate Ledger**.
+6. Preview and export ledger documents.
+
+## Screenshots
+
+Add screenshots below when ready.
+
+### Dashboard
+
+![Dashboard screenshot](./docs/images/dashboard.png)
+
+### Ledger Generator
+
+![Ledger generator screenshot](./docs/images/ledger-generator.png)
+
+### Ledger Preview
+
+![Ledger preview screenshot](./docs/images/ledger-preview.png)
+
+## Tech Stack
+
+- Next.js (App Router) + React + TypeScript
+- Supabase (Auth + database)
+- Tailwind CSS
+- Chart.js / react-chartjs-2
+- Vitest + Testing Library
