@@ -11,7 +11,7 @@ type FormInputFieldProps = InputHTMLAttributes<HTMLInputElement> & {
 
 const defaultContainerClassName = "relative w-full max-w-md mb-6";
 const defaultInputClassName =
-  "border border-gray-500 rounded-xl w-full h-10 px-3 text-gray-700 font-medium focus:border-purple-300";
+  "border border-gray-500 rounded-xl h-10 px-3 text-gray-700 font-medium focus:border-purple-300 w-full";
 const defaultErrorClassName = "absolute top-11 left-2 text-red-300";
 
 export default function FormInputField({

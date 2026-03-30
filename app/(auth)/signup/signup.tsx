@@ -108,7 +108,7 @@ export default function Signup() {
         <FormInputField
           placeholder="Username"
           containerClassName="relative mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          inputClassName="w-56 sm:w-full p-2 h-auto"
           registration={register("username", {
             required: "Username is required",
           })}
@@ -119,7 +119,7 @@ export default function Signup() {
           type="email"
           placeholder="Email"
           containerClassName="relative mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          inputClassName="w-56 sm:w-full p-2 h-auto"
           registration={register("email", {
             required: "Email is required",
             validate: (email) =>
@@ -132,7 +132,7 @@ export default function Signup() {
           type="password"
           placeholder="Password"
           containerClassName="relative mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          inputClassName="w-56 sm:w-full p-2 h-auto"
           registration={register("password", {
             required: "Password is required",
           })}
@@ -143,7 +143,7 @@ export default function Signup() {
           type="password"
           placeholder="Confirm Password"
           containerClassName="relative mb-12"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          inputClassName="w-56 sm:w-full p-2 h-auto"
           registration={register("confirmPassword", {
             validate: (value, formValues) =>
               value === formValues.password || "Passwords do not match",

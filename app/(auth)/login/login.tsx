@@ -93,7 +93,7 @@ export default function Login() {
           type="email"
           placeholder="Email"
           containerClassName="relative flex flex-col justify-around mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          inputClassName="w-56 sm:w-full p-2 h-auto"
           registration={register("email", {
             required: "Email is required",
             validate: (email) =>
@@ -106,7 +106,7 @@ export default function Login() {
           type="password"
           placeholder="Password"
           containerClassName="relative flex flex-col justify-around mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
+          inputClassName="w-56 sm:w-full p-2 h-auto"
           registration={register("password", {
             required: "Password is required",
           })}
