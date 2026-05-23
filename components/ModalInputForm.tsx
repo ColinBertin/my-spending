@@ -119,25 +119,12 @@ export default function ModalInputForm({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-600">Currency</span>
-          <select
-            disabled
+          <input
+            type="text"
+            readOnly
             value={values.currency}
-            onChange={(event) =>
-              setValues((current) =>
-                current
-                  ? {
-                      ...current,
-                      currency: event.target.value as "JPY" | "EUR" | "USD",
-                    }
-                  : current,
-              )
-            }
-            className={formFieldClassName}
-          >
-            <option value="JPY">JPY</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-          </select>
+            className={`${formFieldClassName} cursor-default bg-gray-50 text-gray-400`}
+          />
         </label>
 
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
