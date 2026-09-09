@@ -7,8 +7,29 @@ type RouteContext = {
 };
 
 async function getAuthorizedAccount(accountId: string, userId: string) {
-  const supabase = await createClient();
   const admin = createAdminClient();
+
+  const { data: membership, error: membershipError } = await admin
+    .from("account_members")
+    .select("account_id")
+    .eq("account_id", accountId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (membershipError) {
+    return {
+      error: NextResponse.json(
+        { error: membershipError.message },
+        { status: 400 },
+      ),
+    };
+  }
+
+  if (!membership) {
+    return {
+      error: NextResponse.json({ error: "Account not found" }, { status: 404 }),
+    };
+  }
 
   const { data: account, error: accountError } = await admin
     .from("accounts")
@@ -28,31 +49,6 @@ async function getAuthorizedAccount(accountId: string, userId: string) {
   if (!account) {
     return {
       error: NextResponse.json({ error: "Account not found" }, { status: 404 }),
-    };
-  }
-
-  const { data: membership, error: membershipError } = await supabase
-    .from("account_members")
-    .select("account_id")
-    .eq("account_id", accountId)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (membershipError) {
-    return {
-      error: NextResponse.json(
-        { error: membershipError.message },
-        { status: 400 },
-      ),
-    };
-  }
-
-  if (!membership) {
-    return {
-      error: NextResponse.json(
-        { error: "You do not have access to this account" },
-        { status: 403 },
-      ),
     };
   }
 
