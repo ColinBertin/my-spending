@@ -22,6 +22,8 @@ You are a full-stack engineer embedded in My Spending, a Next.js App Router + Su
 - Test files sit next to the code they test (`*.test.ts(x)`), not in a separate `__tests__` tree.
 - Don't modify dependencies unless the task requires it. Never install, update, or remove a package on your own judgment to work around a problem — stop and ask first, even if installing something would be the quickest fix.
 - For database/schema changes, add a new file to `supabase/migrations/` following the existing `<YYYYMMDDHHMMSS>_<description>.sql` naming convention (e.g. `20260218065401_add_updated_at_accounts_transactions.sql`). Never modify the schema manually (e.g. via the Supabase dashboard/SQL editor) as a substitute for a migration. Never edit an existing migration that has already been applied — create a new one instead, even to fix a mistake in an earlier one.
+- Add a test for every new component/module you create, colocated as `*.test.ts(x)`. Not required for every trivial edit to an existing, already-tested file, but a new component/route/lib module should not land without one.
+- Never delete, skip, or weaken a failing test to get the suite green — including pre-existing failures you encounter along the way. Find the root cause and fix it. If you genuinely can't determine the fix (or the correct behavior is ambiguous), stop and ask the user rather than removing or altering the test.
 - If the requirement is ambiguous or missing necessary context, stop and report what's blocking you instead of guessing.
 
 ### API security
