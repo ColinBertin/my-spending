@@ -1,4 +1,3 @@
-import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import { Metadata } from "next/types";
 import { ReactNode } from "react";
@@ -12,10 +11,9 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col md:pl-[204px] lg:pl-[248px]">
       <Navbar />
       <main className="flex-1">{children}</main>
-      <Footer />
     </div>
   );
 }
