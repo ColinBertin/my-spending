@@ -13,12 +13,13 @@ import Modal, { ModalTitleText } from "@/components/Modal";
 import Loading from "../loading";
 import { DashboardAccountSummary } from "@/types";
 import { useAuthUser } from "@/utils/useAuthUser";
-import { getTimeOfDayGreeting } from "@/helpers";
+import { getTimeOfDayGreeting, months } from "@/helpers";
 import {
   useErrorNotification,
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
 import QuickLink from "@/components/QuickLink";
+import Select from "@/components/Select";
 
 type DeletableAccount = {
   id: string;
@@ -35,11 +36,25 @@ export default function Dashboard({
   const { user, loading } = useAuthUser();
   const showErrorNotification = useErrorNotification();
   const showSuccessNotification = useSuccessNotification();
+
+  const today = new Date();
+  const month = today
+    .toLocaleString("default", { month: "long" })
+    .toUpperCase();
+  const year = today.getFullYear();
+
   const [activeDeleteAccount, setActiveDeleteAccount] =
     useState<DeletableAccount | null>(null);
   const [confirmAccountName, setConfirmAccountName] = useState("");
   const [hasConfirmedWarning, setHasConfirmedWarning] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<number>(9);
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
+
+  const years = Array.from({ length: 8 }, (_, i) => year - 5 + i).map(
+    (year) => ({ id: year.toString(), name: year.toString() }),
+  );
+
   const accountSummariesWithId = accountSummaries.filter(
     (
       accountSummary,
@@ -129,10 +144,39 @@ export default function Dashboard({
 
   return (
     <div className="pt-24 sm:pt-30 pb-20 px-4 sm:px-6 flex flex-col justify-center items-center gap-10">
-      <h2 className="text-3xl font-bold">
-        {getTimeOfDayGreeting()}
-        {userName || "there"}!
-      </h2>
+      <header>
+        <small>
+          {month} {year} · MONTH TO DATE
+        </small>
+        <h2 className="text-2xl font-bold">
+          {getTimeOfDayGreeting()}
+          {userName || "there"}!
+        </h2>
+        <div className="inline-flex">
+          <select
+            className="h-10 border border-gray-500 rounded-l px-3 focus:z-10 focus:relative focus:border-purple-300 focus:outline-none"
+            defaultValue={String(selectedMonth)}
+            onChange={(e) => console.log(e.target.value)}
+          >
+            {months.map((month) => (
+              <option key={month.id} value={month.id}>
+                {month.name}
+              </option>
+            ))}
+          </select>
+          <select
+            className="h-10 border border-l-0 border-gray-500 rounded-r px-3 focus:z-10 focus:relative focus:border-purple-300 focus:outline-none"
+            defaultValue={String(selectedYear)}
+            onChange={(e) => console.log(e.target.value)}
+          >
+            {years.map((y) => (
+              <option key={y.id} value={y.id}>
+                {y.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </header>
       <div className="w-full max-w-6xl grid grid-cols-1 xl:grid-cols-2 gap-5">
         {accountSummariesWithId.map((accountSummary) => (
           <AccountCard
