@@ -1,6 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
 import AccountDetails from "./details";
 import { redirect } from "next/navigation";
+import {
+  getMockAccountById,
+  listMockTransactionsForAccount,
+  MOCK_USER_ID,
+} from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 
 export const metadata = {
   title: "Transaction Details",
@@ -19,6 +25,28 @@ export default async function AccountDetailsPage({
   const end = new Date(
     Date.UTC(currentYear, currentMonthIndex + 1, 1, 0, 0, 0),
   );
+
+  if (isMockEnabled()) {
+    const account = getMockAccountById(id);
+    if (!account) redirect("/");
+
+    const transactions = listMockTransactionsForAccount({
+      accountId: id,
+      userId: MOCK_USER_ID,
+      selectedMonth: (currentMonthIndex + 1).toString(),
+      selectedYear: currentYear.toString(),
+    });
+
+    return (
+      <AccountDetails
+        accountId={id}
+        transactions={transactions}
+        initialMonth={(currentMonthIndex + 1).toString()}
+        initialYear={currentYear.toString()}
+        accountName={account?.name ?? "Account"}
+      />
+    );
+  }
 
   const supabase = await createClient();
 

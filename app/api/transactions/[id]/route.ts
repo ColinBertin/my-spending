@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import {
+  deleteMockTransactionForUser,
+  getMockCategoryByIdForUser,
+  getMockTransactionByIdForUser,
+  hasMockAccountAccess,
+  MOCK_USER_ID,
+  updateMockTransactionForUser,
+} from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 
 const TRANSACTION_TYPES = new Set(["income", "expense"]);
 const CURRENCIES = new Set(["JPY", "EUR", "USD"]);
@@ -102,15 +111,6 @@ async function getCategoryForUser(categoryId: string, userId: string) {
 }
 
 export async function PATCH(req: Request, context: RouteContext) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { id } = await context.params;
 
   let body: unknown;
@@ -182,6 +182,72 @@ export async function PATCH(req: Request, context: RouteContext) {
     );
   }
 
+  if (isMockEnabled()) {
+    const transaction = getMockTransactionByIdForUser(id, MOCK_USER_ID);
+    if (!transaction) {
+      return NextResponse.json(
+        { error: "Transaction not found" },
+        { status: 404 },
+      );
+    }
+
+    if (
+      !transaction.account_id ||
+      !hasMockAccountAccess(transaction.account_id, MOCK_USER_ID)
+    ) {
+      return NextResponse.json(
+        { error: "You do not have access to this account" },
+        { status: 403 },
+      );
+    }
+
+    const category = getMockCategoryByIdForUser(
+      category_id.trim(),
+      MOCK_USER_ID,
+    );
+    if (!category) {
+      return NextResponse.json(
+        { error: "Invalid category_id for this user" },
+        { status: 400 },
+      );
+    }
+
+    const updated = updateMockTransactionForUser(
+      id,
+      {
+        title: title.trim(),
+        type: normalizedType as "income" | "expense",
+        currency: normalizedCurrency,
+        amount: numericAmount,
+        date: parsedDate,
+        category_id: category.id,
+        category_name: category.name,
+        category_icon: category.icon ?? null,
+        category_icon_pack: category.icon_pack ?? null,
+        category_color: category.color ?? null,
+      },
+      MOCK_USER_ID,
+    );
+
+    if (!updated) {
+      return NextResponse.json(
+        { error: "Transaction not found" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ ok: true }, { status: 200 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const authorized = await getAuthorizedTransaction(id, user.id);
   if ("error" in authorized) {
     return authorized.error;
@@ -221,15 +287,6 @@ export async function PATCH(req: Request, context: RouteContext) {
 }
 
 export async function DELETE(req: Request, context: RouteContext) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { id } = await context.params;
 
   let body: unknown = {};
@@ -249,6 +306,45 @@ export async function DELETE(req: Request, context: RouteContext) {
       { error: "confirmTitle is required" },
       { status: 400 },
     );
+  }
+
+  if (isMockEnabled()) {
+    const transaction = getMockTransactionByIdForUser(id, MOCK_USER_ID);
+    if (!transaction) {
+      return NextResponse.json(
+        { error: "Transaction not found" },
+        { status: 404 },
+      );
+    }
+
+    if (
+      !transaction.account_id ||
+      !hasMockAccountAccess(transaction.account_id, MOCK_USER_ID)
+    ) {
+      return NextResponse.json(
+        { error: "You do not have access to this account" },
+        { status: 403 },
+      );
+    }
+
+    if (transaction.title !== confirmTitle.trim()) {
+      return NextResponse.json(
+        { error: "Confirmation title does not match" },
+        { status: 400 },
+      );
+    }
+
+    deleteMockTransactionForUser(id, MOCK_USER_ID);
+    return NextResponse.json({ ok: true }, { status: 200 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const authorized = await getAuthorizedTransaction(id, user.id);

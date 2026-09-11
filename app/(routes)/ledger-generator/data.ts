@@ -1,6 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { Category, Transaction, TransactionsByCategory } from "@/types";
+import {
+  listMockAccountsForUser,
+  listMockCategoriesForUser,
+  listMockTransactionsForAccount,
+  MOCK_USER_ID,
+} from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 
 type AccountMemberWithAccount = {
   account_id?: string;
@@ -87,6 +94,21 @@ export function getPreviousMonthRange() {
 }
 
 export async function getProfessionalLedgerContext(): Promise<ProfessionalLedgerContext> {
+  if (isMockEnabled()) {
+    const accounts = listMockAccountsForUser(MOCK_USER_ID);
+    const professionalAccountId =
+      accounts.find((account) => account.type === "professional")?.id ?? null;
+    const categories = listMockCategoriesForUser(MOCK_USER_ID).filter(
+      (category) => category.type === "professional" || category.type == null,
+    );
+
+    return {
+      userId: MOCK_USER_ID,
+      professionalAccountId,
+      categories,
+    };
+  }
+
   const supabase = await createClient();
 
   const {
@@ -137,6 +159,27 @@ export async function getTransactionsForRange(
 ) {
   if (!professionalAccountId) {
     return [] as Transaction[];
+  }
+
+  if (isMockEnabled()) {
+    const categoryNames = new Set(categories.map((category) => category.name));
+    const startMs = new Date(range.startIso).getTime();
+    const endMs = new Date(range.endIso).getTime();
+
+    return listMockTransactionsForAccount({
+      accountId: professionalAccountId,
+      userId,
+    }).filter((transaction) => {
+      if (
+        categoryNames.size > 0 &&
+        !categoryNames.has(transaction.category_name)
+      ) {
+        return false;
+      }
+
+      const time = new Date(transaction.date).getTime();
+      return time >= startMs && time < endMs;
+    });
   }
 
   const supabase = await createClient();

@@ -7,6 +7,7 @@ import Image from "next/image";
 
 import { emailRegex } from "@/helpers";
 import Button from "@/components/Button";
+import { isMockEnabled } from "@/utils/mock/env";
 import FormInputField from "@/components/FormInputField";
 import logo from "@/public/images/yen-icon.png";
 import { signUpWithPassword } from "@/utils/authClient";
@@ -73,10 +74,9 @@ export default function Signup() {
   //     `${location.origin}/auth/callback`,
   //   );
 
-  //   if (error) {
-  //     console.error("Google sign-in error:", error);
-  //   }
-  // }
+  if (isMockEnabled()) {
+    router.push("/");
+  }
 
   if (isMutating) {
     return (

@@ -66,6 +66,23 @@ npm run lint
 npm run type-check
 ```
 
+## Mock Mode (local + staging)
+
+Set this environment variable to run without Supabase auth/DB calls:
+
+```bash
+NEXT_PUBLIC_USE_MOCK=true
+```
+
+When mock mode is enabled:
+
+- Login/signup/logout run against a local mocked auth session.
+- API routes (`/api/accounts`, `/api/categories`, `/api/transactions`) use in-memory mock data.
+- Server-rendered dashboard/account pages read from the same mock dataset.
+- Seeded mock data lives in `utils/mock/data.ts`.
+
+For staging, set `NEXT_PUBLIC_USE_MOCK=true` in your staging environment variables.
+
 ## What This App Does
 
 - Provides authenticated personal/business finance tracking.

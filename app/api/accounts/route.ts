@@ -1,20 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { createMockAccountForUser, MOCK_USER_ID } from "@/utils/mock/data";
+import { isMockEnabled } from "@/utils/mock/env";
 
 const ACCOUNT_TYPES = new Set(["single", "shared", "professional"]);
 const CURRENCIES = new Set(["JPY", "EUR", "USD"]);
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   let body: unknown;
   try {
     body = await req.json();
@@ -53,6 +46,28 @@ export async function POST(req: Request) {
       { error: "Currency must be JPY, EUR, or USD" },
       { status: 400 },
     );
+  }
+
+  if (isMockEnabled()) {
+    const { id } = createMockAccountForUser(
+      {
+        name: name.trim(),
+        type: type as "single" | "shared" | "professional",
+        currency: normalizedCurrency,
+      },
+      MOCK_USER_ID,
+    );
+
+    return NextResponse.json({ id }, { status: 201 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const admin = createAdminClient();
