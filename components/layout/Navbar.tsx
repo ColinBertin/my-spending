@@ -20,10 +20,10 @@ const instrumentSans = Instrument_Sans({
 const navItems = [
   { label: "Dashboard", href: "/" },
   { label: "Accounts", href: "/accounts/create" },
-  { label: "Categories", href: "/categories/create" },
+  { label: "Categories", href: "/categories" },
   { label: "Ledger", href: "/ledger-generator" },
-  { label: "Reports", href: "/categories/create" },
-  { label: "Settings", href: "/categories/create" },
+  { label: "Reports", href: "/reports" },
+  { label: "Settings", href: "/settings" },
 ];
 
 export default function NavBar() {
