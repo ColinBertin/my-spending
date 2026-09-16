@@ -43,6 +43,21 @@ export interface Transaction {
   updated_at?: Date;
 }
 
+export interface MonthlyTransactionSummary {
+  net: number;
+  totalIncome: number;
+  totalSpending: number;
+  transactionCount: number;
+}
+
+export interface MonthlyFlow {
+  label: string;
+  year: number;
+  month: number;
+  totalIncome: number;
+  totalSpending: number;
+}
+
 export type TransactionsByCategory = Record<string, Transaction[]>;
 
 export interface CategoryTotal {

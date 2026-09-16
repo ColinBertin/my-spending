@@ -1,9 +1,4 @@
-import {
-  Account,
-  CategoryTotal,
-  DashboardAccountSummary,
-  TransactionType,
-} from "@/types";
+import { Account } from "@/types";
 import Dashboard from "./dashboard";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -26,8 +21,10 @@ type TransactionSummaryRow = {
   category_color: string | null;
 };
 
-type TransactionCountRow = {
-  account_id: string | null;
+type MonthlyFlowTransactionRow = {
+  date: string;
+  type: "income" | "expense" | null;
+  amount: number;
 };
 
 export default async function DashboardPage() {
@@ -35,10 +32,10 @@ export default async function DashboardPage() {
   const now = new Date();
   const currentYear = now.getUTCFullYear();
   const currentMonthIndex = now.getUTCMonth();
-  const currentMonth = (currentMonthIndex + 1).toString();
-  const currentYearString = currentYear.toString();
-  const start = new Date(Date.UTC(currentYear, currentMonthIndex, 1, 0, 0, 0));
-  const end = new Date(
+  const currentMonthStart = new Date(
+    Date.UTC(currentYear, currentMonthIndex, 1, 0, 0, 0),
+  );
+  const currentMonthEnd = new Date(
     Date.UTC(currentYear, currentMonthIndex + 1, 1, 0, 0, 0),
   );
 
@@ -70,7 +67,6 @@ export default async function DashboardPage() {
     .filter((id): id is string => Boolean(id));
 
   let summaryRows: TransactionSummaryRow[] = [];
-  let transactionCountRows: TransactionCountRow[] = [];
 
   if (accountIds.length > 0) {
     const { data: transactionData, error: transactionError } = await supabase
@@ -80,146 +76,97 @@ export default async function DashboardPage() {
       )
       .in("account_id", accountIds)
       .eq("created_by", user.id)
-      .gte("date", start.toISOString())
-      .lt("date", end.toISOString());
+      .gte("date", currentMonthStart.toISOString())
+      .lt("date", currentMonthEnd.toISOString());
 
     if (transactionError) {
       throw transactionError;
     }
 
     summaryRows = (transactionData as TransactionSummaryRow[]) ?? [];
-
-    const { data: transactionCountData, error: transactionCountError } =
-      await supabase
-        .from("transactions")
-        .select("account_id")
-        .in("account_id", accountIds)
-        .eq("created_by", user.id);
-
-    if (transactionCountError) {
-      throw transactionCountError;
-    }
-
-    transactionCountRows =
-      (transactionCountData as TransactionCountRow[]) ?? [];
   }
 
-  const summariesByAccount = new Map<
-    string,
-    {
-      categoryTotals: Map<string, CategoryTotal>;
-      totalIncome: number;
-      totalSpending: number;
-    }
-  >();
+  const monthlySummary = summaryRows.reduce(
+    (acc, row) => {
+      const amount = Number(row.amount) || 0;
 
-  for (const row of summaryRows) {
-    if (!row.account_id) {
-      continue;
-    }
-
-    if (!summariesByAccount.has(row.account_id)) {
-      summariesByAccount.set(row.account_id, {
-        categoryTotals: new Map<string, CategoryTotal>(),
-        totalIncome: 0,
-        totalSpending: 0,
-      });
-    }
-
-    const accountSummary = summariesByAccount.get(row.account_id);
-    if (!accountSummary) {
-      continue;
-    }
-
-    const amount = Number(row.amount) || 0;
-
-    if (!row.type) {
-      continue;
-    }
-
-    if (row.type === "income") {
-      accountSummary.totalIncome += amount;
-    } else {
-      accountSummary.totalSpending += amount;
-    }
-    if (!row.category_name) {
-      continue;
-    }
-
-    const categoryKey = `${row.type as TransactionType}:${row.category_name}`;
-    const existingCategory = accountSummary.categoryTotals.get(categoryKey);
-
-    if (existingCategory) {
-      existingCategory.total += amount;
-
-      if (!existingCategory.category_icon && row.category_icon) {
-        existingCategory.category_icon = row.category_icon;
-      }
-      if (!existingCategory.category_icon_pack && row.category_icon_pack) {
-        existingCategory.category_icon_pack = row.category_icon_pack;
-      }
-      if (!existingCategory.category_color && row.category_color) {
-        existingCategory.category_color = row.category_color;
+      if (row.type === "income") {
+        acc.totalIncome += amount;
+      } else if (row.type === "expense") {
+        acc.totalSpending += amount;
       }
 
-      continue;
-    }
+      acc.transactionCount += 1;
+      acc.net = acc.totalIncome - acc.totalSpending;
 
-    accountSummary.categoryTotals.set(categoryKey, {
-      category: row.category_name,
-      type: row.type as TransactionType,
-      total: amount,
-      category_icon: row.category_icon ?? undefined,
-      category_icon_pack: row.category_icon_pack ?? undefined,
-      category_color: row.category_color ?? undefined,
-    });
-  }
-
-  const transactionCountByAccount = new Map<string, number>();
-
-  for (const row of transactionCountRows) {
-    if (!row.account_id) {
-      continue;
-    }
-
-    transactionCountByAccount.set(
-      row.account_id,
-      (transactionCountByAccount.get(row.account_id) ?? 0) + 1,
-    );
-  }
-
-  const accountSummaries: DashboardAccountSummary[] = accounts.map(
-    (account) => {
-      const accountId = account.id;
-      const accountSummary = accountId
-        ? summariesByAccount.get(accountId)
-        : undefined;
-
-      const categoryTotals = accountSummary
-        ? Array.from(accountSummary.categoryTotals.values()).sort((a, b) => {
-            if (a.type !== b.type) {
-              return a.type === "income" ? -1 : 1;
-            }
-
-            return a.category.localeCompare(b.category);
-          })
-        : [];
-
-      return {
-        account,
-        summary: {
-          categoryTotals,
-          totalSpending: accountSummary?.totalSpending ?? 0,
-          totalIncome: accountSummary?.totalIncome ?? 0,
-          selectedMonth: currentMonth,
-          selectedYear: currentYearString,
-        },
-        transactionCount: accountId
-          ? (transactionCountByAccount.get(accountId) ?? 0)
-          : 0,
-      };
+      return acc;
     },
+    { totalIncome: 0, totalSpending: 0, transactionCount: 0, net: 0 },
   );
 
-  return <Dashboard accountSummaries={accountSummaries} />;
+  const twelveMonthsAgoStart = new Date(
+    Date.UTC(currentYear, currentMonthIndex - 11, 1, 0, 0, 0),
+  );
+
+  let monthlyFlowRows: MonthlyFlowTransactionRow[] = [];
+
+  if (accountIds.length > 0) {
+    const { data: monthlyFlowData, error: monthlyFlowError } = await supabase
+      .from("transactions")
+      .select("date,type,amount")
+      .in("account_id", accountIds)
+      .eq("created_by", user.id)
+      .gte("date", twelveMonthsAgoStart.toISOString())
+      .lt("date", currentMonthEnd.toISOString());
+
+    if (monthlyFlowError) {
+      throw monthlyFlowError;
+    }
+
+    monthlyFlowRows = (monthlyFlowData as MonthlyFlowTransactionRow[]) ?? [];
+  }
+
+  const twelveMonthFlow = Array.from({ length: 12 }, (_, i) => {
+    const monthDate = new Date(
+      Date.UTC(currentYear, currentMonthIndex - 11 + i, 1),
+    );
+    const monthEnd = new Date(
+      Date.UTC(monthDate.getUTCFullYear(), monthDate.getUTCMonth() + 1, 1),
+    );
+
+    const totals = monthlyFlowRows.reduce(
+      (acc, row) => {
+        const rowDate = new Date(row.date);
+
+        if (rowDate < monthDate || rowDate >= monthEnd) {
+          return acc;
+        }
+
+        const amount = Number(row.amount) || 0;
+
+        if (row.type === "income") {
+          acc.totalIncome += amount;
+        } else if (row.type === "expense") {
+          acc.totalSpending += amount;
+        }
+
+        return acc;
+      },
+      { totalIncome: 0, totalSpending: 0 },
+    );
+
+    return {
+      label: monthDate.toLocaleString("default", { month: "short" }),
+      year: monthDate.getUTCFullYear(),
+      month: monthDate.getUTCMonth() + 1,
+      ...totals,
+    };
+  });
+
+  return (
+    <Dashboard
+      monthlyTransactionSummary={monthlySummary}
+      twelveMonthFlow={twelveMonthFlow}
+    />
+  );
 }

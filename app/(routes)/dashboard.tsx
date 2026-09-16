@@ -1,41 +1,30 @@
 "use client";
 
-import {
-  CreditCardIcon,
-  DocumentChartBarIcon,
-  TagIcon,
-} from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AccountCard from "@/components/AccountCard";
-import ModalDetailsContent from "@/components/ModalDetailsContent";
-import Modal, { ModalTitleText } from "@/components/Modal";
 import Loading from "../loading";
-import { DashboardAccountSummary } from "@/types";
+import { MonthlyFlow, MonthlyTransactionSummary } from "@/types";
 import { useAuthUser } from "@/utils/useAuthUser";
-import { getTimeOfDayGreeting, months } from "@/helpers";
-import {
-  useErrorNotification,
-  useSuccessNotification,
-} from "@/components/ui/NotificationProvider";
-import QuickLink from "@/components/QuickLink";
-import Select from "@/components/Select";
+import { formatCurrencyIntoYen, getTimeOfDayGreeting } from "@/helpers";
 
-type DeletableAccount = {
-  id: string;
-  name: string;
-  transactionCount: number;
+import StatTile from "@/components/StatTile";
+import PageLayout from "@/components/ui/PageLayout";
+import PageHeader from "@/components/ui/PageHeader";
+import BarChart from "@/components/BarChart";
+
+type DashboardProps = {
+  monthlyTransactionSummary: MonthlyTransactionSummary;
+  twelveMonthFlow: MonthlyFlow[];
 };
 
 export default function Dashboard({
-  accountSummaries,
-}: {
-  accountSummaries: DashboardAccountSummary[];
-}) {
-  const router = useRouter();
+  monthlyTransactionSummary,
+  twelveMonthFlow,
+}: DashboardProps) {
   const { user, loading } = useAuthUser();
-  const showErrorNotification = useErrorNotification();
-  const showSuccessNotification = useSuccessNotification();
+
+  const barChartMonths = twelveMonthFlow.map((data) => data.label);
+  const barChartIncome = twelveMonthFlow.map((data) => data.totalIncome);
+  const barChartSpending = twelveMonthFlow.map((data) => data.totalSpending);
 
   const today = new Date();
   const month = today
@@ -43,189 +32,147 @@ export default function Dashboard({
     .toUpperCase();
   const year = today.getFullYear();
 
-  const [activeDeleteAccount, setActiveDeleteAccount] =
-    useState<DeletableAccount | null>(null);
-  const [confirmAccountName, setConfirmAccountName] = useState("");
-  const [hasConfirmedWarning, setHasConfirmedWarning] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState<number>(9);
-  const [selectedYear, setSelectedYear] = useState<number>(2026);
-
-  const years = Array.from({ length: 8 }, (_, i) => year - 5 + i).map(
-    (year) => ({ id: year.toString(), name: year.toString() }),
-  );
-
-  const accountSummariesWithId = accountSummaries.filter(
-    (
-      accountSummary,
-    ): accountSummary is DashboardAccountSummary & {
-      account: DashboardAccountSummary["account"] & { id: string };
-    } => Boolean(accountSummary.account.id),
+  const monthYearOptions = Array.from({ length: 60 }, (_, i) => {
+    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    return {
+      id: `${date.getFullYear()}-${date.getMonth() + 1}`,
+      name: date.toLocaleString("default", {
+        month: "long",
+        year: "numeric",
+      }),
+    };
+  });
+  const [selectedMonthYear, setSelectedMonthYear] = useState(
+    monthYearOptions[0].id,
   );
 
   if (loading || !user) {
     return <Loading />;
   }
 
-  const closeDeleteDialog = () => {
-    if (isDeleting) {
-      return;
-    }
-    setActiveDeleteAccount(null);
-    setConfirmAccountName("");
-    setHasConfirmedWarning(false);
-  };
-
-  const openDeleteDialog = (account: DeletableAccount) => {
-    setActiveDeleteAccount(account);
-    setConfirmAccountName("");
-    setHasConfirmedWarning(false);
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!activeDeleteAccount) {
-      return;
-    }
-
-    setIsDeleting(true);
-    const res = await fetch(`/api/accounts/${activeDeleteAccount.id}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        confirmName: confirmAccountName.trim(),
-      }),
-    });
-    const json = await res.json().catch(() => ({}));
-    setIsDeleting(false);
-
-    if (!res.ok) {
-      showErrorNotification(
-        typeof json.error === "string"
-          ? json.error
-          : "Failed to delete account",
-      );
-      return;
-    }
-
-    showSuccessNotification("Account deleted");
-    closeDeleteDialog();
-    router.refresh();
-  };
-
   const rawUserName = user.user_metadata?.username?.trim();
   const userName = rawUserName
     ? `${rawUserName.charAt(0).toUpperCase()}${rawUserName.slice(1)}`
     : null;
-  const quickLinks = [
+
+  const statTiles = [
     {
-      title: "New Account",
-      description: "Create a fresh account in one step",
-      href: "/accounts/create",
-      Icon: CreditCardIcon,
+      label: "Net this month",
+      value: `${monthlyTransactionSummary.net >= 0 ? "+" : ""}${formatCurrencyIntoYen(monthlyTransactionSummary.net)}`,
+      valueClassName:
+        monthlyTransactionSummary.net >= 0
+          ? "text-[#0E7C66]"
+          : "text-[#B0442A]",
     },
     {
-      title: "New Category",
-      description: "Add a category for cleaner tracking",
-      href: "/categories/create",
-      Icon: TagIcon,
+      label: "Income",
+      value: formatCurrencyIntoYen(monthlyTransactionSummary.totalIncome),
     },
     {
-      title: "Pro: Generate Ledger",
-      description: "Open the professional ledger tools",
-      href: "/ledger-generator",
-      Icon: DocumentChartBarIcon,
+      label: "Spending",
+      value: formatCurrencyIntoYen(monthlyTransactionSummary.totalSpending),
+    },
+    {
+      label: "Transactions",
+      value: monthlyTransactionSummary.transactionCount,
     },
   ];
-  const deleteRows = activeDeleteAccount
-    ? [
-        { label: "Account", value: activeDeleteAccount.name },
-        {
-          label: "Transactions",
-          value: String(activeDeleteAccount.transactionCount),
-        },
-      ]
-    : [];
+
+  const categoryBreakdown = [
+    { name: "Rent", amount: 95000, percentage: 100 },
+    { name: "Food", amount: 34200, percentage: 36 },
+    { name: "Health", amount: 16300, percentage: 17 },
+    { name: "Entertainment", amount: 14100, percentage: 15 },
+    { name: "Utilities", amount: 12400, percentage: 13 },
+    { name: "Transport", amount: 9800, percentage: 10 },
+  ];
 
   return (
-    <div className="pt-24 sm:pt-30 pb-20 px-4 sm:px-6 flex flex-col justify-center items-center gap-10">
-      <header>
-        <small>
-          {month} {year} · MONTH TO DATE
-        </small>
-        <h2 className="text-2xl font-bold">
-          {getTimeOfDayGreeting()}
-          {userName || "there"}!
-        </h2>
-        <div className="inline-flex">
-          <select
-            className="h-10 border border-gray-500 rounded-l px-3 focus:z-10 focus:relative focus:border-purple-300 focus:outline-none"
-            defaultValue={String(selectedMonth)}
-            onChange={(e) => console.log(e.target.value)}
-          >
-            {months.map((month) => (
-              <option key={month.id} value={month.id}>
-                {month.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className="h-10 border border-l-0 border-gray-500 rounded-r px-3 focus:z-10 focus:relative focus:border-purple-300 focus:outline-none"
-            defaultValue={String(selectedYear)}
-            onChange={(e) => console.log(e.target.value)}
-          >
-            {years.map((y) => (
-              <option key={y.id} value={y.id}>
-                {y.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </header>
-      <div className="w-full max-w-6xl grid grid-cols-1 xl:grid-cols-2 gap-5">
-        {accountSummariesWithId.map((accountSummary) => (
-          <AccountCard
-            key={accountSummary.account.id}
-            account={accountSummary}
-            handleDialog={openDeleteDialog}
-          />
-        ))}
-      </div>
-      {accountSummariesWithId.length === 0 && (
-        <p className="text-lg font-semibold">No accounts found yet.</p>
-      )}
-      <div className="w-full max-w-6xl">
-        <div className="grid grid-cols-1 justify-center gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {quickLinks.map((link) => (
-            <QuickLink key={link.title} {...link} />
+    <PageLayout>
+      <>
+        <PageHeader
+          hoverTitle={
+            <small>
+              {month} {year} · MONTH TO DATE
+            </small>
+          }
+          title={`${getTimeOfDayGreeting()}
+            ${userName || "there"}`}
+          actionButtons={[
+            <select
+              key={0}
+              className="h-[38px] cursor-pointer rounded-[9px] border border-[#E3DFD7] bg-white px-[15px] text-[13px] font-medium text-[#3B3934] focus:border-[#17161A] focus:outline-none"
+              defaultValue={selectedMonthYear}
+              onChange={(e) => setSelectedMonthYear(e.target.value)}
+            >
+              {monthYearOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>,
+          ]}
+        />
+        <section className="mb-5 grid grid-cols-2 gap-px overflow-hidden rounded-[12px] border border-[#E3DFD7] bg-[#E3DFD7] sm:grid-cols-4">
+          {statTiles.map((tile) => (
+            <StatTile key={tile.label} {...tile} />
           ))}
-        </div>
-      </div>
-
-      <Modal open={!!activeDeleteAccount} onClose={closeDeleteDialog}>
-        {activeDeleteAccount && (
-          <div className="space-y-5">
-            <ModalTitleText className="text-blue-dark">
-              Delete Account
-            </ModalTitleText>
-            <ModalDetailsContent
-              rows={deleteRows}
-              confirmValue={confirmAccountName}
-              setConfirmValue={setConfirmAccountName}
-              confirmTarget={activeDeleteAccount.name}
-              closeDialog={closeDeleteDialog}
-              isSaving={isDeleting}
-              handleDelete={handleDeleteAccount}
-              warning={{
-                message:
-                  "Warning: This account can't be recovered. Deleting it will also permanently remove all transactions related to this account.",
-                checkboxLabel: "I understand this action is permanent.",
-                checked: hasConfirmedWarning,
-                onChange: setHasConfirmedWarning,
-              }}
-            />
+        </section>
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
+          <div className="overflow-hidden rounded-[12px] border border-[#E3DFD7] bg-white">
+            <div className="flex items-baseline justify-between gap-[10px] border-b border-[#E3DFD7] px-[18px] py-[15px]">
+              <h2 className="text-[14px] font-semibold">Twelve-month flow</h2>
+              <span className="text-[10px] font-medium tracking-[0.12em] text-[#5C5952] uppercase">
+                Income / Spending
+              </span>
+            </div>
+            <div className="px-[18px] pt-5 pb-4">
+              <BarChart
+                labelSet={barChartMonths}
+                datasets={[
+                  {
+                    label: "Income",
+                    color: "#17161A",
+                    data: barChartIncome,
+                  },
+                  {
+                    label: "Spending",
+                    color: "rgba(232, 85, 47, 0.35)",
+                    data: barChartSpending,
+                  },
+                ]}
+              />
+            </div>
           </div>
-        )}
-      </Modal>
-    </div>
+          <div className="overflow-hidden rounded-[12px] border border-[#E3DFD7] bg-white">
+            <div className="border-b border-[#E3DFD7] px-[18px] py-[15px]">
+              <h2 className="text-[14px] font-semibold">Where it went</h2>
+            </div>
+            <div className="flex flex-col gap-3 px-[18px] pt-[14px] pb-4">
+              {categoryBreakdown.map((category) => (
+                <div key={category.name}>
+                  <div className="mb-[6px] flex justify-between gap-[10px] text-[12px] font-medium">
+                    <span>{category.name}</span>
+                    <span className="font-mono tabular-nums text-[#3B3934]">
+                      {formatCurrencyIntoYen(category.amount)}
+                    </span>
+                  </div>
+                  <div className="h-[6px] overflow-hidden rounded-[3px] bg-[#F1EEE8]">
+                    <div
+                      className="h-full rounded-[3px]"
+                      style={{
+                        width: `${category.percentage}%`,
+                        backgroundColor:
+                          category.percentage > 60 ? "#17161A" : "#E8552F",
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </>
+    </PageLayout>
   );
 }

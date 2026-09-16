@@ -10,12 +10,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/utils/authClient";
 import clsx from "clsx";
 import Link from "next/link";
-import { Instrument_Sans } from "next/font/google";
-
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
 
 const navItems = [
   { label: "Dashboard", href: "/" },
@@ -75,12 +69,7 @@ export default function NavBar() {
   return (
     <>
       {/* PERSISTENT SIDEBAR — tablet 204px / desktop 248px */}
-      <aside
-        className={clsx(
-          instrumentSans.className,
-          "print-hidden fixed inset-y-0 left-0 z-30 hidden md:flex md:w-[204px] lg:w-[248px] flex-col bg-[#F1EEE8] border-r border-[#E3DFD7]",
-        )}
-      >
+      <aside className="print-hidden fixed inset-y-0 left-0 z-30 hidden md:flex md:w-[204px] lg:w-[248px] flex-col bg-[#F1EEE8] border-r border-[#E3DFD7]">
         <div className="flex items-center gap-[10px] border-b border-[#E3DFD7] px-4 py-4">
           <Image
             src={logo}
@@ -146,12 +135,7 @@ export default function NavBar() {
       </aside>
 
       {/* MOBILE STICKY HEADER */}
-      <header
-        className={clsx(
-          instrumentSans.className,
-          "print-hidden sticky top-0 z-40 flex items-center justify-between gap-[10px] border-b border-[#E3DFD7] bg-[#F7F5F1]/[0.92] px-4 py-3 backdrop-blur-sm md:hidden",
-        )}
-      >
+      <header className="print-hidden sticky top-0 z-40 flex items-center justify-between gap-[10px] border-b border-[#E3DFD7] bg-[#F7F5F1]/[0.92] px-4 py-3 backdrop-blur-sm md:hidden">
         <div className="flex items-center gap-[9px]">
           <Image
             src={logo}
@@ -187,10 +171,7 @@ export default function NavBar() {
       >
         <div
           ref={drawerRef}
-          className={clsx(
-            instrumentSans.className,
-            "print-hidden fixed inset-x-0 top-[65px] z-40 grid grid-cols-2 gap-[6px] border-b border-[#E3DFD7] bg-white px-3 pb-3 pt-2 md:hidden",
-          )}
+          className="print-hidden fixed inset-x-0 top-[65px] z-40 grid grid-cols-2 gap-[6px] border-b border-[#E3DFD7] bg-white px-3 pb-3 pt-2 md:hidden"
         >
           {navItems.map((item) => {
             const active = isSamePath(item.href);
