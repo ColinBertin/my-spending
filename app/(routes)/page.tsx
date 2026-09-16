@@ -11,20 +11,10 @@ type AccountMemberRow = {
   account: Account;
 };
 
-type TransactionSummaryRow = {
-  account_id: string | null;
+type TransactionFlowRow = {
   type: "income" | "expense" | null;
-  category_name: string | null;
   amount: number;
-  category_icon: string | null;
-  category_icon_pack: string | null;
-  category_color: string | null;
-};
-
-type MonthlyFlowTransactionRow = {
   date: string;
-  type: "income" | "expense" | null;
-  amount: number;
 };
 
 export default async function DashboardPage() {
@@ -32,11 +22,11 @@ export default async function DashboardPage() {
   const now = new Date();
   const currentYear = now.getUTCFullYear();
   const currentMonthIndex = now.getUTCMonth();
-  const currentMonthStart = new Date(
-    Date.UTC(currentYear, currentMonthIndex, 1, 0, 0, 0),
-  );
   const currentMonthEnd = new Date(
-    Date.UTC(currentYear, currentMonthIndex + 1, 1, 0, 0, 0),
+    Date.UTC(currentYear, currentMonthIndex + 1, 1),
+  );
+  const twelveMonthsAgoStart = new Date(
+    Date.UTC(currentYear, currentMonthIndex - 11, 1),
   );
 
   const {
@@ -47,6 +37,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  // Fetch user accounts
   const { data, error } = await supabase
     .from("account_members")
     .select(
@@ -61,107 +52,74 @@ export default async function DashboardPage() {
   const accounts = (data as unknown as AccountMemberRow[]).map(
     (r) => r.account,
   );
-
   const accountIds = accounts
     .map((account) => account.id)
     .filter((id): id is string => Boolean(id));
 
-  let summaryRows: TransactionSummaryRow[] = [];
+  // Fetch the past 12 months transactions
+  let flowRows: TransactionFlowRow[] = [];
 
   if (accountIds.length > 0) {
     const { data: transactionData, error: transactionError } = await supabase
       .from("transactions")
-      .select(
-        "account_id,type,category_name,amount,category_icon,category_icon_pack,category_color",
-      )
+      .select("type,amount,date")
       .in("account_id", accountIds)
       .eq("created_by", user.id)
-      .gte("date", currentMonthStart.toISOString())
+      .gte("date", twelveMonthsAgoStart.toISOString())
       .lt("date", currentMonthEnd.toISOString());
 
     if (transactionError) {
       throw transactionError;
     }
 
-    summaryRows = (transactionData as TransactionSummaryRow[]) ?? [];
+    flowRows = (transactionData as TransactionFlowRow[]) ?? [];
   }
 
-  const monthlySummary = summaryRows.reduce(
-    (acc, row) => {
-      const amount = Number(row.amount) || 0;
-
-      if (row.type === "income") {
-        acc.totalIncome += amount;
-      } else if (row.type === "expense") {
-        acc.totalSpending += amount;
-      }
-
-      acc.transactionCount += 1;
-      acc.net = acc.totalIncome - acc.totalSpending;
-
-      return acc;
-    },
-    { totalIncome: 0, totalSpending: 0, transactionCount: 0, net: 0 },
-  );
-
-  const twelveMonthsAgoStart = new Date(
-    Date.UTC(currentYear, currentMonthIndex - 11, 1, 0, 0, 0),
-  );
-
-  let monthlyFlowRows: MonthlyFlowTransactionRow[] = [];
-
-  if (accountIds.length > 0) {
-    const { data: monthlyFlowData, error: monthlyFlowError } = await supabase
-      .from("transactions")
-      .select("date,type,amount")
-      .in("account_id", accountIds)
-      .eq("created_by", user.id)
-      .gte("date", twelveMonthsAgoStart.toISOString())
-      .lt("date", currentMonthEnd.toISOString());
-
-    if (monthlyFlowError) {
-      throw monthlyFlowError;
-    }
-
-    monthlyFlowRows = (monthlyFlowData as MonthlyFlowTransactionRow[]) ?? [];
-  }
-
+  // Bucket the fetched rows into 12 calendar months
   const twelveMonthFlow = Array.from({ length: 12 }, (_, i) => {
-    const monthDate = new Date(
-      Date.UTC(currentYear, currentMonthIndex - 11 + i, 1),
-    );
-    const monthEnd = new Date(
-      Date.UTC(monthDate.getUTCFullYear(), monthDate.getUTCMonth() + 1, 1),
-    );
-
-    const totals = monthlyFlowRows.reduce(
-      (acc, row) => {
-        const rowDate = new Date(row.date);
-
-        if (rowDate < monthDate || rowDate >= monthEnd) {
-          return acc;
-        }
-
-        const amount = Number(row.amount) || 0;
-
-        if (row.type === "income") {
-          acc.totalIncome += amount;
-        } else if (row.type === "expense") {
-          acc.totalSpending += amount;
-        }
-
-        return acc;
-      },
-      { totalIncome: 0, totalSpending: 0 },
-    );
-
+    const date = new Date(Date.UTC(currentYear, currentMonthIndex - 11 + i, 1));
     return {
-      label: monthDate.toLocaleString("default", { month: "short" }),
-      year: monthDate.getUTCFullYear(),
-      month: monthDate.getUTCMonth() + 1,
-      ...totals,
+      label: date.toLocaleString("default", { month: "short" }),
+      year: date.getUTCFullYear(),
+      month: date.getUTCMonth() + 1,
+      totalIncome: 0,
+      totalSpending: 0,
     };
   });
+
+  let currentMonthTransactionCount = 0;
+
+  for (const row of flowRows) {
+    const rowDate = new Date(row.date);
+    const monthsAgo =
+      (currentYear - rowDate.getUTCFullYear()) * 12 +
+      (currentMonthIndex - rowDate.getUTCMonth());
+    const bucket = twelveMonthFlow[11 - monthsAgo];
+
+    if (!bucket) {
+      continue;
+    }
+
+    const amount = Number(row.amount) || 0;
+
+    if (row.type === "income") {
+      bucket.totalIncome += amount;
+    } else if (row.type === "expense") {
+      bucket.totalSpending += amount;
+    }
+
+    if (monthsAgo === 0) {
+      currentMonthTransactionCount += 1;
+    }
+  }
+
+  const currentMonth = twelveMonthFlow[11];
+  const monthlySummary = {
+    totalIncome: currentMonth.totalIncome,
+    totalSpending: currentMonth.totalSpending,
+    net: currentMonth.totalIncome - currentMonth.totalSpending,
+    transactionCount: currentMonthTransactionCount,
+  };
 
   return (
     <Dashboard
