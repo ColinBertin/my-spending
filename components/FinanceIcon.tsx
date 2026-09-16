@@ -31,7 +31,9 @@ export const FinanceIcon: FC<FinanceIconProps> = ({
   const IconSet = iconSets[iconPack];
   const IconComponent = IconSet?.[icon as keyof typeof IconSet];
 
-  if (!IconComponent) return null;
+  if (!IconComponent) {
+    return null;
+  }
 
   return (
     <IconComponent

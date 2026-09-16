@@ -33,8 +33,9 @@ export async function GET(req: Request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user)
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { searchParams } = new URL(req.url);
 
@@ -102,8 +103,9 @@ export async function GET(req: Request) {
 
     const { data: transactions, error } = await query;
 
-    if (error)
+    if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
 
     const categoryTotalsMap = new Map<string, CategoryTotal>();
     let totalSpending = 0;
@@ -118,7 +120,9 @@ export async function GET(req: Request) {
       } else {
         totalSpending += amount;
       }
-      if (!transaction.category_name) continue;
+      if (!transaction.category_name) {
+        continue;
+      }
 
       const categoryKey = `${transactionType}:${transaction.category_name}`;
       const existingCategory = categoryTotalsMap.get(categoryKey);
@@ -188,8 +192,9 @@ export async function GET(req: Request) {
     ascending: true,
   });
 
-  if (error)
+  if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 
   return NextResponse.json(
     { transactions: transactions ?? [] },
@@ -202,8 +207,9 @@ export async function POST(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user)
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   let body: unknown;
   try {
@@ -431,8 +437,9 @@ export async function POST(req: Request) {
     })
     .select("id")
     .single();
-  if (error)
+  if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 
   return NextResponse.json({ id: transactionId }, { status: 201 });
 }

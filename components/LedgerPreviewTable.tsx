@@ -69,7 +69,9 @@ export default function LedgerPreviewTable({
   );
 
   const closeDialog = () => {
-    if (isSaving) return;
+    if (isSaving) {
+      return;
+    }
     setActiveDialog(null);
     setEditValues(null);
     setConfirmTitle("");
@@ -88,7 +90,9 @@ export default function LedgerPreviewTable({
   };
 
   const handleUpdate = async () => {
-    if (!activeDialog || activeDialog.mode !== "update" || !editValues) return;
+    if (!activeDialog || activeDialog.mode !== "update" || !editValues) {
+      return;
+    }
 
     if (!editValues.title.trim()) {
       showErrorNotification("Title is required");
@@ -145,7 +149,9 @@ export default function LedgerPreviewTable({
   };
 
   const handleDelete = async () => {
-    if (!activeDialog || activeDialog.mode !== "delete") return;
+    if (!activeDialog || activeDialog.mode !== "delete") {
+      return;
+    }
 
     setIsSaving(true);
     const res = await fetch(

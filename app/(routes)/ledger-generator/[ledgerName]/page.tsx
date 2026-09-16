@@ -87,7 +87,9 @@ function sortTransactionsByDate(
   return [...transactions].sort((a, b) => {
     const aDate = new Date(a.date).getTime();
     const bDate = new Date(b.date).getTime();
-    if (aDate !== bDate) return aDate - bDate;
+    if (aDate !== bDate) {
+      return aDate - bDate;
+    }
     return String(a.id).localeCompare(String(b.id));
   });
 }
