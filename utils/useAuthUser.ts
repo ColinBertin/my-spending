@@ -16,7 +16,9 @@ export function useAuthUser() {
     supabase.auth
       .getSession()
       .then(({ data, error }) => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
         if (error) {
           setError(error.message);
         }
@@ -35,7 +37,9 @@ export function useAuthUser() {
         setLoading(false);
       })
       .catch((err: Error) => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
         setError(err.message);
         setLoading(false);
       });
@@ -43,7 +47,9 @@ export function useAuthUser() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!isMounted) return;
+      if (!isMounted) {
+        return;
+      }
       setUser(
         session?.user
           ? {

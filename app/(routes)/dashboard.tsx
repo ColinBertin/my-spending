@@ -68,7 +68,9 @@ export default function Dashboard({
   }
 
   const closeDeleteDialog = () => {
-    if (isDeleting) return;
+    if (isDeleting) {
+      return;
+    }
     setActiveDeleteAccount(null);
     setConfirmAccountName("");
     setHasConfirmedWarning(false);
@@ -81,7 +83,9 @@ export default function Dashboard({
   };
 
   const handleDeleteAccount = async () => {
-    if (!activeDeleteAccount) return;
+    if (!activeDeleteAccount) {
+      return;
+    }
 
     setIsDeleting(true);
     const res = await fetch(`/api/accounts/${activeDeleteAccount.id}`, {

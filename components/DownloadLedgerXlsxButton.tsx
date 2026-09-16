@@ -20,7 +20,9 @@ export function DownloadLedgerXlsxButton({
   generalLedger = false,
 }: DownloadLedgerXlsxButtonProps) {
   const onClick = async () => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
 
     try {
       const wb = await buildLedgerWorkbook(transactions, 0, { generalLedger });

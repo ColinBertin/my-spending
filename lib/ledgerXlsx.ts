@@ -27,7 +27,9 @@ const SUBTOTAL_FILL = "BFBFBF";
 const SHEET_NAME = "Feuil1";
 
 function deepCloneStyle(style: unknown): StyleLike {
-  if (!style || typeof style !== "object") return {};
+  if (!style || typeof style !== "object") {
+    return {};
+  }
   return JSON.parse(JSON.stringify(style)) as StyleLike;
 }
 
@@ -87,7 +89,9 @@ function buildFallbackTemplateWorkbook() {
   };
 
   const rows: XLSX.RowInfo[] = [];
-  for (let r = 0; r < 60; r++) rows[r] = { hpx: 48, hpt: 48 };
+  for (let r = 0; r < 60; r++) {
+    rows[r] = { hpx: 48, hpt: 48 };
+  }
   rows[1] = { hpx: 16, hpt: 16 };
   ws["!rows"] = rows;
 
@@ -162,7 +166,9 @@ async function loadTemplateWorkbook() {
     for (const path of candidates) {
       try {
         const res = await fetch(path);
-        if (!res.ok) continue;
+        if (!res.ok) {
+          continue;
+        }
         templateBufferCache = await res.arrayBuffer();
         break;
       } catch {
@@ -210,7 +216,9 @@ function setStyledCell(
   const cell: XLSX.CellObject = { t: "z" };
 
   cell.s = withCellStyle(base?.s, options);
-  if (base?.z) cell.z = base.z;
+  if (base?.z) {
+    cell.z = base.z;
+  }
 
   if (value === undefined || value === null || value === "") {
     cell.t = "z";
@@ -234,8 +242,12 @@ function clearBodyRowsKeepingStyle(
       const cleared: XLSX.CellObject = {
         t: "z",
       };
-      if (existing?.s) cleared.s = existing.s;
-      if (existing?.z) cleared.z = existing.z;
+      if (existing?.s) {
+        cleared.s = existing.s;
+      }
+      if (existing?.z) {
+        cleared.z = existing.z;
+      }
       ws[addr] = cleared;
     }
   }
@@ -246,7 +258,9 @@ function ensureRowMeta(
   row: number,
   templateRowMeta?: XLSX.RowInfo,
 ) {
-  if (!templateRowMeta) return;
+  if (!templateRowMeta) {
+    return;
+  }
   const rows = ws["!rows"] ?? [];
   if (!rows[row]) {
     rows[row] = { ...templateRowMeta };
@@ -266,9 +280,15 @@ function setRowHeight(ws: XLSX.WorkSheet, row: number, hpx: number) {
 }
 
 function rowHeightPx(row?: XLSX.RowInfo, fallback = 16) {
-  if (!row) return fallback;
-  if (typeof row.hpx === "number") return row.hpx;
-  if (typeof row.hpt === "number") return row.hpt / 0.75;
+  if (!row) {
+    return fallback;
+  }
+  if (typeof row.hpx === "number") {
+    return row.hpx;
+  }
+  if (typeof row.hpt === "number") {
+    return row.hpt / 0.75;
+  }
   return fallback;
 }
 
@@ -348,7 +368,9 @@ export async function buildLedgerWorkbook(
   const txs = [...transactions].sort((a, b) => {
     const da = toDate(a.date).getTime();
     const db = toDate(b.date).getTime();
-    if (da !== db) return da - db;
+    if (da !== db) {
+      return da - db;
+    }
     return String(a.id).localeCompare(String(b.id));
   });
 

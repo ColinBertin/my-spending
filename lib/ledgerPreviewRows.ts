@@ -83,7 +83,9 @@ export function buildLedgerPreviewRows(
   const txs = [...transactions].sort((a, b) => {
     const da = toDate(a.date).getTime();
     const db = toDate(b.date).getTime();
-    if (da !== db) return da - db;
+    if (da !== db) {
+      return da - db;
+    }
     return String(a.id).localeCompare(String(b.id));
   });
 

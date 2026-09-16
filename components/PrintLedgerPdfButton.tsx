@@ -16,7 +16,9 @@ export default function PrintLedgerPdfButton({
     let restored = false;
 
     const restoreTitle = () => {
-      if (restored) return;
+      if (restored) {
+        return;
+      }
       restored = true;
       document.title = previousTitle;
       window.removeEventListener("afterprint", restoreTitle);
@@ -29,7 +31,9 @@ export default function PrintLedgerPdfButton({
   };
 
   useEffect(() => {
-    if (!autoStart) return;
+    if (!autoStart) {
+      return;
+    }
     const timer = window.setTimeout(onClick, 50);
     return () => window.clearTimeout(timer);
   }, [autoStart]);

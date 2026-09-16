@@ -60,8 +60,12 @@ export default function TransactionContainer({
     categoryTotals.length > 0 || totalIncome > 0 || totalSpending > 0;
 
   const getAccountTypeIcon = (type: Account["type"]) => {
-    if (type === "single") return <FaUser className="h-5 w-5" />;
-    if (type === "shared") return <FaUsers className="h-5 w-5" />;
+    if (type === "single") {
+      return <FaUser className="h-5 w-5" />;
+    }
+    if (type === "shared") {
+      return <FaUsers className="h-5 w-5" />;
+    }
     return <FaUserTie className="h-5 w-5" />;
   };
 

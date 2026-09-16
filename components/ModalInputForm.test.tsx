@@ -13,12 +13,16 @@ function findAll(
   const results: Array<{ type?: unknown; props?: { children?: unknown } }> = [];
 
   const visit = (value: unknown) => {
-    if (!value) return;
+    if (!value) {
+      return;
+    }
     if (Array.isArray(value)) {
       value.forEach(visit);
       return;
     }
-    if (typeof value !== "object") return;
+    if (typeof value !== "object") {
+      return;
+    }
 
     const element = value as { type?: unknown; props?: { children?: unknown } };
     if (predicate(element)) {
