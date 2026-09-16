@@ -38,6 +38,9 @@ export default function BarChart({
         data={data}
         options={{
           maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+          },
           scales: {
             x: { grid: { display: false }, border: { display: false } },
             y: {

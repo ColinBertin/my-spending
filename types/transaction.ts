@@ -25,6 +25,7 @@ export interface CategoryTotal {
   category: string;
   type: TransactionType;
   total: number;
+  percentage?: number;
   category_icon?: string;
   category_icon_pack?: string;
   category_color?: string;
