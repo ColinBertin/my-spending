@@ -1,12 +1,8 @@
-import {
-  Account,
-  CategoryTotal,
-  DashboardAccountSummary,
-  TransactionType,
-} from "@/types";
+import { Account, RecentActivityItem } from "@/types";
 import Dashboard from "./dashboard";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { getAccountsSummary, getMonthlySummary } from "./actions";
 
 export const metadata = {
   title: "Dashboard",
@@ -16,18 +12,20 @@ type AccountMemberRow = {
   account: Account;
 };
 
-type TransactionSummaryRow = {
-  account_id: string | null;
+type TransactionFlowRow = {
   type: "income" | "expense" | null;
-  category_name: string | null;
   amount: number;
-  category_icon: string | null;
-  category_icon_pack: string | null;
-  category_color: string | null;
+  date: string;
 };
 
-type TransactionCountRow = {
-  account_id: string | null;
+type RecentTransactionRow = {
+  id: string;
+  title: string;
+  amount: number;
+  date: string;
+  type: "income" | "expense" | null;
+  category_name: string | null;
+  account: { name: string } | null;
 };
 
 export default async function DashboardPage() {
@@ -35,11 +33,14 @@ export default async function DashboardPage() {
   const now = new Date();
   const currentYear = now.getUTCFullYear();
   const currentMonthIndex = now.getUTCMonth();
-  const currentMonth = (currentMonthIndex + 1).toString();
-  const currentYearString = currentYear.toString();
-  const start = new Date(Date.UTC(currentYear, currentMonthIndex, 1, 0, 0, 0));
-  const end = new Date(
-    Date.UTC(currentYear, currentMonthIndex + 1, 1, 0, 0, 0),
+  const currentMonthStart = new Date(
+    Date.UTC(currentYear, currentMonthIndex, 1),
+  );
+  const currentMonthEnd = new Date(
+    Date.UTC(currentYear, currentMonthIndex + 1, 1),
+  );
+  const twelveMonthsAgoStart = new Date(
+    Date.UTC(currentYear, currentMonthIndex - 11, 1),
   );
 
   const {
@@ -50,6 +51,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  // Fetch user accounts
   const { data, error } = await supabase
     .from("account_members")
     .select(
@@ -64,162 +66,110 @@ export default async function DashboardPage() {
   const accounts = (data as unknown as AccountMemberRow[]).map(
     (r) => r.account,
   );
-
   const accountIds = accounts
     .map((account) => account.id)
     .filter((id): id is string => Boolean(id));
 
-  let summaryRows: TransactionSummaryRow[] = [];
-  let transactionCountRows: TransactionCountRow[] = [];
+  // Fetch the past 12 months transactions
+  let flowRows: TransactionFlowRow[] = [];
 
   if (accountIds.length > 0) {
     const { data: transactionData, error: transactionError } = await supabase
       .from("transactions")
-      .select(
-        "account_id,type,category_name,amount,category_icon,category_icon_pack,category_color",
-      )
+      .select("type,amount,date")
       .in("account_id", accountIds)
       .eq("created_by", user.id)
-      .gte("date", start.toISOString())
-      .lt("date", end.toISOString());
+      .gte("date", twelveMonthsAgoStart.toISOString())
+      .lt("date", currentMonthEnd.toISOString());
 
     if (transactionError) {
       throw transactionError;
     }
 
-    summaryRows = (transactionData as TransactionSummaryRow[]) ?? [];
-
-    const { data: transactionCountData, error: transactionCountError } =
-      await supabase
-        .from("transactions")
-        .select("account_id")
-        .in("account_id", accountIds)
-        .eq("created_by", user.id);
-
-    if (transactionCountError) {
-      throw transactionCountError;
-    }
-
-    transactionCountRows =
-      (transactionCountData as TransactionCountRow[]) ?? [];
+    flowRows = (transactionData as TransactionFlowRow[]) ?? [];
   }
 
-  const summariesByAccount = new Map<
-    string,
-    {
-      categoryTotals: Map<string, CategoryTotal>;
-      totalIncome: number;
-      totalSpending: number;
-    }
-  >();
+  // Bucket the fetched rows into 12 calendar months
+  const twelveMonthFlow = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date(Date.UTC(currentYear, currentMonthIndex - 11 + i, 1));
+    return {
+      label: date.toLocaleString("default", { month: "short" }),
+      year: date.getUTCFullYear(),
+      month: date.getUTCMonth() + 1,
+      totalIncome: 0,
+      totalSpending: 0,
+    };
+  });
 
-  for (const row of summaryRows) {
-    if (!row.account_id) {
-      continue;
-    }
+  for (const row of flowRows) {
+    const rowDate = new Date(row.date);
+    const monthsAgo =
+      (currentYear - rowDate.getUTCFullYear()) * 12 +
+      (currentMonthIndex - rowDate.getUTCMonth());
+    const bucket = twelveMonthFlow[11 - monthsAgo];
 
-    if (!summariesByAccount.has(row.account_id)) {
-      summariesByAccount.set(row.account_id, {
-        categoryTotals: new Map<string, CategoryTotal>(),
-        totalIncome: 0,
-        totalSpending: 0,
-      });
-    }
-
-    const accountSummary = summariesByAccount.get(row.account_id);
-    if (!accountSummary) {
+    if (!bucket) {
       continue;
     }
 
     const amount = Number(row.amount) || 0;
 
-    if (!row.type) {
-      continue;
-    }
-
     if (row.type === "income") {
-      accountSummary.totalIncome += amount;
-    } else {
-      accountSummary.totalSpending += amount;
+      bucket.totalIncome += amount;
+    } else if (row.type === "expense") {
+      bucket.totalSpending += amount;
     }
-    if (!row.category_name) {
-      continue;
-    }
-
-    const categoryKey = `${row.type as TransactionType}:${row.category_name}`;
-    const existingCategory = accountSummary.categoryTotals.get(categoryKey);
-
-    if (existingCategory) {
-      existingCategory.total += amount;
-
-      if (!existingCategory.category_icon && row.category_icon) {
-        existingCategory.category_icon = row.category_icon;
-      }
-      if (!existingCategory.category_icon_pack && row.category_icon_pack) {
-        existingCategory.category_icon_pack = row.category_icon_pack;
-      }
-      if (!existingCategory.category_color && row.category_color) {
-        existingCategory.category_color = row.category_color;
-      }
-
-      continue;
-    }
-
-    accountSummary.categoryTotals.set(categoryKey, {
-      category: row.category_name,
-      type: row.type as TransactionType,
-      total: amount,
-      category_icon: row.category_icon ?? undefined,
-      category_icon_pack: row.category_icon_pack ?? undefined,
-      category_color: row.category_color ?? undefined,
-    });
   }
 
-  const transactionCountByAccount = new Map<string, number>();
+  // The 5 most recent transactions this month, across all accounts. Fetched
+  // once here only — it does not refetch when the month picker changes.
+  let recentActivity: RecentActivityItem[] = [];
 
-  for (const row of transactionCountRows) {
-    if (!row.account_id) {
-      continue;
+  if (accountIds.length > 0) {
+    const { data: recentData, error: recentError } = await supabase
+      .from("transactions")
+      .select("id,title,amount,date,type,category_name,account:accounts(name)")
+      .in("account_id", accountIds)
+      .eq("created_by", user.id)
+      .gte("date", currentMonthStart.toISOString())
+      .lt("date", currentMonthEnd.toISOString())
+      .order("date", { ascending: false })
+      .limit(5);
+
+    if (recentError) {
+      throw recentError;
     }
 
-    transactionCountByAccount.set(
-      row.account_id,
-      (transactionCountByAccount.get(row.account_id) ?? 0) + 1,
-    );
+    recentActivity = (
+      (recentData as unknown as RecentTransactionRow[]) ?? []
+    ).map((row) => ({
+      id: row.id,
+      date: new Date(row.date).toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        timeZone: "UTC",
+      }),
+      category: row.category_name ?? "—",
+      title: row.title,
+      accountName: row.account?.name ?? "—",
+      amount: Number(row.amount) || 0,
+      type: row.type ?? "expense",
+    }));
   }
 
-  const accountSummaries: DashboardAccountSummary[] = accounts.map(
-    (account) => {
-      const accountId = account.id;
-      const accountSummary = accountId
-        ? summariesByAccount.get(accountId)
-        : undefined;
+  // This month's stats and per-account breakdown, via the same actions the
+  // month picker calls on change
+  const [monthlySummary, accountsSummary] = await Promise.all([
+    getMonthlySummary(currentMonthIndex + 1, currentYear),
+    getAccountsSummary(currentMonthIndex + 1, currentYear),
+  ]);
 
-      const categoryTotals = accountSummary
-        ? Array.from(accountSummary.categoryTotals.values()).sort((a, b) => {
-            if (a.type !== b.type) {
-              return a.type === "income" ? -1 : 1;
-            }
-
-            return a.category.localeCompare(b.category);
-          })
-        : [];
-
-      return {
-        account,
-        summary: {
-          categoryTotals,
-          totalSpending: accountSummary?.totalSpending ?? 0,
-          totalIncome: accountSummary?.totalIncome ?? 0,
-          selectedMonth: currentMonth,
-          selectedYear: currentYearString,
-        },
-        transactionCount: accountId
-          ? (transactionCountByAccount.get(accountId) ?? 0)
-          : 0,
-      };
-    },
+  return (
+    <Dashboard
+      monthlyTransactionSummary={monthlySummary}
+      twelveMonthFlow={twelveMonthFlow}
+      accountsSummary={accountsSummary}
+      recentActivity={recentActivity}
+    />
   );
-
-  return <Dashboard accountSummaries={accountSummaries} />;
 }

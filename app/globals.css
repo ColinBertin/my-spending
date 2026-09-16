@@ -6,6 +6,9 @@
   --color-white-custom: #ebebeb;
   --color-blue-light: #00a7e1;
   --color-blue-dark: #0474ba;
+  --font-sans:
+    var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
 @custom-variant dark (&:is(.dark *));
