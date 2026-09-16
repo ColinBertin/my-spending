@@ -45,7 +45,9 @@ export const FinanceIconPicker: FC<FinanceIconPickerProps> = ({
         icons.map((iconName) => {
           const IconSet = iconPacks[pack];
           const IconComponent = IconSet[iconName as keyof typeof IconSet];
-          if (!IconComponent) return null;
+          if (!IconComponent) {
+            return null;
+          }
 
           const isSelected = selected === `${pack}-${iconName}`;
 

@@ -7,8 +7,9 @@ export async function POST(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user)
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   let body: unknown;
   try {
@@ -81,8 +82,9 @@ export async function POST(req: Request) {
     type,
     user_id: user.id,
   });
-  if (accErr)
+  if (accErr) {
     return NextResponse.json({ error: accErr.message }, { status: 400 });
+  }
 
   return NextResponse.json({ id: categoryId }, { status: 201 });
 }

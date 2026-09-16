@@ -83,7 +83,9 @@ export default async function DashboardPage() {
       .gte("date", start.toISOString())
       .lt("date", end.toISOString());
 
-    if (transactionError) throw transactionError;
+    if (transactionError) {
+      throw transactionError;
+    }
 
     summaryRows = (transactionData as TransactionSummaryRow[]) ?? [];
 
@@ -94,7 +96,9 @@ export default async function DashboardPage() {
         .in("account_id", accountIds)
         .eq("created_by", user.id);
 
-    if (transactionCountError) throw transactionCountError;
+    if (transactionCountError) {
+      throw transactionCountError;
+    }
 
     transactionCountRows =
       (transactionCountData as TransactionCountRow[]) ?? [];
@@ -110,7 +114,9 @@ export default async function DashboardPage() {
   >();
 
   for (const row of summaryRows) {
-    if (!row.account_id) continue;
+    if (!row.account_id) {
+      continue;
+    }
 
     if (!summariesByAccount.has(row.account_id)) {
       summariesByAccount.set(row.account_id, {
@@ -121,18 +127,24 @@ export default async function DashboardPage() {
     }
 
     const accountSummary = summariesByAccount.get(row.account_id);
-    if (!accountSummary) continue;
+    if (!accountSummary) {
+      continue;
+    }
 
     const amount = Number(row.amount) || 0;
 
-    if (!row.type) continue;
+    if (!row.type) {
+      continue;
+    }
 
     if (row.type === "income") {
       accountSummary.totalIncome += amount;
     } else {
       accountSummary.totalSpending += amount;
     }
-    if (!row.category_name) continue;
+    if (!row.category_name) {
+      continue;
+    }
 
     const categoryKey = `${row.type as TransactionType}:${row.category_name}`;
     const existingCategory = accountSummary.categoryTotals.get(categoryKey);
@@ -166,7 +178,9 @@ export default async function DashboardPage() {
   const transactionCountByAccount = new Map<string, number>();
 
   for (const row of transactionCountRows) {
-    if (!row.account_id) continue;
+    if (!row.account_id) {
+      continue;
+    }
 
     transactionCountByAccount.set(
       row.account_id,
