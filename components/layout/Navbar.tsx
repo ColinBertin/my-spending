@@ -189,7 +189,7 @@ export default function NavBar() {
           ref={drawerRef}
           className={clsx(
             instrumentSans.className,
-            "print-hidden sticky top-[65px] z-40 grid grid-cols-2 gap-[6px] border-b border-[#E3DFD7] bg-white px-3 pb-3 pt-2 md:hidden",
+            "print-hidden fixed inset-x-0 top-[65px] z-40 grid grid-cols-2 gap-[6px] border-b border-[#E3DFD7] bg-white px-3 pb-3 pt-2 md:hidden",
           )}
         >
           {navItems.map((item) => {
