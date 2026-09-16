@@ -13,8 +13,17 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("../Menu", () => ({
-  default: () => <div>Mock Menu</div>,
+vi.mock("next/font/google", () => ({
+  Instrument_Sans: () => ({ className: "instrument-sans" }),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/",
+}));
+
+vi.mock("@/utils/authClient", () => ({
+  signOut: vi.fn(),
 }));
 
 vi.mock("@headlessui/react", () => ({
@@ -23,10 +32,10 @@ vi.mock("@headlessui/react", () => ({
 }));
 
 describe("Navbar", () => {
-  it("renders logo and keeps menu hidden by default", () => {
+  it("renders logo and keeps the mobile drawer hidden by default", () => {
     const html = renderToStaticMarkup(<Navbar />);
 
     expect(html).toContain("My Finances");
-    expect(html).not.toContain("Mock Menu");
+    expect(html.match(/Log out/g)).toHaveLength(1);
   });
 });

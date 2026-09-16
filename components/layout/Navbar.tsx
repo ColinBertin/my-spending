@@ -21,7 +21,7 @@ const navItems = [
   { label: "Dashboard", href: "/" },
   { label: "Accounts", href: "/accounts/create" },
   { label: "Categories", href: "/categories/create" },
-  { label: "Ledger", href: "/categories/create" },
+  { label: "Ledger", href: "/ledger-generator" },
   { label: "Reports", href: "/categories/create" },
   { label: "Settings", href: "/categories/create" },
 ];
