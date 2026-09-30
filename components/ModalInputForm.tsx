@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { Category, TransactionType } from "@/types";
 import Button from "./Button";
+import Spinner from "./Spinner";
 
 type ModalInputValues = {
   title: string;
@@ -22,16 +23,6 @@ type ModalInputFormProps = {
 
 const formFieldClassName =
   "w-full h-10 border border-gray-500 rounded-xl px-3 text-gray-700 font-medium outline-none focus:border-purple-300";
-
-function InlineSpinner() {
-  return (
-    <span
-      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
-      role="status"
-      aria-hidden="true"
-    />
-  );
-}
 
 export default function ModalInputForm({
   values,
@@ -156,7 +147,7 @@ export default function ModalInputForm({
           text={
             isSaving ? (
               <span className="inline-flex items-center gap-2">
-                <InlineSpinner />
+                <Spinner />
                 Saving...
               </span>
             ) : (

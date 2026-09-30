@@ -1,12 +1,29 @@
-export default function Spinner() {
+import clsx from "clsx";
+
+const TICK_COUNT = 12;
+
+type SpinnerProps = {
+  className?: string;
+};
+
+export default function Spinner({ className }: SpinnerProps) {
   return (
-    <div
-      className="inline-block h-16 w-16 animate-spin rounded-full border-8 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+    <span
+      className={clsx("relative inline-block h-12 w-12", className)}
       role="status"
     >
-      <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-        Loading...
-      </span>
-    </div>
+      {Array.from({ length: TICK_COUNT }, (_, i) => (
+        <span
+          key={i}
+          className="absolute top-1/2 left-1/2 h-[11px] w-[3px] rounded-full bg-current motion-reduce:animate-none"
+          style={{
+            transform: `translate(-50%, -50%) rotate(${i * 30}deg) translateY(-17px)`,
+            animation: "spinner-tick-fade 1s linear infinite",
+            animationDelay: `${(i - TICK_COUNT) / TICK_COUNT}s`,
+          }}
+        />
+      ))}
+      <span className="sr-only">Loading...</span>
+    </span>
   );
 }

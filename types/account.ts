@@ -11,3 +11,7 @@ export interface Account {
   updated_at?: string | null;
   account_members: { user_id: string }[];
 }
+
+export type AccountMemberRow = {
+  account: Account;
+};

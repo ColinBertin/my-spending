@@ -1,5 +1,6 @@
 import DetailRow from "./DetailRow";
 import Button from "./Button";
+import Spinner from "./Spinner";
 
 type ModalDetailsContentProps = {
   rows: { label: string; value: string }[];
@@ -16,16 +17,6 @@ type ModalDetailsContentProps = {
     onChange: (checked: boolean) => void;
   };
 };
-
-function InlineSpinner() {
-  return (
-    <span
-      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
-      role="status"
-      aria-hidden="true"
-    />
-  );
-}
 
 export default function ModalDetailsContent({
   rows,
@@ -91,7 +82,7 @@ export default function ModalDetailsContent({
           text={
             isSaving ? (
               <span className="inline-flex items-center gap-2">
-                <InlineSpinner />
+                <Spinner />
                 Deleting...
               </span>
             ) : (

@@ -30,3 +30,10 @@ export interface CategoryTotal {
   category_icon_pack?: string;
   category_color?: string;
 }
+
+export type TransactionFlowRow = {
+  account_id: string;
+  type: "income" | "expense" | null;
+  amount: number;
+  date: string;
+};

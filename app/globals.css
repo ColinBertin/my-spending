@@ -129,6 +129,15 @@
   }
 }
 
+@keyframes spinner-tick-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.15;
+  }
+}
+
 .print-only {
   display: none;
 }

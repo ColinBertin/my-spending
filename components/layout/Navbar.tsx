@@ -13,7 +13,7 @@ import Link from "next/link";
 
 const navItems = [
   { label: "Dashboard", href: "/" },
-  { label: "Accounts", href: "/accounts/create" },
+  { label: "Accounts", href: "/accounts" },
   { label: "Categories", href: "/categories" },
   { label: "Ledger", href: "/ledger-generator" },
   { label: "Reports", href: "/reports" },

@@ -19,10 +19,16 @@ export default function PageHeader({
       <div>
         {hoverTitle && hoverTitle}
         <PageTitle title={title} />
-        <p>{subTitle}</p>
+        {subTitle && (
+          <p className="mt-2 font-mono text-[11px] text-[#5C5952]">
+            {subTitle}
+          </p>
+        )}
       </div>
       {actionButtons && (
-        <div className="flex">{actionButtons.map((button) => button)}</div>
+        <div className="flex flex-wrap items-center gap-2">
+          {actionButtons.map((button) => button)}
+        </div>
       )}
     </header>
   );

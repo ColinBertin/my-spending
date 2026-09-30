@@ -1,4 +1,8 @@
-import { Account, RecentActivityItem } from "@/types";
+import {
+  AccountMemberRow,
+  RecentActivityItem,
+  TransactionFlowRow,
+} from "@/types";
 import Dashboard from "./dashboard";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -6,16 +10,6 @@ import { getAccountsSummary, getMonthlySummary } from "./actions";
 
 export const metadata = {
   title: "Dashboard",
-};
-
-type AccountMemberRow = {
-  account: Account;
-};
-
-type TransactionFlowRow = {
-  type: "income" | "expense" | null;
-  amount: number;
-  date: string;
 };
 
 type RecentTransactionRow = {
