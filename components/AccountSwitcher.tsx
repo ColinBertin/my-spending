@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import clsx from "clsx";
 import { formatCurrencyIntoYen } from "@/helpers";
 
@@ -16,7 +16,9 @@ type AccountSwitcherProps = {
 };
 
 export default function AccountSwitcher({ accounts }: AccountSwitcherProps) {
-  const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.id);
+  const { id: selectedAccountId = accounts[0]?.id } = useParams<{
+    id?: string;
+  }>();
 
   return (
     <div className="mb-[18px] flex gap-[9px] overflow-x-auto pb-1">
@@ -24,10 +26,10 @@ export default function AccountSwitcher({ accounts }: AccountSwitcherProps) {
         const isActive = account.id === selectedAccountId;
 
         return (
-          <button
+          <Link
             key={account.id}
-            type="button"
-            onClick={() => setSelectedAccountId(account.id)}
+            href={`/accounts/${account.id}`}
+            aria-current={isActive ? "page" : undefined}
             className={clsx(
               "flex min-w-[128px] flex-none cursor-pointer flex-col items-start gap-[7px] rounded-[10px] border px-[13px] py-[11px] text-left sm:min-w-[150px] sm:flex-1 sm:px-[15px] sm:py-3",
               isActive
@@ -57,7 +59,7 @@ export default function AccountSwitcher({ accounts }: AccountSwitcherProps) {
             >
               {formatCurrencyIntoYen(account.balance)}
             </span>
-          </button>
+          </Link>
         );
       })}
       <Link
