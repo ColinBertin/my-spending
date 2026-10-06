@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { requireUser } from "@/utils/supabase/requireUser";
 
 const ACCOUNT_TYPES = new Set(["single", "shared", "professional"]);
 const CURRENCIES = new Set(["JPY", "EUR", "USD"]);
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireUser();
+  if (!auth.ok) {
+    return auth.response;
   }
+  const { user } = auth;
 
   let body: unknown;
   try {
