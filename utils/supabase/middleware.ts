@@ -25,18 +25,30 @@ export async function updateSession(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           });
-          cookiesToSet.forEach(({ name, value }) =>
-            supabaseResponse.cookies.set(name, value),
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
     },
   );
 
+  // IMPORTANT: Avoid writing any logic between createServerClient and
+  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
+
   // IMPORTANT: Don't remove getClaims()
   const { data } = await supabase.auth.getClaims();
 
   const user = data?.claims;
+
+  // Any response other than supabaseResponse must carry its cookies
+  const withSessionCookies = <T extends NextResponse>(response: T): T => {
+    supabaseResponse.cookies
+      .getAll()
+      .forEach((cookie) => response.cookies.set(cookie));
+    return response;
+  };
 
   if (
     !user &&
@@ -44,12 +56,14 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/signup")
   ) {
     if (request.nextUrl.pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return withSessionCookies(
+        NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+      );
     }
 
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    return withSessionCookies(NextResponse.redirect(url));
   }
 
   return supabaseResponse;

@@ -37,12 +37,18 @@ export function useNotification() {
 
 export function useSuccessNotification() {
   const { showNotification } = useNotification();
-  return (message: string) => showNotification("success", message);
+  return useCallback(
+    (message: string) => showNotification("success", message),
+    [showNotification],
+  );
 }
 
 export function useErrorNotification() {
   const { showNotification } = useNotification();
-  return (message: string) => showNotification("error", message);
+  return useCallback(
+    (message: string) => showNotification("error", message),
+    [showNotification],
+  );
 }
 
 export default function NotificationProvider({
