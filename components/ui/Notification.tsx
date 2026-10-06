@@ -1,23 +1,39 @@
 "use client";
 
 import { Portal, Transition } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
-import { Fragment, JSX, useEffect, useState } from "react";
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { Fragment, useEffect, useState } from "react";
+
+export type NotificationVariant = "success" | "error";
 
 export type NotificationProps = {
-  actions?: boolean;
-  bgColor: string;
-  icon?: JSX.Element;
-  message?: JSX.Element;
+  id: number;
+  variant: NotificationVariant;
+  message?: string;
   show: boolean;
   timeout?: number;
   closeNotification: () => void;
 };
 
+const VARIANT_STYLES = {
+  success: { label: "Success", Icon: CheckCircleIcon, color: "text-[#0E7C66]" },
+  error: {
+    label: "Error",
+    Icon: ExclamationCircleIcon,
+    color: "text-[#B0442A]",
+  },
+} satisfies Record<
+  NotificationVariant,
+  { label: string; Icon: typeof CheckCircleIcon; color: string }
+>;
+
 export default function Notification({
-  actions,
-  bgColor,
-  icon,
+  id,
+  variant,
   message,
   show,
   timeout,
@@ -33,24 +49,24 @@ export default function Notification({
     if (show) {
       const timer = setTimeout(() => {
         closeNotification();
-      }, timeout || 8_000);
+      }, timeout ?? 8_000);
       return () => clearTimeout(timer);
     }
-  }, [show, closeNotification, timeout]);
+  }, [id, show, closeNotification, timeout]);
 
   if (!isMounted) {
     return null;
   }
 
+  const styles = VARIANT_STYLES[variant];
+
   return (
     <Portal>
-      {/* Global notification live region, render this permanently at the end of the document */}
       <div
-        aria-live="assertive"
-        className="pointer-events-none fixed inset-0 z-20 flex items-start px-4 py-6 sm:p-6"
+        aria-live={variant === "error" ? "assertive" : "polite"}
+        className="print-hidden pointer-events-none fixed inset-0 z-[60] flex items-start px-4 py-6 sm:p-6"
       >
-        <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
-          {/* Notification panel, dynamically insert this into the live region when it needs to be displayed */}
+        <div className="flex w-full flex-col items-center sm:items-end">
           <Transition
             as={Fragment}
             enter="transform ease-out duration-300 transition"
@@ -62,41 +78,25 @@ export default function Notification({
             show={show}
           >
             <div
-              className={`w-full max-w-sm ${bgColor} pointer-events-auto rounded-lg shadow-lg ring-1 ring-black/5`}
+              className="pointer-events-auto flex w-full max-w-sm items-center gap-[11px] rounded-[12px] border border-[#D9D4C9] bg-white py-[11px] pr-[9px] pl-[14px]"
+              role={variant === "error" ? "alert" : "status"}
             >
-              <div className="p-4">
-                <div className="flex items-start">
-                  {icon && <div className="shrink-0">{icon}</div>}
-                  <div className="ml-3 w-0 flex-1">
-                    {message}
-                    {actions && (
-                      <div className="mt-4 flex">
-                        <button
-                          className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                          type="button"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          className="ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                          type="button"
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="ml-4 flex shrink-0">
-                    <button
-                      className={`${bgColor} inline-flex rounded-md text-white hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`}
-                      onClick={() => closeNotification()}
-                    >
-                      <span className="sr-only">Close</span>
-                      <XMarkIcon aria-hidden="true" className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <styles.Icon
+                aria-hidden="true"
+                className={`h-5 w-5 flex-none ${styles.color}`}
+              />
+              <p className="min-w-0 flex-1 text-[13px] leading-[1.5] text-[#3B3934] [text-wrap:pretty]">
+                <span className="sr-only">{styles.label}: </span>
+                {message}
+              </p>
+              <button
+                className="inline-flex h-7 w-7 flex-none cursor-pointer items-center justify-center rounded-[7px] text-[#5C5952] transition-colors hover:bg-[#F4F1EA] hover:text-[#17161A] focus-visible:outline-[1.5px] focus-visible:outline-[#17161A] focus-visible:outline-solid"
+                onClick={closeNotification}
+                type="button"
+              >
+                <span className="sr-only">Close</span>
+                <XMarkIcon aria-hidden="true" className="h-4 w-4" />
+              </button>
             </div>
           </Transition>
         </div>

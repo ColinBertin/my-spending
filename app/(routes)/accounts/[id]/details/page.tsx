@@ -1,6 +1,5 @@
-import { createClient } from "@/utils/supabase/server";
+import { requirePageUser } from "@/utils/supabase/requireUser";
 import AccountDetails from "./details";
-import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Transaction Details",
@@ -20,15 +19,7 @@ export default async function AccountDetailsPage({
     Date.UTC(currentYear, currentMonthIndex + 1, 1, 0, 0, 0),
   );
 
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, supabase } = await requirePageUser();
 
   const { data: account, error: accountError } = await supabase
     .from("accounts")
