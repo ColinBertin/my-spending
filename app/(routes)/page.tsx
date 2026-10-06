@@ -5,8 +5,7 @@ import {
   TransactionType,
 } from "@/types";
 import Dashboard from "./dashboard";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/utils/supabase/requireUser";
 
 export const metadata = {
   title: "Dashboard",
@@ -31,7 +30,6 @@ type TransactionCountRow = {
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
   const now = new Date();
   const currentYear = now.getUTCFullYear();
   const currentMonthIndex = now.getUTCMonth();
@@ -42,13 +40,7 @@ export default async function DashboardPage() {
     Date.UTC(currentYear, currentMonthIndex + 1, 1, 0, 0, 0),
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, supabase } = await requirePageUser();
 
   const { data, error } = await supabase
     .from("account_members")

@@ -1,6 +1,5 @@
 import CreateTransaction from "./create-transaction";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/utils/supabase/requireUser";
 
 export const metadata = {
   title: "Add Transaction",
@@ -13,15 +12,7 @@ export default async function CreateTransactions({
 }) {
   const { id } = await params;
 
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, supabase } = await requirePageUser();
 
   const { data: account, error: accountError } = await supabase
     .from("accounts")

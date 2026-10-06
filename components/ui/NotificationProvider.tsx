@@ -1,18 +1,24 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
-import type { Dispatch, ReactNode, SetStateAction } from "react";
-import { createContext, useContext, useState } from "react";
-import { NotificationProps } from "./Notification";
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import type { NotificationProps, NotificationVariant } from "./Notification";
 import Notification from "./Notification";
 
 type NotificationState = Omit<NotificationProps, "closeNotification">;
 
 type NotificationProviderState = {
-  setNotificationState: Dispatch<SetStateAction<NotificationState>>;
+  showNotification: (
+    variant: NotificationVariant,
+    message: string,
+    timeout?: number,
+  ) => void;
 };
 
 const NotificationProviderContext = createContext<
@@ -30,42 +36,13 @@ export function useNotification() {
 }
 
 export function useSuccessNotification() {
-  const { setNotificationState } = useNotification();
-  return (message: string) =>
-    setNotificationState({
-      bgColor: "bg-teal-500",
-      icon: (
-        <CheckCircleIcon aria-hidden="true" className="h-6 w-6 text-white" />
-      ),
-      message: (
-        <>
-          <p className="font-medium text-white">Success!</p>
-          <p className="mt-1 text-white">{message}</p>
-        </>
-      ),
-      show: true,
-    });
+  const { showNotification } = useNotification();
+  return (message: string) => showNotification("success", message);
 }
 
 export function useErrorNotification() {
-  const { setNotificationState } = useNotification();
-  return (message: string) =>
-    setNotificationState({
-      bgColor: "bg-red-400",
-      icon: (
-        <ExclamationCircleIcon
-          aria-hidden="true"
-          className="h-6 w-6 text-white"
-        />
-      ),
-      message: (
-        <>
-          <p className="font-medium text-white">Something bad happened!</p>
-          <p className="mt-1 text-white">{message}</p>
-        </>
-      ),
-      show: true,
-    });
+  const { showNotification } = useNotification();
+  return (message: string) => showNotification("error", message);
 }
 
 export default function NotificationProvider({
@@ -75,22 +52,44 @@ export default function NotificationProvider({
 }) {
   const [notificationState, setNotificationState] = useState<NotificationState>(
     {
-      bgColor: "bg-green-500",
+      id: 0,
+      variant: "success",
       message: undefined,
       show: false,
     },
   );
 
+  const showNotification = useCallback(
+    (variant: NotificationVariant, message: string, timeout?: number) =>
+      setNotificationState((prev) => ({
+        id: prev.id + 1,
+        variant,
+        message,
+        timeout,
+        show: true,
+      })),
+    [],
+  );
+
+  const closeNotification = useCallback(
+    () => setNotificationState((prev) => ({ ...prev, show: false })),
+    [],
+  );
+
+  const contextValue = useMemo(
+    () => ({ showNotification }),
+    [showNotification],
+  );
+
   return (
-    <NotificationProviderContext.Provider value={{ setNotificationState }}>
+    <NotificationProviderContext.Provider value={contextValue}>
       <Notification
-        bgColor={notificationState.bgColor}
-        closeNotification={() =>
-          setNotificationState({ ...notificationState, show: false })
-        }
-        icon={notificationState.icon}
+        closeNotification={closeNotification}
+        id={notificationState.id}
         message={notificationState.message}
         show={notificationState.show}
+        timeout={notificationState.timeout}
+        variant={notificationState.variant}
       />
       {children}
     </NotificationProviderContext.Provider>

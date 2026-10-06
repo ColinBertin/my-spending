@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { requirePageUser } from "@/utils/supabase/requireUser";
 import { Category, Transaction, TransactionsByCategory } from "@/types";
 
 type AccountMemberWithAccount = {
@@ -87,15 +87,7 @@ export function getPreviousMonthRange() {
 }
 
 export async function getProfessionalLedgerContext(): Promise<ProfessionalLedgerContext> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, supabase } = await requirePageUser();
 
   const { data: membershipData, error: membershipError } = await supabase
     .from("account_members")
