@@ -17,7 +17,8 @@ const navItems = [
   { label: "Categories", href: "/categories" },
   { label: "Ledger", href: "/ledger" },
   { label: "Reports", href: "/reports" },
-  { label: "Settings", href: "/settings" },
+  // TODO: Add a settings route with user details/update...
+  // { label: "Settings", href: "/settings" },
 ];
 
 export default function NavBar() {
