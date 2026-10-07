@@ -1,4 +1,6 @@
+import { sumIncomeAndSpending } from "@/helpers";
 import LedgerGenerator from "./ledger-generator";
+import { getProfessionalAccountName } from "./ledger-preview";
 import {
   getCurrentJanuaryRange,
   getPreviousYearRange,
@@ -13,25 +15,6 @@ export const metadata = {
   title: "Ledger Generator",
 };
 
-function sumIncomeAndSpending(
-  transactions: Awaited<ReturnType<typeof getTransactionsForRange>>,
-) {
-  return transactions.reduce(
-    (totals, transaction) => {
-      const amount = Number(transaction.amount) || 0;
-
-      if (transaction.type === "income") {
-        totals.totalIncome += amount;
-      } else {
-        totals.totalSpending += amount;
-      }
-
-      return totals;
-    },
-    { totalIncome: 0, totalSpending: 0 },
-  );
-}
-
 export default async function LedgerGeneratorPage() {
   const { previousYear, startIso, endIso } = getPreviousYearRange();
   const {
@@ -41,12 +24,13 @@ export default async function LedgerGeneratorPage() {
   } = getCurrentJanuaryRange();
   const { userId, professionalAccountId, categories } =
     await getProfessionalLedgerContext();
-  const transactions = await getTransactionsForRange(
-    userId,
-    categories,
-    professionalAccountId,
-    { startIso, endIso },
-  );
+  const [professionalAccountName, transactions] = await Promise.all([
+    getProfessionalAccountName(professionalAccountId),
+    getTransactionsForRange(userId, categories, professionalAccountId, {
+      startIso,
+      endIso,
+    }),
+  ]);
   const transactionsByCategory = groupTransactionsByCategory(
     categories,
     transactions,
@@ -91,6 +75,7 @@ export default async function LedgerGeneratorPage() {
       }
       categories={categories}
       currentYear={currentYear}
+      hasProfessionalAccount={professionalAccountId !== null}
       januaryAccountsReceivableCount={januaryAccountsReceivableCount}
       januaryAccountsReceivableIncome={
         januaryAccountsReceivableTotals.totalIncome
@@ -102,6 +87,7 @@ export default async function LedgerGeneratorPage() {
       januaryAccruedExpenseIncome={januaryAccruedExpenseTotals.totalIncome}
       januaryAccruedExpenseSpending={januaryAccruedExpenseTotals.totalSpending}
       previousYear={previousYear}
+      professionalAccountName={professionalAccountName}
       transactionsByCategory={transactionsByCategory}
     />
   );
