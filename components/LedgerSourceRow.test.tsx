@@ -14,9 +14,7 @@ describe("LedgerSourceRow", () => {
       />,
     );
 
-    expect(html).toContain(
-      `href="/ledger-generator/${encodeURIComponent("未払費用")}"`,
-    );
+    expect(html).toContain(`href="/ledger/${encodeURIComponent("未払費用")}"`);
     expect(html).toContain("未払費用 · Accrued expenses");
     expect(html).toContain("2 ENTRIES");
     expect(html).toContain("1,200");

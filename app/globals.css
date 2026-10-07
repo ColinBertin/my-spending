@@ -46,7 +46,7 @@
   --spacing-control-full: 46px;
   --spacing-field: 42px;
 
-  /* Legacy palette — still used by error/not-found/ledger-generator.
+  /* Legacy palette — still used by error/not-found/ledger.
      Remove once those screens are migrated. */
   --color-orange-dark: #f17720;
   --color-orange-light: #ffa630;

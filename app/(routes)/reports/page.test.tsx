@@ -4,7 +4,7 @@ import ReportsPage, { metadata } from "./page";
 
 const getLedgerPreviewMock = vi.fn();
 
-vi.mock("../ledger-generator/ledger-preview", () => ({
+vi.mock("../ledger/ledger-preview", () => ({
   GENERAL_LEDGER_NAME: "general-ledger",
   getLedgerPreview: (name: string) => getLedgerPreviewMock(name),
 }));
@@ -35,7 +35,7 @@ describe("ReportsPage", () => {
 
     expect(getLedgerPreviewMock).toHaveBeenCalledWith("general-ledger");
     expect(html).toContain(
-      "総勘定元帳 · General ledger|/ledger-generator|Ledger generator|",
+      "総勘定元帳 · General ledger|/ledger|Ledger generator|",
     );
     expect(html).toContain("manual");
     expect(metadata.title).toBe("Reports");

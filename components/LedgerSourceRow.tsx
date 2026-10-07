@@ -44,7 +44,7 @@ export default function LedgerSourceRow({
           className="h-8 flex-none rounded-[8px] px-3 text-[12px]"
         >
           <Link
-            href={`/ledger-generator/${encodeURIComponent(ledgerName)}`}
+            href={`/ledger/${encodeURIComponent(ledgerName)}`}
             aria-label={`Preview ${label}`}
           >
             Preview

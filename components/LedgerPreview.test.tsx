@@ -67,7 +67,7 @@ describe("LedgerPreview", () => {
     const html = renderToStaticMarkup(
       <LedgerPreview
         {...content()}
-        backHref="/ledger-generator"
+        backHref="/ledger"
         backLabel="Ledger generator"
         autoDownload
       />,
@@ -75,7 +75,7 @@ describe("LedgerPreview", () => {
 
     expect(html).toContain("ledger-preview-page");
     expect(html).toContain("ledger-preview-header");
-    expect(html).toContain('href="/ledger-generator"');
+    expect(html).toContain('href="/ledger"');
     expect(html).toContain("← Ledger generator");
     expect(html).toContain("総勘定元帳 · General ledger");
     expect(html).toContain("STUDIO PRO · FY2025 · JPY");
@@ -99,7 +99,7 @@ describe("LedgerPreview", () => {
           totalIncome: 0,
           totalSpending: 0,
         })}
-        backHref="/ledger-generator"
+        backHref="/ledger"
         backLabel="Ledger generator"
       />,
     );

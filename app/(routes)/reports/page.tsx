@@ -2,7 +2,7 @@ import LedgerPreview from "@/components/LedgerPreview";
 import {
   GENERAL_LEDGER_NAME,
   getLedgerPreview,
-} from "../ledger-generator/ledger-preview";
+} from "../ledger/ledger-preview";
 
 export const metadata = {
   title: "Reports",
@@ -19,7 +19,7 @@ export default async function ReportsPage({
   return (
     <LedgerPreview
       {...preview}
-      backHref="/ledger-generator"
+      backHref="/ledger"
       backLabel="Ledger generator"
       autoDownload={download === "1"}
     />
