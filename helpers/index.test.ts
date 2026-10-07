@@ -3,8 +3,11 @@ import {
   emailRegex,
   formatCurrencyIntoYen,
   getCurrentMonthRange,
+  getLedgerEndingBalance,
   getMonthRange,
   getTimeOfDayGreeting,
+  splitLedgerDateLabel,
+  sumIncomeAndSpending,
 } from "./index";
 
 describe("helpers", () => {
@@ -76,5 +79,54 @@ describe("helpers", () => {
 
     vi.setSystemTime(new Date(2026, 0, 1, 20, 0, 0));
     expect(getTimeOfDayGreeting()).toBe("Good evening, ");
+  });
+  it("sums income and spending, treating non-income as spending", () => {
+    expect(
+      sumIncomeAndSpending([
+        { type: "income", amount: 1000 },
+        { type: "expense", amount: 250 },
+        { type: "expense", amount: Number("not-a-number") },
+        { type: "income", amount: 500 },
+      ]),
+    ).toEqual({ totalIncome: 1500, totalSpending: 250 });
+    expect(sumIncomeAndSpending([])).toEqual({
+      totalIncome: 0,
+      totalSpending: 0,
+    });
+  });
+
+  it("splits ledger date labels into date and voucher number", () => {
+    expect(splitLedgerDateLabel("1/5\n12")).toEqual({
+      date: "1/5",
+      voucherNo: "12",
+    });
+    expect(splitLedgerDateLabel("\n3")).toEqual({ date: "", voucherNo: "3" });
+    expect(splitLedgerDateLabel(undefined)).toEqual({
+      date: "",
+      voucherNo: "",
+    });
+  });
+
+  it("returns the running balance after the last ledger entry", () => {
+    expect(
+      getLedgerEndingBalance([
+        { id: "carry", kind: "carry", balance: 100 },
+        { id: "e1", kind: "entry", balance: 600 },
+        { id: "e2", kind: "entry", balance: 450 },
+        { id: "s", kind: "subtotal", income: 500, expense: 150 },
+        { id: "closing", kind: "closing", balance: 100 },
+        { id: "f", kind: "footer", balance: 100 },
+      ]),
+    ).toBe(450);
+  });
+
+  it("falls back to the opening balance when there are no entries", () => {
+    expect(
+      getLedgerEndingBalance([
+        { id: "carry", kind: "carry", balance: 80 },
+        { id: "f", kind: "footer", balance: 80 },
+      ]),
+    ).toBe(80);
+    expect(getLedgerEndingBalance([])).toBe(0);
   });
 });
