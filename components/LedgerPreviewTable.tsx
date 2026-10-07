@@ -503,9 +503,7 @@ export default function LedgerPreviewTable({
       >
         {activeDialog?.mode === "update" && activeTransaction && editValues && (
           <div className="space-y-5">
-            <ModalTitleText className="text-blue-dark">
-              Update Transaction
-            </ModalTitleText>
+            <ModalTitleText>Update Transaction</ModalTitleText>
             <ModalInputForm
               values={editValues}
               setValues={setEditValues}
@@ -519,7 +517,7 @@ export default function LedgerPreviewTable({
 
         {activeDialog?.mode === "delete" && activeTransaction && (
           <div className="space-y-5">
-            <ModalTitleText className="text-red">
+            <ModalTitleText className="text-[#9E3B21]">
               Delete Transaction
             </ModalTitleText>
             <ModalDetailsContent
