@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import PageLayout from "@/components/ui/PageLayout";
+import PageLayout from "@/components/layout/PageLayout";
 import AccountSwitcher from "@/components/AccountSwitcher";
 import AccountHeader from "./[id]/account-header";
 import { getAccountsMonthlySummary } from "./data";

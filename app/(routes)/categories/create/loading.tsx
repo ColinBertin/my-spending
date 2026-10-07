@@ -1,4 +1,4 @@
-import PageLayout from "@/components/ui/PageLayout";
+import PageLayout from "@/components/layout/PageLayout";
 
 const SKELETON_BLOCK = "rounded-[4px] bg-[#F1EEE8]";
 

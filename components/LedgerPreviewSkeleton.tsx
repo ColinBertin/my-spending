@@ -1,5 +1,5 @@
 import StatTileSkeleton from "@/components/StatTileSkeleton";
-import PageLayout from "@/components/ui/PageLayout";
+import PageLayout from "@/components/layout/PageLayout";
 
 const SKELETON_ROWS = [
   ["72%", "48%", "64%"],

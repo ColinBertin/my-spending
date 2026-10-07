@@ -34,9 +34,7 @@ describe("ReportsPage", () => {
     );
 
     expect(getLedgerPreviewMock).toHaveBeenCalledWith("general-ledger");
-    expect(html).toContain(
-      "総勘定元帳 · General ledger|/ledger|Ledger generator|",
-    );
+    expect(html).toContain("総勘定元帳 · General ledger|/|Dashboard|");
     expect(html).toContain("manual");
     expect(metadata.title).toBe("Reports");
   });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Loading from "../loading";
 import {
   AccountMonthlySummary,
@@ -17,8 +17,8 @@ import MonthlyFlowCard from "@/components/MonthlyFlowCard";
 import CategoryBreakdownCard from "@/components/CategoryBreakdownCard";
 import AccountsOverviewSection from "@/components/AccountsOverviewSection";
 import RecentActivityCard from "@/components/RecentActivityCard";
-import PageLayout from "@/components/ui/PageLayout";
-import PageHeader from "@/components/ui/PageHeader";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
 import { getAccountsSummary, getMonthlySummary } from "./actions";
 
 type DashboardProps = {
@@ -41,10 +41,11 @@ export default function Dashboard({
   const [accounts, setAccounts] =
     useState<AccountMonthlySummary[]>(accountsSummary);
   const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const latestRequestId = useRef(0);
 
   const today = new Date();
   const [selectedMonthYear, setSelectedMonthYear] = useState(
-    `${today.getFullYear()}-${today.getMonth() + 1}`,
+    `${today.getUTCFullYear()}-${today.getUTCMonth() + 1}`,
   );
 
   const [selectedYearStr, selectedMonthStr] = selectedMonthYear.split("-");
@@ -61,6 +62,7 @@ export default function Dashboard({
     const [yearStr, monthStr] = value.split("-");
     const month = Number.parseInt(monthStr);
     const year = Number.parseInt(yearStr);
+    const requestId = ++latestRequestId.current;
 
     setIsSummaryLoading(true);
 
@@ -69,12 +71,19 @@ export default function Dashboard({
         getMonthlySummary(month, year),
         getAccountsSummary(month, year),
       ]);
+      if (requestId !== latestRequestId.current) {
+        return;
+      }
       setTransactionSummary(monthlySummary);
       setAccounts(accountsSummary);
     } catch (error) {
-      console.error(error);
+      if (requestId === latestRequestId.current) {
+        console.error(error);
+      }
     } finally {
-      setIsSummaryLoading(false);
+      if (requestId === latestRequestId.current) {
+        setIsSummaryLoading(false);
+      }
     }
   };
 

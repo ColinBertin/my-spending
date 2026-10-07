@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { Account } from "@/types";
 import MonthStepper from "@/components/MonthStepper";
-import PageHeader from "@/components/ui/PageHeader";
+import PageHeader from "@/components/layout/PageHeader";
 import { MONTH_PARAM, parseMonthParam, toMonthParam } from "../month-param";
 
 export type AccountSummary = {
@@ -29,8 +29,7 @@ export default function AccountHeader({ accounts }: AccountHeaderProps) {
   const { id: selectedId } = useParams<{ id?: string }>();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeAccount =
-    accounts.find((account) => account.id === selectedId) ?? accounts[0];
+  const activeAccount = accounts.find((account) => account.id === selectedId);
 
   if (!activeAccount || pathname.endsWith("/transactions/create")) {
     return null;

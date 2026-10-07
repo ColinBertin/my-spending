@@ -2,7 +2,7 @@ import Link from "next/link";
 import LedgerPreviewTable from "@/components/LedgerPreviewTable";
 import PrintLedgerPdfButton from "@/components/PrintLedgerPdfButton";
 import StatTile from "@/components/StatTile";
-import PageLayout from "@/components/ui/PageLayout";
+import PageLayout from "@/components/layout/PageLayout";
 import { formatCurrencyIntoYen, getLedgerEndingBalance } from "@/helpers";
 import { LedgerPreviewRow } from "@/lib/ledgerPreviewRows";
 import { Category, Transaction } from "@/types";
@@ -44,8 +44,8 @@ export default function LedgerPreview({
   const hasEntries = transactions.length > 0;
 
   return (
-    <PageLayout className="ledger-preview-page">
-      <div className="ledger-preview-inner flex min-w-0 flex-col gap-4">
+    <PageLayout className="ledger-preview-page md:flex md:h-screen md:flex-col">
+      <div className="ledger-preview-inner flex min-w-0 flex-col gap-4 md:min-h-0 md:flex-1">
         <div className="ledger-preview-header print-hidden flex flex-col gap-4">
           <div className="flex flex-wrap items-end justify-between gap-[14px]">
             <div className="min-w-0">

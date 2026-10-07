@@ -64,6 +64,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -85,6 +86,7 @@
   --card-foreground: var(--color-ink);
   --primary: var(--color-brand-text);
   --primary-foreground: #ffffff;
+  --primary-hover: #8a331b;
   --secondary: var(--color-surface-head);
   --secondary-foreground: var(--color-ink-body);
   --muted: var(--color-surface-rail);
@@ -139,6 +141,8 @@
   }
 
   .ledger-preview-page {
+    display: block !important;
+    height: auto !important;
     padding: 0 !important;
   }
 
