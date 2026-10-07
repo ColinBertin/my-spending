@@ -312,9 +312,9 @@ export default function LedgerPreviewTable({
         </table>
       </div>
 
-      <div className="ledger-preview-table-wrap print-hidden min-w-0">
-        <div className="hidden overflow-hidden rounded-[12px] border border-[#D9D4C9] bg-white md:block">
-          <div className="relative max-h-[640px] overflow-auto overscroll-contain">
+      <div className="ledger-preview-table-wrap print-hidden min-w-0 md:flex md:min-h-0 md:flex-col">
+        <div className="hidden overflow-hidden rounded-[12px] border border-[#D9D4C9] bg-white md:flex md:min-h-0 md:flex-col">
+          <div className="relative min-h-0 overflow-auto overscroll-contain">
             <table className="ledger-preview-table w-full min-w-[720px] border-separate border-spacing-0 font-mono tabular-nums">
               <colgroup>
                 <col className="w-[86px]" />

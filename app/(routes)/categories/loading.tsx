@@ -1,4 +1,4 @@
-import PageLayout from "@/components/ui/PageLayout";
+import PageLayout from "@/components/layout/PageLayout";
 
 const SKELETON_CARDS = [
   ["58%", "44%", "52%", "82%"],

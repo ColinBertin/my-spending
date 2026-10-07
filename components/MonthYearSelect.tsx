@@ -9,12 +9,15 @@ export default function MonthYearSelect({
 }: MonthYearSelectProps) {
   const today = new Date();
   const options = Array.from({ length: 60 }, (_, i) => {
-    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const date = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i, 1),
+    );
     return {
-      id: `${date.getFullYear()}-${date.getMonth() + 1}`,
+      id: `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}`,
       name: date.toLocaleString("default", {
         month: "long",
         year: "numeric",
+        timeZone: "UTC",
       }),
     };
   });

@@ -19,8 +19,8 @@ export default async function ReportsPage({
   return (
     <LedgerPreview
       {...preview}
-      backHref="/ledger"
-      backLabel="Ledger generator"
+      backHref="/"
+      backLabel="Dashboard"
       autoDownload={download === "1"}
     />
   );

@@ -34,10 +34,22 @@ type AccountTransactionRow = {
   amount: number;
 };
 
+function assertValidMonthYear(month: number, year: number) {
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new Error("month must be an integer between 1 and 12");
+  }
+
+  if (!Number.isInteger(year) || year < 1970 || year > 9999) {
+    throw new Error("year must be a valid 4-digit year");
+  }
+}
+
 export async function getMonthlySummary(
   month: number,
   year: number,
 ): Promise<MonthlyTransactionSummary> {
+  assertValidMonthYear(month, year);
+
   const supabase = await createClient();
 
   const {
@@ -140,6 +152,8 @@ export async function getAccountsSummary(
   month: number,
   year: number,
 ): Promise<AccountMonthlySummary[]> {
+  assertValidMonthYear(month, year);
+
   const supabase = await createClient();
 
   const {

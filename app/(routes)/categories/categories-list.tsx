@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { useState } from "react";
-import PageLayout from "@/components/ui/PageLayout";
+import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { CategoryCard, CategoryScope } from "./category-cards";
 import CategoryTile from "./category-tile";

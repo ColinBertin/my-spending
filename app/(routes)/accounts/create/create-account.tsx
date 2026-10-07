@@ -10,7 +10,7 @@ import {
   useErrorNotification,
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
-import PageLayout from "@/components/ui/PageLayout";
+import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 
 const ACCOUNT_TYPES: {
