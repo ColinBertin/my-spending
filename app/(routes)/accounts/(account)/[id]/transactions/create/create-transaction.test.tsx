@@ -44,6 +44,7 @@ vi.mock("react-hook-form", () => ({
     },
     control: {},
     reset: resetMock,
+    watch: () => undefined,
     formState: { errors: {} },
   }),
   Controller: ({
@@ -59,10 +60,6 @@ vi.mock("react-hook-form", () => ({
         onChange: vi.fn(),
       },
     }),
-}));
-
-vi.mock("@/components/Calendar", () => ({
-  default: () => <div>Mock Calendar</div>,
 }));
 
 const categories: Category[] = [
@@ -109,14 +106,36 @@ describe("CreateTransaction", () => {
 
   it("renders expected static form text", () => {
     const html = renderToStaticMarkup(
-      <CreateTransaction accountId="acc-1" categories={categories} />,
+      <CreateTransaction
+        accountId="acc-1"
+        accountName="Main Account"
+        accountCurrency="eur"
+        categories={categories}
+      />,
     );
 
-    expect(html).toContain("New Transaction");
-    expect(html).toContain("Mock Calendar");
+    expect(html).toContain("New transaction");
+    expect(html).toContain("← Main Account");
+    expect(html).toContain('href="/accounts/acc-1/details"');
+    expect(html).toContain("Expense");
+    expect(html).toContain("Income");
+    expect(html).toContain("Food");
+    expect(html).toContain("Salary");
+    expect(html).toContain('value="2026-02-20"');
+    expect(html).toContain("Save transaction");
+    expect(html).toContain("Save &amp; add another");
+    expect(html).toContain("€");
   });
 
-  it("submits transaction and redirects on success", async () => {
+  it("prompts to create a category when there are none", () => {
+    const html = renderToStaticMarkup(
+      <CreateTransaction accountId="acc-1" categories={[]} />,
+    );
+
+    expect(html).toContain('href="/categories/create"');
+  });
+
+  it("submits transaction and returns to the account on success", async () => {
     renderToStaticMarkup(
       <CreateTransaction accountId="acc-1" categories={categories} />,
     );
@@ -155,6 +174,38 @@ describe("CreateTransaction", () => {
       account_id: "acc-1",
     });
     expect(payload.date).toBe("2026-02-20T00:00:00.000Z");
+    expect(showSuccessNotificationMock).toHaveBeenCalledWith(
+      "Transaction added !",
+    );
+    expect(pushMock).toHaveBeenCalledWith("/accounts/acc-1/details");
+    expect(refreshMock).toHaveBeenCalledTimes(1);
+    expect(resetMock).not.toHaveBeenCalled();
+  });
+
+  it("stays on the form when saving with 'add another'", async () => {
+    renderToStaticMarkup(
+      <CreateTransaction accountId="acc-1" categories={categories} />,
+    );
+
+    const submitter = { getAttribute: () => "add-another" };
+    await (
+      submitHandler as unknown as (
+        values: Record<string, unknown>,
+        event: unknown,
+      ) => Promise<void>
+    )(
+      {
+        title: "Coffee",
+        amount: "10",
+        category_id: "cat-1",
+        type: "expense",
+        currency: "JPY",
+        date: new Date("2026-02-20T00:00:00.000Z"),
+      },
+      { nativeEvent: { submitter } },
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(showSuccessNotificationMock).toHaveBeenCalledWith(
       "Transaction added !",
     );

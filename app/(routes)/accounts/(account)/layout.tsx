@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import PageLayout from "@/components/ui/PageLayout";
 import AccountSwitcher from "@/components/AccountSwitcher";
-import AccountHeader from "./account-header";
+import AccountHeader from "./[id]/account-header";
 import { getAccountsMonthlySummary } from "./data";
 
 export const metadata = {
@@ -18,7 +18,7 @@ export default async function AccountsLayout({
   return (
     <PageLayout>
       <>
-        <div className="mb-[11px] flex justify-end">
+        <div className="mb-[11px] flex items-baseline justify-between gap-3">
           <span className="font-mono text-[10px] tracking-[0.14em] text-[#5C5952] uppercase">
             {accountsMonthlySummary.length} accounts
           </span>

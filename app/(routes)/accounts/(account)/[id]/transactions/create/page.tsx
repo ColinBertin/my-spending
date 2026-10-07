@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import CreateTransaction from "./create-transaction";
 import { requirePageUser } from "@/utils/supabase/requireUser";
 
@@ -8,15 +9,30 @@ export const metadata = {
 export default async function CreateTransactions({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
 
   const { user, supabase } = await requirePageUser();
 
+  const { data: membership, error: membershipError } = await supabase
+    .from("account_members")
+    .select("account_id")
+    .eq("account_id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (membershipError) {
+    throw membershipError;
+  }
+
+  if (!membership) {
+    notFound();
+  }
+
   const { data: account, error: accountError } = await supabase
     .from("accounts")
-    .select("type")
+    .select("name,type,currency")
     .eq("id", id)
     .single();
 
@@ -40,5 +56,12 @@ export default async function CreateTransactions({
     throw error;
   }
 
-  return <CreateTransaction accountId={id} categories={categories} />;
+  return (
+    <CreateTransaction
+      accountId={id}
+      accountName={account.name}
+      accountCurrency={account.currency}
+      categories={categories}
+    />
+  );
 }

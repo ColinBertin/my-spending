@@ -75,7 +75,6 @@ export default async function DashboardPage() {
     flowRows = (transactionData as TransactionFlowRow[]) ?? [];
   }
 
-  // Bucket the fetched rows into 12 calendar months
   const twelveMonthFlow = Array.from({ length: 12 }, (_, i) => {
     const date = new Date(Date.UTC(currentYear, currentMonthIndex - 11 + i, 1));
     return {
@@ -107,8 +106,6 @@ export default async function DashboardPage() {
     }
   }
 
-  // The 5 most recent transactions this month, across all accounts. Fetched
-  // once here only — it does not refetch when the month picker changes.
   let recentActivity: RecentActivityItem[] = [];
 
   if (accountIds.length > 0) {
@@ -143,8 +140,6 @@ export default async function DashboardPage() {
     }));
   }
 
-  // This month's stats and per-account breakdown, via the same actions the
-  // month picker calls on change
   const [monthlySummary, accountsSummary] = await Promise.all([
     getMonthlySummary(currentMonthIndex + 1, currentYear),
     getAccountsSummary(currentMonthIndex + 1, currentYear),

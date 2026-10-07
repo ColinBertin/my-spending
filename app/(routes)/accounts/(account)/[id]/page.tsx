@@ -12,7 +12,6 @@ export default async function AccountPage({
   const accounts = await getAccountsMonthlySummary();
   const account = accounts.find((a) => a.id === id);
 
-  // 404 rather than 403 so account ids can't be probed.
   if (!account) {
     notFound();
   }

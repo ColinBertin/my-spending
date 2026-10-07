@@ -2,7 +2,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { Account, AccountMemberRow, TransactionFlowRow } from "@/types";
 import { createClient } from "@/utils/supabase/server";
-import type { AccountSummary } from "./account-header";
+import type { AccountSummary } from "./[id]/account-header";
 
 function summarizeAccounts(
   accounts: Account[],
@@ -40,7 +40,6 @@ function summarizeAccounts(
     });
 }
 
-// Shared by layout.tsx and page.tsx; cache() dedupes the queries per request.
 export const getAccountsMonthlySummary = cache(
   async (): Promise<AccountSummary[]> => {
     const supabase = await createClient();
@@ -62,7 +61,6 @@ export const getAccountsMonthlySummary = cache(
       redirect("/login");
     }
 
-    // Fetch user accounts
     const { data, error } = await supabase
       .from("account_members")
       .select(
@@ -82,7 +80,6 @@ export const getAccountsMonthlySummary = cache(
       .map((account) => account.id)
       .filter((id): id is string => Boolean(id));
 
-    // Fetch current month transactions
     let flowRows: TransactionFlowRow[] = [];
 
     if (accountIds.length > 0) {
