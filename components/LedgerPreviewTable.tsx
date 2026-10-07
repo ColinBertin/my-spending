@@ -1,6 +1,7 @@
 "use client";
 
-import { ClipboardPen, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Pencil, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import Modal, { ModalTitleText } from "./Modal";
@@ -14,8 +15,10 @@ import ModalDetailsContent from "./ModalDetailsContent";
 import ModalInputForm from "./ModalInputForm";
 import {
   buildInitialEditState,
+  formatCurrencyIntoYen,
   formatNumber,
   isCarryOverRow,
+  splitLedgerDateLabel,
   toInputDate,
   toIsoDateStart,
 } from "@/helpers";
@@ -28,6 +31,45 @@ const HEADER_TITLES = [
   "支　出　金　額",
   "残　　高",
 ];
+
+const headerCellClassName =
+  "sticky top-0 z-10 border-r border-b border-r-[#E3DFD7] border-b-[#D9D4C9] bg-[#F4F1EA] px-3 py-[11px] align-bottom text-[10px] leading-[1.5] font-medium tracking-[0.08em] whitespace-pre-line text-[#6B6760]";
+const bodyCellClassName =
+  "border-r border-b border-[#F1EEE8] px-3 py-[9px] align-top text-[11px] text-[#3B3934]";
+const amountCellClassName = "text-right text-[11.5px] font-medium";
+
+function RowActions({
+  transaction,
+  onUpdate,
+  onDelete,
+}: {
+  transaction: Transaction;
+  onUpdate: (transaction: Transaction) => void;
+  onDelete: (transaction: Transaction) => void;
+}) {
+  return (
+    <span className="flex flex-none justify-center gap-[7px]">
+      <button
+        type="button"
+        onClick={() => onUpdate(transaction)}
+        aria-label={`Update ${transaction.title}`}
+        title={`Update ${transaction.title}`}
+        className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-[6px] border border-[#E3DFD7] bg-white text-[#6B6760] transition-colors hover:bg-[#FBFAF7] hover:text-[#17161A]"
+      >
+        <Pencil className="h-3 w-3" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onDelete(transaction)}
+        aria-label={`Delete ${transaction.title}`}
+        title={`Delete ${transaction.title}`}
+        className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-[6px] border border-[#F3CFC3] bg-white text-[#B0442A] transition-colors hover:bg-[#FCEDE8]"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </span>
+  );
+}
 
 export type EditFormState = {
   title: string;
@@ -270,90 +312,188 @@ export default function LedgerPreviewTable({
         </table>
       </div>
 
-      <div className="ledger-preview-table-wrap print-hidden min-w-0 max-w-full overflow-x-auto border border-blue-dark/20 bg-white shadow-sm">
-        <table className="ledger-preview-table w-full table-fixed border-collapse text-xs sm:text-sm">
-          <colgroup>
-            <col className="w-[10%]" />
-            <col className="w-[14%]" />
-            <col className="w-[22%]" />
-            <col className="w-[14%]" />
-            <col className="w-[14%]" />
-            <col className="w-[16%]" />
-            <col className="print-hidden w-[10%]" />
-          </colgroup>
-          <thead>
-            <tr className="bg-gray-100">
-              {headerTitles.map((title) => (
-                <th
-                  key={title}
-                  className="border border-black px-2 py-2 text-center font-semibold whitespace-pre-line"
-                >
-                  {title}
-                </th>
-              ))}
-              <th className="print-hidden border border-black px-2 py-2 text-center font-semibold">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {screenRows.map((row) => {
-              const transaction = row.transactionId
-                ? transactionsById.get(row.transactionId)
-                : undefined;
-
-              return (
-                <tr
-                  key={row.id}
-                  className={row.summary ? "bg-[#bfbfbf]" : "bg-white"}
-                >
-                  <td className="border border-black px-2 py-1 align-top whitespace-pre-line break-words">
-                    {row.dateLabel ?? ""}
-                  </td>
-                  <td className="border border-black px-2 py-1 align-top break-words">
-                    {row.accountLabel ?? ""}
-                  </td>
-                  <td className="border border-black px-2 py-1 align-top break-words">
-                    {row.description ?? ""}
-                  </td>
-                  <td className="border border-black px-2 py-1 text-right align-top">
-                    {formatNumber(row.income)}
-                  </td>
-                  <td className="border border-black px-2 py-1 text-right align-top">
-                    {formatNumber(row.expense)}
-                  </td>
-                  <td className="border border-black px-2 py-1 text-right align-top">
-                    {formatNumber(row.balance)}
-                  </td>
-                  <td className="print-hidden border border-black px-2 py-1 align-top">
-                    {transaction ? (
-                      <div className="print-hidden flex justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openUpdateDialog(transaction)}
-                          aria-label={`Update ${transaction.title}`}
-                          title={`Update ${transaction.title}`}
-                          className="flex h-10 w-10 cursor-pointer items-center justify-center text-blue-dark transition-opacity hover:opacity-70"
-                        >
-                          <ClipboardPen className="h-5 w-5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openDeleteDialog(transaction)}
-                          aria-label={`Delete ${transaction.title}`}
-                          title={`Delete ${transaction.title}`}
-                          className="flex h-10 w-10 cursor-pointer items-center justify-center text-red-500 transition-opacity hover:opacity-70"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                      </div>
-                    ) : null}
-                  </td>
+      <div className="ledger-preview-table-wrap print-hidden min-w-0 md:flex md:min-h-0 md:flex-col">
+        <div className="hidden overflow-hidden rounded-[12px] border border-[#D9D4C9] bg-white md:flex md:min-h-0 md:flex-col">
+          <div className="relative min-h-0 overflow-auto overscroll-contain">
+            <table className="ledger-preview-table w-full min-w-[720px] border-separate border-spacing-0 font-mono tabular-nums">
+              <colgroup>
+                <col className="w-[86px]" />
+                <col className="w-[150px]" />
+                <col />
+                <col className="w-[110px]" />
+                <col className="w-[110px]" />
+                <col className="w-[110px]" />
+                <col className="w-[84px]" />
+              </colgroup>
+              <thead>
+                <tr>
+                  {headerTitles.map((title, index) => (
+                    <th
+                      key={title}
+                      className={cn(
+                        headerCellClassName,
+                        index >= 3 ? "text-right" : "text-left",
+                      )}
+                    >
+                      {title}
+                    </th>
+                  ))}
+                  <th
+                    className={cn(
+                      headerCellClassName,
+                      "border-r-0 text-center",
+                    )}
+                  >
+                    操作
+                  </th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {screenRows.map((row) => {
+                  const transaction = row.transactionId
+                    ? transactionsById.get(row.transactionId)
+                    : undefined;
+                  const { date, voucherNo } = splitLedgerDateLabel(
+                    row.dateLabel,
+                  );
+                  const cellClassName = cn(
+                    bodyCellClassName,
+                    row.summary ? "bg-[#F4F1EA] font-medium" : "bg-white",
+                  );
+
+                  return (
+                    <tr key={row.id}>
+                      <td className={cellClassName}>
+                        <div className="text-[11px]">{date}</div>
+                        {voucherNo && (
+                          <div className="mt-[3px] text-[10px] text-[#5C5952]">
+                            {voucherNo}
+                          </div>
+                        )}
+                      </td>
+                      <td className={cn(cellClassName, "break-words")}>
+                        {row.accountLabel ?? ""}
+                      </td>
+                      <td
+                        className={cn(
+                          cellClassName,
+                          "font-sans text-[12px] leading-[1.45] break-words",
+                        )}
+                      >
+                        {row.description ?? ""}
+                      </td>
+                      <td
+                        className={cn(
+                          cellClassName,
+                          amountCellClassName,
+                          "text-[#0E7C66]",
+                        )}
+                      >
+                        {formatNumber(row.income)}
+                      </td>
+                      <td
+                        className={cn(
+                          cellClassName,
+                          amountCellClassName,
+                          "text-[#B0442A]",
+                        )}
+                      >
+                        {formatNumber(row.expense)}
+                      </td>
+                      <td
+                        className={cn(
+                          cellClassName,
+                          amountCellClassName,
+                          "text-[#17161A]",
+                        )}
+                      >
+                        {formatNumber(row.balance)}
+                      </td>
+                      <td className={cn(cellClassName, "border-r-0")}>
+                        {transaction && (
+                          <RowActions
+                            transaction={transaction}
+                            onUpdate={openUpdateDialog}
+                            onDelete={openDeleteDialog}
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 md:hidden">
+          {screenRows.map((row) => {
+            const transaction = row.transactionId
+              ? transactionsById.get(row.transactionId)
+              : undefined;
+            const { date, voucherNo } = splitLedgerDateLabel(row.dateLabel);
+            const hasAmount =
+              row.income !== undefined || row.expense !== undefined;
+
+            return (
+              <div
+                key={row.id}
+                className={cn(
+                  "rounded-[11px] border border-[#E3DFD7] px-[14px] py-[13px]",
+                  row.summary ? "bg-[#F4F1EA]" : "bg-white",
+                )}
+              >
+                {(voucherNo || row.accountLabel) && (
+                  <div className="flex justify-between gap-[10px] font-mono text-[11px] leading-none text-[#5C5952]">
+                    <span>
+                      {[date, voucherNo && `No.${voucherNo}`]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                    <span className="truncate">{row.accountLabel ?? ""}</span>
+                  </div>
+                )}
+                <div
+                  className={cn(
+                    "flex items-start justify-between gap-3",
+                    (voucherNo || row.accountLabel) && "mt-2",
+                  )}
+                >
+                  <p className="min-w-0 text-[13px] leading-[1.4] font-medium break-words">
+                    {row.description ?? ""}
+                  </p>
+                  {transaction && (
+                    <RowActions
+                      transaction={transaction}
+                      onUpdate={openUpdateDialog}
+                      onDelete={openDeleteDialog}
+                    />
+                  )}
+                </div>
+                <div className="mt-[10px] flex flex-wrap justify-between gap-[10px] font-mono text-[13px] leading-none font-medium tabular-nums">
+                  <span className="flex flex-wrap gap-[10px]">
+                    {row.income !== undefined && (
+                      <span className="text-[#0E7C66]">
+                        +{formatCurrencyIntoYen(row.income)}
+                      </span>
+                    )}
+                    {row.expense !== undefined && (
+                      <span className="text-[#B0442A]">
+                        −{formatCurrencyIntoYen(row.expense)}
+                      </span>
+                    )}
+                    {!hasAmount && <span className="text-[#5C5952]">—</span>}
+                  </span>
+                  {row.balance !== undefined && (
+                    <span className="text-[#5C5952]">
+                      残 {formatCurrencyIntoYen(row.balance)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <Modal
@@ -363,9 +503,7 @@ export default function LedgerPreviewTable({
       >
         {activeDialog?.mode === "update" && activeTransaction && editValues && (
           <div className="space-y-5">
-            <ModalTitleText className="text-blue-dark">
-              Update Transaction
-            </ModalTitleText>
+            <ModalTitleText>Update Transaction</ModalTitleText>
             <ModalInputForm
               values={editValues}
               setValues={setEditValues}
@@ -379,7 +517,7 @@ export default function LedgerPreviewTable({
 
         {activeDialog?.mode === "delete" && activeTransaction && (
           <div className="space-y-5">
-            <ModalTitleText className="text-red">
+            <ModalTitleText className="text-[#9E3B21]">
               Delete Transaction
             </ModalTitleText>
             <ModalDetailsContent

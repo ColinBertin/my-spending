@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import Button from "./Button";
+import { Button } from "@/components/ui/button";
 import ModalDetailsContent from "./ModalDetailsContent";
 
 function findAll(
@@ -67,12 +67,12 @@ describe("ModalDetailsContent", () => {
 
     const actionButtons = findAll(element, (item) => item.type === Button);
     expect(actionButtons).toHaveLength(2);
-    expect(
-      (actionButtons[0].props as { handleChange: () => void }).handleChange,
-    ).toBe(closeDialog);
-    expect(
-      (actionButtons[1].props as { handleChange: () => void }).handleChange,
-    ).toBe(handleDelete);
+    expect((actionButtons[0].props as { onClick: () => void }).onClick).toBe(
+      closeDialog,
+    );
+    expect((actionButtons[1].props as { onClick: () => void }).onClick).toBe(
+      handleDelete,
+    );
     expect((actionButtons[1].props as { disabled: boolean }).disabled).toBe(
       true,
     );

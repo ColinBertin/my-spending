@@ -50,7 +50,7 @@ Middleware (`middleware.ts` → `utils/supabase/middleware.ts`) redirects unauth
 
 ### Ledger generation
 
-`lib/ledgerPreviewRows.ts` builds the row model (carry-forward balances, subtotals, closing rows) for on-screen ledger previews; `lib/ledgerXlsx.ts` renders that into a styled XLSX workbook, cloning cell styles from a template file (`public/水道光熱費_2024.xlsx`, falling back to `public/ledger-template.xlsx`) rather than building styles from scratch. `app/(routes)/ledger-generator/data.ts` contains domain-specific accounting rules — e.g. specific category names (Japanese and English) treated as accrued expenses, and a January-adjustment ledger for categories in `CATEGORY_LEDGER_JANUARY_ADJUSTMENT_TARGETS`. These rules encode real accounting requirements, not arbitrary defaults — don't change the category name lists or adjustment logic without understanding the accounting rationale.
+`lib/ledgerPreviewRows.ts` builds the row model (carry-forward balances, subtotals, closing rows) for on-screen ledger previews; `lib/ledgerXlsx.ts` renders that into a styled XLSX workbook, cloning cell styles from a template file (`public/水道光熱費_2024.xlsx`, falling back to `public/ledger-template.xlsx`) rather than building styles from scratch. `app/(routes)/ledger/data.ts` contains domain-specific accounting rules — e.g. specific category names (Japanese and English) treated as accrued expenses, and a January-adjustment ledger for categories in `CATEGORY_LEDGER_JANUARY_ADJUSTMENT_TARGETS`. These rules encode real accounting requirements, not arbitrary defaults — don't change the category name lists or adjustment logic without understanding the accounting rationale.
 
 ### Frontend structure
 

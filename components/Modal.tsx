@@ -22,7 +22,12 @@ type ModalTitleProps = {
 
 export function ModalTitleText({ children, className }: ModalTitleProps) {
   return (
-    <DialogTitle className={cn("text-xl font-semibold", className)}>
+    <DialogTitle
+      className={cn(
+        "text-[20px] leading-[1.2] font-semibold tracking-[-0.02em] text-[#17161A]",
+        className,
+      )}
+    >
       {children}
     </DialogTitle>
   );
@@ -41,11 +46,11 @@ export default function Modal({
       onClose={onClose}
       className={cn("relative z-50", className)}
     >
-      <DialogBackdrop className="fixed inset-0 bg-black/30" />
+      <DialogBackdrop className="fixed inset-0 bg-[#17161A]/40" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel
           className={cn(
-            "w-full max-w-xl rounded-2xl border border-blue-dark/20 bg-white p-5 shadow-xl",
+            "max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-[12px] border border-[#E3DFD7] bg-white px-5 pt-[22px] pb-6 font-sans text-[#3B3934] shadow-[0_12px_32px_-12px_rgba(23,22,26,0.28)] sm:px-6",
             panelClassName,
           )}
         >

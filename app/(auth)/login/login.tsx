@@ -4,8 +4,6 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-import Button from "@/components/Button";
-import FormInputField from "@/components/FormInputField";
 import { signInWithPassword } from "@/utils/authClient";
 import { emailRegex } from "@/helpers";
 import logo from "@/public/images/yen-icon.png";
@@ -16,12 +14,13 @@ import {
 import { useState, useTransition } from "react";
 import Spinner from "@/components/Spinner";
 
-type SignupInput = {
-  username: string;
+type LoginFormValues = {
   email: string;
   password: string;
-  confirmPassword: string;
 };
+
+const fieldClassName =
+  "h-11 rounded-[9px] border border-[#E3DFD7] bg-[#FBFAF7] px-3 text-[13px] text-[#17161A] placeholder:text-[#8C887F] outline-none transition-colors focus:border-[1.5px] focus:border-[#17161A] focus:bg-white";
 
 export default function Login() {
   const router = useRouter();
@@ -38,9 +37,9 @@ export default function Login() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupInput>({ mode: "onChange" });
+  } = useForm<LoginFormValues>({ mode: "onChange" });
 
-  async function handleLogin(data: SignupInput) {
+  async function handleLogin(data: LoginFormValues) {
     try {
       setIsFetching(true);
       const { error } = await signInWithPassword(data.email, data.password);
@@ -62,70 +61,107 @@ export default function Login() {
 
   if (isMutating) {
     return (
-      <div className="flex flex-col h-full w-full justify-center items-center">
+      <div className="flex h-full w-full flex-col items-center justify-center text-[#17161A]">
         <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="">
-      <form
-        className="flex flex-col justify-center h-1/2"
-        onSubmit={handleSubmit(handleLogin)}
-      >
-        <div className="mb-8 flex flex-col items-center gap-3">
+    <div className="w-full max-w-[400px] rounded-xl border border-[#E3DFD7] bg-white p-6 sm:p-8">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#FCEDE8]">
           <Image
             src={logo}
             alt="My Spending logo"
-            className="h-16 w-16 sm:h-20 sm:w-20"
+            className="h-6 w-6"
             priority
           />
-          <h1 className="text-4xl sm:text-5xl font-bold text-blue-dark text-center">
-            My Spending
-          </h1>
-        </div>
-        <h1 className="text-3xl font-semibold text-center text-red mb-10">
-          Login
+        </span>
+        <span
+          className="text-[10px] font-medium uppercase tracking-[0.16em] text-[#5C5952]"
+          style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+        >
+          My Spending
+        </span>
+        <h1 className="text-[26px] font-semibold leading-[1.25] tracking-[-0.02em] text-[#17161A] sm:text-[28px]">
+          Log in
         </h1>
+        <p className="text-[13px] leading-[1.6] text-[#5C5952]">
+          Welcome back — enter your details to continue.
+        </p>
+      </div>
 
-        <FormInputField
-          type="email"
-          placeholder="Email"
-          containerClassName="relative flex flex-col justify-around mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
-          registration={register("email", {
-            required: "Email is required",
-            validate: (email) =>
-              emailRegex.test(email) ? true : "Invalid email format",
-          })}
-          error={errors.email?.message}
-        />
-
-        <FormInputField
-          type="password"
-          placeholder="Password"
-          containerClassName="relative flex flex-col justify-around mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
-          registration={register("password", {
-            required: "Password is required",
-          })}
-          error={errors.password?.message}
-        />
-        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
-          <Button color="primary" type="submit" text="Log in" />
-          <Button
-            color="secondary"
-            type="button"
-            text="Sign up"
-            handleChange={(e) => {
-              e.preventDefault();
-              router.push("/signup");
-            }}
+      <form
+        className="mt-8 flex flex-col gap-5"
+        onSubmit={handleSubmit(handleLogin)}
+      >
+        <div className="flex flex-col gap-[7px]">
+          <label
+            htmlFor="email"
+            className="text-[11px] font-medium text-[#5C5952]"
+          >
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            className={fieldClassName}
+            {...register("email", {
+              required: "Email is required",
+              validate: (email) =>
+                emailRegex.test(email) ? true : "Invalid email format",
+            })}
           />
+          {errors.email?.message && (
+            <span className="text-[12px] text-[#B0442A]">
+              {errors.email.message}
+            </span>
+          )}
         </div>
+
+        <div className="flex flex-col gap-[7px]">
+          <label
+            htmlFor="password"
+            className="text-[11px] font-medium text-[#5C5952]"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            className={fieldClassName}
+            {...register("password", {
+              required: "Password is required",
+            })}
+          />
+          {errors.password?.message && (
+            <span className="text-[12px] text-[#B0442A]">
+              {errors.password.message}
+            </span>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          className="mt-2 h-[46px] rounded-[9px] bg-[#B04124] text-[13px] font-medium text-white transition-colors hover:bg-[#8A331B]"
+        >
+          Log in
+        </button>
       </form>
-      {/* <button onClick={handleGoogleSignIn}>Sign Up / Login with Google</button> */}
+
+      <p className="mt-6 text-center text-[13px] text-[#5C5952]">
+        Don&apos;t have an account?{" "}
+        <button
+          type="button"
+          className="font-medium text-[#B04124] hover:text-[#8A331B]"
+          onClick={() => router.push("/signup")}
+        >
+          Sign up
+        </button>
+      </p>
     </div>
   );
 }

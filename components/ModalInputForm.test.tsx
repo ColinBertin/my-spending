@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Category } from "@/types";
-import Button from "./Button";
+import { Button } from "@/components/ui/button";
 import ModalInputForm from "./ModalInputForm";
 
 function findAll(
@@ -107,12 +107,12 @@ describe("ModalInputForm", () => {
 
     const actionButtons = findAll(element, (item) => item.type === Button);
     expect(actionButtons).toHaveLength(2);
-    expect(
-      (actionButtons[0].props as { handleChange: () => void }).handleChange,
-    ).toBe(closeDialog);
-    expect(
-      (actionButtons[1].props as { handleChange: () => void }).handleChange,
-    ).toBe(handleSave);
+    expect((actionButtons[0].props as { onClick: () => void }).onClick).toBe(
+      closeDialog,
+    );
+    expect((actionButtons[1].props as { onClick: () => void }).onClick).toBe(
+      handleSave,
+    );
     expect((actionButtons[0].props as { disabled: boolean }).disabled).toBe(
       true,
     );
