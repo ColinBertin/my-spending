@@ -35,7 +35,11 @@ export default function NavBar() {
     setDrawerOpen(false);
   }, []);
 
-  const isSamePath = (href: string) => pathname?.endsWith(href);
+  // Nested routes (e.g. /accounts/[id]) keep their section highlighted
+  const isActive = (href: string) =>
+    href === "/"
+      ? pathname === "/"
+      : pathname === href || pathname.startsWith(`${href}/`);
 
   async function handleLogout() {
     closeDrawer();
@@ -83,9 +87,13 @@ export default function NavBar() {
 
         <nav className="flex flex-col gap-[2px] px-2 py-[10px]">
           {navItems.map((item) => {
-            const active = isSamePath(item.href);
+            const active = isActive(item.href);
             return (
-              <Link key={item.label} href={item.href}>
+              <Link
+                key={item.label}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+              >
                 <span
                   className={clsx(
                     "flex h-[38px] w-full items-center gap-[11px] rounded-[9px] px-3 text-left text-[13px] font-medium transition-colors",
@@ -174,9 +182,14 @@ export default function NavBar() {
           className="print-hidden fixed inset-x-0 top-[65px] z-40 grid grid-cols-2 gap-[6px] border-b border-[#E3DFD7] bg-white px-3 pb-3 pt-2 md:hidden"
         >
           {navItems.map((item) => {
-            const active = isSamePath(item.href);
+            const active = isActive(item.href);
             return (
-              <Link key={item.label} href={item.href} onClick={closeDrawer}>
+              <Link
+                key={item.label}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                onClick={closeDrawer}
+              >
                 <span
                   className={clsx(
                     "flex h-10 w-full items-center justify-center rounded-[9px] border text-[12px] font-medium",

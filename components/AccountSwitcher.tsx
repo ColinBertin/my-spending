@@ -28,7 +28,7 @@ export default function AccountSwitcher({ accounts }: AccountSwitcherProps) {
         return (
           <Link
             key={account.id}
-            href={`/accounts/${account.id}`}
+            href={`/accounts/${account.id}/details`}
             aria-current={isActive ? "page" : undefined}
             className={clsx(
               "flex min-w-[128px] flex-none cursor-pointer flex-col items-start gap-[7px] rounded-[10px] border px-[13px] py-[11px] text-left sm:min-w-[150px] sm:flex-1 sm:px-[15px] sm:py-3",
