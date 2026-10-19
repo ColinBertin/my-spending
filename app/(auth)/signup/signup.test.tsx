@@ -10,8 +10,8 @@ vi.mock("react", async () => {
   };
 });
 
-vi.mock("@/public/images/yen-icon.png", () => ({
-  default: { src: "/yen-icon.png", width: 64, height: 64 },
+vi.mock("@/public/brand/app-icon-dark.svg", () => ({
+  default: { src: "/brand/app-icon-dark.svg", width: 64, height: 64 },
 }));
 
 const pushMock = vi.fn();

@@ -5,7 +5,7 @@ import Image from "next/image";
 import clsx from "clsx";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
-import logo from "@/public/images/yen-icon.png";
+import logo from "@/public/brand/app-icon-dark.svg";
 import Spinner from "@/components/Spinner";
 
 const fieldClassName =
@@ -32,14 +32,12 @@ export function AuthCard({ title, subtitle, children }: AuthCardProps) {
   return (
     <div className="w-full max-w-[400px] rounded-xl border border-[#E3DFD7] bg-white p-6 sm:p-8">
       <div className="flex flex-col items-center gap-3 text-center">
-        <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#FCEDE8]">
-          <Image
-            src={logo}
-            alt="My Spending logo"
-            className="h-6 w-6"
-            priority
-          />
-        </span>
+        <Image
+          src={logo}
+          alt="My Spending logo"
+          className="h-11 w-11"
+          priority
+        />
         <span
           className="text-[10px] font-medium uppercase tracking-[0.16em] text-[#5C5952]"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}

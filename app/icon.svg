@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="16" height="16">
+  <style>
+    .ink { fill: #17161A; }
+    .frame { fill: none; stroke: #17161A; }
+    /* Follows the browser's theme: paper-coloured mark on dark tab bars */
+    @media (prefers-color-scheme: dark) {
+      .ink { fill: #F7F5F1; }
+      .frame { stroke: #F7F5F1; }
+    }
+  </style>
+  <rect class="frame" x="7" y="9" width="50" height="46" rx="6" stroke-width="6"/>
+  <rect class="ink" x="8" y="22" width="48" height="6"/>
+  <rect class="ink" x="14" y="33" width="16" height="10" rx="5"/>
+  <rect x="34" y="33" width="16" height="10" rx="5" fill="#E8552F"/>
+</svg>
