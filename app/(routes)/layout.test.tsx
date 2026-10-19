@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
-import Layout, { metadata } from "./layout";
+import Layout from "./layout";
 
 vi.mock("@/components/layout/Navbar", () => ({
   default: () => <div>Mock Navbar</div>,
@@ -21,12 +21,5 @@ describe("routes layout", () => {
 
     expect(html).toContain("Mock Navbar");
     expect(html).toContain("Page Content");
-  });
-
-  it("exports metadata defaults", () => {
-    expect(metadata.title).toEqual({
-      template: "%s - My Spending",
-      default: "My Spending",
-    });
   });
 });

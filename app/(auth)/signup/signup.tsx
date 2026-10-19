@@ -2,20 +2,23 @@
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 // import { FcGoogle } from "react-icons/fc";
 
 import { emailRegex } from "@/helpers";
-import Button from "@/components/Button";
-import FormInputField from "@/components/FormInputField";
-import logo from "@/public/images/yen-icon.png";
+import { Button } from "@/components/ui/button";
 import { signUpWithPassword } from "@/utils/authClient";
 import {
   useErrorNotification,
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
 import { useState, useTransition } from "react";
-import Spinner from "@/components/Spinner";
+import {
+  AuthCard,
+  AuthField,
+  AuthLoading,
+  AuthSwitchPrompt,
+  authSubmitButtonClassName,
+} from "../auth-ui";
 
 type SignupInput = {
   username: string;
@@ -79,91 +82,78 @@ export default function Signup() {
   // }
 
   if (isMutating) {
-    return (
-      <div className="flex flex-col h-full w-full justify-center items-center">
-        <Spinner />
-      </div>
-    );
+    return <AuthLoading />;
   }
 
   return (
-    <div>
+    <AuthCard
+      title="Create your account"
+      subtitle="Enter your details to get started."
+    >
       <form
-        className="flex flex-col justify-center h-1/2"
+        className="mt-8 flex flex-col gap-5"
         onSubmit={handleSubmit(handleSignup)}
       >
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <Image
-            src={logo}
-            alt="My Spending logo"
-            className="h-16 w-16 sm:h-20 sm:w-20"
-            priority
-          />
-          <h1 className="text-4xl sm:text-5xl font-bold text-blue-dark text-center">
-            My Spending
-          </h1>
-        </div>
-        <h1 className="text-3xl font-semibold text-center mb-10">Signup</h1>
-
-        <FormInputField
-          placeholder="Username"
-          containerClassName="relative mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
-          registration={register("username", {
+        <AuthField
+          id="username"
+          autoComplete="username"
+          label="Username"
+          placeholder="Your name"
+          error={errors.username?.message}
+          {...register("username", {
             required: "Username is required",
           })}
-          error={errors.username?.message}
         />
 
-        <FormInputField
+        <AuthField
+          id="email"
+          autoComplete="email"
+          label="Email"
           type="email"
-          placeholder="Email"
-          containerClassName="relative mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
-          registration={register("email", {
+          placeholder="you@example.com"
+          error={errors.email?.message}
+          {...register("email", {
             required: "Email is required",
             validate: (email) =>
               emailRegex.test(email) || "Invalid email format",
           })}
-          error={errors.email?.message}
         />
 
-        <FormInputField
+        <AuthField
+          id="password"
+          autoComplete="new-password"
+          label="Password"
           type="password"
-          placeholder="Password"
-          containerClassName="relative mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
-          registration={register("password", {
+          placeholder="••••••••"
+          error={errors.password?.message}
+          {...register("password", {
             required: "Password is required",
           })}
-          error={errors.password?.message}
         />
 
-        <FormInputField
+        <AuthField
+          id="confirmPassword"
+          autoComplete="new-password"
+          label="Confirm password"
           type="password"
-          placeholder="Confirm Password"
-          containerClassName="relative mb-12"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
-          registration={register("confirmPassword", {
+          placeholder="••••••••"
+          error={errors.confirmPassword?.message}
+          {...register("confirmPassword", {
             validate: (value, formValues) =>
               value === formValues.password || "Passwords do not match",
           })}
-          error={errors.confirmPassword?.message}
         />
 
-        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
-          <Button color="primary" type="submit" text="Sign up" />
-          <Button
-            color="secondary"
-            type="button"
-            text="Log in"
-            handleChange={(e) => {
-              e.preventDefault();
-              router.push("/login");
-            }}
-          />
-        </div>
+        <Button type="submit" className={authSubmitButtonClassName}>
+          Create account
+        </Button>
       </form>
+
+      <AuthSwitchPrompt
+        prompt="Already have an account?"
+        actionLabel="Log in"
+        onAction={() => router.push("/login")}
+      />
 
       {/* <button
         className="py-2 px-4 rounded-3xl mt-4"
@@ -171,6 +161,6 @@ export default function Signup() {
       >
         <FcGoogle size={40} />
       </button> */}
-    </div>
+    </AuthCard>
   );
 }

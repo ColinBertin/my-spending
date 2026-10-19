@@ -1,9 +1,14 @@
+import AuthPageShell from "../auth-page-shell";
 import Signup from "./signup";
+
+export const metadata = {
+  title: "Sign up",
+};
 
 export default function SignupPage() {
   return (
-    <div className="flex w-screen h-screen justify-center items-center">
+    <AuthPageShell>
       <Signup />
-    </div>
+    </AuthPageShell>
   );
 }

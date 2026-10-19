@@ -69,6 +69,44 @@ export function isCarryOverRow(row: LedgerPreviewRow) {
   );
 }
 
+export function sumIncomeAndSpending(
+  transactions: Pick<Transaction, "amount" | "type">[],
+) {
+  return transactions.reduce(
+    (totals, transaction) => {
+      const amount = Number(transaction.amount) || 0;
+
+      if (transaction.type === "income") {
+        totals.totalIncome += amount;
+      } else {
+        totals.totalSpending += amount;
+      }
+
+      return totals;
+    },
+    { totalIncome: 0, totalSpending: 0 },
+  );
+}
+
+// Ledger rows encode "M/D\nvoucherNo" (the date is blank for repeat days).
+export function splitLedgerDateLabel(dateLabel?: string) {
+  const [date = "", voucherNo = ""] = (dateLabel ?? "").split("\n");
+  return { date: date.trim(), voucherNo: voucherNo.trim() };
+}
+
+// Running balance after the last posted entry (before any closing entry);
+// falls back to the opening balance when the ledger has no entries.
+export function getLedgerEndingBalance(rows: LedgerPreviewRow[]) {
+  for (let index = rows.length - 1; index >= 0; index--) {
+    const row = rows[index];
+    if (row.kind === "entry" && typeof row.balance === "number") {
+      return row.balance;
+    }
+  }
+
+  return rows.find((row) => row.kind === "carry")?.balance ?? 0;
+}
+
 export function toDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
 }

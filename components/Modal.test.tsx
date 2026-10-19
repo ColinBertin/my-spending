@@ -29,7 +29,7 @@ describe("Modal", () => {
 
     expect(element.props.className).toContain("print-hidden");
     expect(panel.props.className).toContain("max-w-2xl");
-    expect(panel.props.className).toContain("rounded-2xl");
+    expect(panel.props.className).toContain("rounded-[12px]");
   });
 });
 
@@ -40,7 +40,7 @@ describe("ModalTitleText", () => {
       className: "text-red",
     });
 
-    expect(element.props.className).toContain("text-xl");
+    expect(element.props.className).toContain("text-[20px]");
     expect(element.props.className).toContain("font-semibold");
     expect(element.props.className).toContain("text-red");
   });

@@ -2,25 +2,26 @@
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
-import Button from "@/components/Button";
-import FormInputField from "@/components/FormInputField";
 import { signInWithPassword } from "@/utils/authClient";
 import { emailRegex } from "@/helpers";
-import logo from "@/public/images/yen-icon.png";
+import { Button } from "@/components/ui/button";
 import {
   useErrorNotification,
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
 import { useState, useTransition } from "react";
-import Spinner from "@/components/Spinner";
+import {
+  AuthCard,
+  AuthField,
+  AuthLoading,
+  AuthSwitchPrompt,
+  authSubmitButtonClassName,
+} from "../auth-ui";
 
-type SignupInput = {
-  username: string;
+type LoginFormValues = {
   email: string;
   password: string;
-  confirmPassword: string;
 };
 
 export default function Login() {
@@ -38,9 +39,9 @@ export default function Login() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupInput>({ mode: "onChange" });
+  } = useForm<LoginFormValues>({ mode: "onChange" });
 
-  async function handleLogin(data: SignupInput) {
+  async function handleLogin(data: LoginFormValues) {
     try {
       setIsFetching(true);
       const { error } = await signInWithPassword(data.email, data.password);
@@ -61,71 +62,54 @@ export default function Login() {
   }
 
   if (isMutating) {
-    return (
-      <div className="flex flex-col h-full w-full justify-center items-center">
-        <Spinner />
-      </div>
-    );
+    return <AuthLoading />;
   }
 
   return (
-    <div className="">
+    <AuthCard
+      title="Log in"
+      subtitle="Welcome back — enter your details to continue."
+    >
       <form
-        className="flex flex-col justify-center h-1/2"
+        className="mt-8 flex flex-col gap-5"
         onSubmit={handleSubmit(handleLogin)}
       >
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <Image
-            src={logo}
-            alt="My Spending logo"
-            className="h-16 w-16 sm:h-20 sm:w-20"
-            priority
-          />
-          <h1 className="text-4xl sm:text-5xl font-bold text-blue-dark text-center">
-            My Spending
-          </h1>
-        </div>
-        <h1 className="text-3xl font-semibold text-center text-red mb-10">
-          Login
-        </h1>
-
-        <FormInputField
+        <AuthField
+          id="email"
+          autoComplete="email"
+          label="Email"
           type="email"
-          placeholder="Email"
-          containerClassName="relative flex flex-col justify-around mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
-          registration={register("email", {
+          placeholder="you@example.com"
+          error={errors.email?.message}
+          {...register("email", {
             required: "Email is required",
             validate: (email) =>
               emailRegex.test(email) ? true : "Invalid email format",
           })}
-          error={errors.email?.message}
         />
 
-        <FormInputField
+        <AuthField
+          id="password"
+          autoComplete="current-password"
+          label="Password"
           type="password"
-          placeholder="Password"
-          containerClassName="relative flex flex-col justify-around mb-8"
-          inputClassName="w-56 sm:w-80 p-2 h-auto"
-          registration={register("password", {
+          placeholder="••••••••"
+          error={errors.password?.message}
+          {...register("password", {
             required: "Password is required",
           })}
-          error={errors.password?.message}
         />
-        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
-          <Button color="primary" type="submit" text="Log in" />
-          <Button
-            color="secondary"
-            type="button"
-            text="Sign up"
-            handleChange={(e) => {
-              e.preventDefault();
-              router.push("/signup");
-            }}
-          />
-        </div>
+
+        <Button type="submit" className={authSubmitButtonClassName}>
+          Log in
+        </Button>
       </form>
-      {/* <button onClick={handleGoogleSignIn}>Sign Up / Login with Google</button> */}
-    </div>
+
+      <AuthSwitchPrompt
+        prompt="Don't have an account?"
+        actionLabel="Sign up"
+        onAction={() => router.push("/signup")}
+      />
+    </AuthCard>
   );
 }

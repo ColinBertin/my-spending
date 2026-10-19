@@ -1,9 +1,14 @@
+import AuthPageShell from "../auth-page-shell";
 import Login from "./login";
+
+export const metadata = {
+  title: "Log in",
+};
 
 export default function LoginPage() {
   return (
-    <div className="flex w-screen h-screen justify-center items-center">
+    <AuthPageShell>
       <Login />
-    </div>
+    </AuthPageShell>
   );
 }
