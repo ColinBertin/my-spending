@@ -76,9 +76,9 @@ export default function NavBar() {
       {/* PERSISTENT SIDEBAR — tablet 204px / desktop 248px */}
       <aside className="print-hidden fixed inset-y-0 left-0 z-30 hidden md:flex md:w-[204px] lg:w-[248px] flex-col bg-[#F1EEE8] border-r border-[#E3DFD7]">
         <div className="flex items-center gap-[10px] border-b border-[#E3DFD7] px-4 py-4">
-          <Image src={logo} alt="My Finances" className="h-[26px] w-[26px]" />
+          <Image src={logo} alt="" className="h-[26px] w-[26px]" />
           <span className="text-[15px] font-semibold tracking-[-0.01em] text-[#17161A]">
-            My Finances
+            My Spending
           </span>
         </div>
 
@@ -142,9 +142,9 @@ export default function NavBar() {
       {/* MOBILE STICKY HEADER */}
       <header className="print-hidden sticky top-0 z-40 flex items-center justify-between gap-[10px] border-b border-[#E3DFD7] bg-[#F7F5F1]/[0.92] px-4 py-3 backdrop-blur-sm md:hidden">
         <div className="flex items-center gap-[9px]">
-          <Image src={logo} alt="My Finances" className="h-6 w-6" />
+          <Image src={logo} alt="" className="h-6 w-6" />
           <span className="text-[14px] font-semibold text-[#17161A]">
-            My Finances
+            My Spending
           </span>
         </div>
         <button

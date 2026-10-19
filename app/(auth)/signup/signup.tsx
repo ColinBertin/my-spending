@@ -121,6 +121,7 @@ export default function Signup() {
 
         <AuthField
           id="password"
+          autoComplete="new-password"
           label="Password"
           type="password"
           placeholder="••••••••"
@@ -132,6 +133,7 @@ export default function Signup() {
 
         <AuthField
           id="confirmPassword"
+          autoComplete="new-password"
           label="Confirm password"
           type="password"
           placeholder="••••••••"

@@ -84,6 +84,8 @@ export function AuthField({
           type={isPassword && isPasswordVisible ? "text" : type}
           placeholder={placeholder}
           className={clsx(fieldClassName, "w-full", isPassword && "pr-11")}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
           {...inputProps}
         />
         {isPassword && (
@@ -99,7 +101,11 @@ export function AuthField({
           </button>
         )}
       </div>
-      {error && <span className="text-[12px] text-[#B0442A]">{error}</span>}
+      {error && (
+        <span id={`${id}-error`} className="text-[12px] text-[#B0442A]">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

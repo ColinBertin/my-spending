@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { signInWithPassword } from "@/utils/authClient";
 import { emailRegex } from "@/helpers";
+import { Button } from "@/components/ui/button";
 import {
   useErrorNotification,
   useSuccessNotification,
@@ -99,9 +100,9 @@ export default function Login() {
           })}
         />
 
-        <button type="submit" className={authSubmitButtonClassName}>
+        <Button type="submit" className={authSubmitButtonClassName}>
           Log in
-        </button>
+        </Button>
       </form>
 
       <AuthSwitchPrompt

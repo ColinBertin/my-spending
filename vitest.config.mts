@@ -10,6 +10,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "."),
     },
   },
+  css: {
+    postcss: { plugins: [] },
+  },
   test: {
     environment: "node",
     pool: "threads",

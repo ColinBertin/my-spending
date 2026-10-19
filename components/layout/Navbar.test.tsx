@@ -71,7 +71,7 @@ describe("Navbar", () => {
   it("renders logo and keeps the mobile drawer hidden by default", () => {
     const html = renderToStaticMarkup(<Navbar />);
 
-    expect(html).toContain("My Finances");
+    expect(html).toContain("My Spending");
     expect(html.match(/Log out/g)).toHaveLength(1);
   });
 });

@@ -1,15 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async redirects() {
-    // Old ledger URLs (/ledger-generator, then /ledger) now live under /ledgers
-    return ["/ledger-generator", "/ledger"].flatMap((oldBase) => [
-      { source: oldBase, destination: "/ledgers", permanent: true },
+    return [
       {
-        source: `${oldBase}/:path*`,
+        source: "/ledger-generator",
+        destination: "/ledgers",
+        permanent: true,
+      },
+      {
+        source: "/ledger-generator/:path*",
         destination: "/ledgers/:path*",
         permanent: true,
       },
-    ]);
+    ];
   },
 };
 
