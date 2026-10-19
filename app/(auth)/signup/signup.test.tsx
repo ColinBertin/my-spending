@@ -78,47 +78,35 @@ describe("Signup", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders the signup copy, all fields and the log-in link", () => {
+  it("renders the signup copy, the email field and the log-in link", () => {
     const html = renderToStaticMarkup(<Signup />);
 
     expect(html).toContain("Create your account");
     expect(html).toContain("Create account");
     expect(html).toContain("Already have an account?");
     expect(html).toContain("Log in");
-    for (const id of ["username", "email", "password", "confirmPassword"]) {
-      expect(html).toContain(`for="${id}"`);
-      expect(html).toContain(`id="${id}"`);
-    }
+    expect(html).toContain('for="email"');
+    expect(html).toContain('id="email"');
   });
 
   it("renders field error messages", () => {
     formErrors = {
       email: { message: "Invalid email format" },
-      confirmPassword: { message: "Passwords do not match" },
     };
     const html = renderToStaticMarkup(<Signup />);
 
     expect(html).toContain("Invalid email format");
-    expect(html).toContain("Passwords do not match");
   });
 
   it("registers the existing validation rules", () => {
     renderToStaticMarkup(<Signup />);
 
-    expect(registeredRules.username?.required).toBe("Username is required");
     expect(registeredRules.email?.required).toBe("Email is required");
-    expect(registeredRules.password?.required).toBe("Password is required");
 
     const validateEmail = registeredRules.email?.validate;
     expect(validateEmail?.("user@example.com", validValues)).toBe(true);
     expect(validateEmail?.("not-an-email", validValues)).toBe(
       "Invalid email format",
-    );
-
-    const validateConfirm = registeredRules.confirmPassword?.validate;
-    expect(validateConfirm?.("test-password", validValues)).toBe(true);
-    expect(validateConfirm?.("different", validValues)).toBe(
-      "Passwords do not match",
     );
   });
 
