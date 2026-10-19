@@ -19,7 +19,7 @@ export default async function LedgerPreviewPage({
   return (
     <LedgerPreview
       {...preview}
-      backHref="/ledger"
+      backHref="/ledgers"
       backLabel="Ledger generator"
       autoDownload={download === "1"}
     />

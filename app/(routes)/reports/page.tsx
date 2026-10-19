@@ -2,7 +2,7 @@ import LedgerPreview from "@/components/LedgerPreview";
 import {
   GENERAL_LEDGER_NAME,
   getLedgerPreview,
-} from "../ledger/ledger-preview";
+} from "../ledgers/ledger-preview";
 
 export const metadata = {
   title: "Reports",

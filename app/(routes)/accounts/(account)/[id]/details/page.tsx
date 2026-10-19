@@ -4,7 +4,7 @@ import { parseMonthParam } from "../../month-param";
 import AccountDetails from "./details";
 
 export const metadata = {
-  title: "Transaction Details",
+  title: "Accounts",
 };
 
 export default async function AccountDetailsPage({

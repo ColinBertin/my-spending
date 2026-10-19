@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ReactNode } from "react";
 import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -15,8 +16,11 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
 });
 
-export const metadata = {
-  title: "My Spending",
+export const metadata: Metadata = {
+  title: {
+    template: "%s - My Spending",
+    default: "My Spending",
+  },
   description: "Track your spending with Supabase Auth",
 };
 

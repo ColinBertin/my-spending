@@ -61,7 +61,7 @@ describe("LedgerGenerator", () => {
     expect(html).toContain("Generate ledger");
     expect(html).toContain("Studio Pro");
     expect(html).toContain("2025");
-    expect(html).toContain('href="/ledger/general-ledger"');
+    expect(html).toContain('href="/ledgers/general-ledger"');
     expect(html).toContain("2 entries");
     expect(html).toMatch(/[¥￥]5,000/);
     expect(html).toMatch(/[¥￥]300/);
@@ -72,9 +72,9 @@ describe("LedgerGenerator", () => {
   it("lists every category and only links categories with entries", () => {
     const html = render();
 
-    expect(html).toContain(`href="/ledger/${encodeURIComponent("売上高")}"`);
+    expect(html).toContain(`href="/ledgers/${encodeURIComponent("売上高")}"`);
     expect(html).not.toContain(
-      `href="/ledger/${encodeURIComponent("消耗品費")}"`,
+      `href="/ledgers/${encodeURIComponent("消耗品費")}"`,
     );
     expect(html).toContain("消耗品費");
     expect(html).toContain("売上高, 水道光熱費, 通信費");
@@ -83,9 +83,9 @@ describe("LedgerGenerator", () => {
   it("links each January adjustment to its own ledger", () => {
     const html = render();
 
-    expect(html).toContain(`href="/ledger/${encodeURIComponent("未払費用")}"`);
+    expect(html).toContain(`href="/ledgers/${encodeURIComponent("未払費用")}"`);
     expect(html).not.toContain(
-      `href="/ledger/${encodeURIComponent("売掛金")}"`,
+      `href="/ledgers/${encodeURIComponent("売掛金")}"`,
     );
     expect(html).toMatch(/NET -[¥￥]900/);
   });
@@ -103,6 +103,6 @@ describe("LedgerGenerator", () => {
     expect(html).toContain("No professional account");
     expect(html).toContain('href="/accounts/create"');
     expect(html).toContain('href="/categories/create"');
-    expect(html).not.toContain('href="/ledger/general-ledger"');
+    expect(html).not.toContain('href="/ledgers/general-ledger"');
   });
 });

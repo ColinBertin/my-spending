@@ -3,6 +3,10 @@ import StatTile from "@/components/StatTile";
 import { formatCurrencyIntoYen } from "@/helpers";
 import { getAccountsMonthlySummary } from "../data";
 
+export const metadata = {
+  title: "Accounts",
+};
+
 export default async function AccountPage({
   params,
 }: {

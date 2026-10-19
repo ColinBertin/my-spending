@@ -15,7 +15,7 @@ const navItems = [
   { label: "Dashboard", href: "/" },
   { label: "Accounts", href: "/accounts" },
   { label: "Categories", href: "/categories" },
-  { label: "Ledger", href: "/ledger" },
+  { label: "Ledgers", href: "/ledgers" },
   { label: "Reports", href: "/reports" },
   // TODO: Add a settings route with user details/update...
   // { label: "Settings", href: "/settings" },
@@ -114,7 +114,7 @@ export default function NavBar() {
 
         <div className="mt-auto border-t border-[#E3DFD7] px-2 pb-[14px] pt-3">
           <Link
-            href="/ledger"
+            href="/ledgers"
             className="flex h-[38px] w-full items-center gap-[10px] rounded-[9px] border border-[#E3DFD7] bg-white px-3 text-[12px] font-medium text-[#3B3934] transition-colors hover:bg-[#FBFAF7]"
           >
             <span className="h-[7px] w-[7px] flex-none rounded-[2px] bg-[#E8552F]" />

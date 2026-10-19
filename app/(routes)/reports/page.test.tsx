@@ -4,7 +4,7 @@ import ReportsPage, { metadata } from "./page";
 
 const getLedgerPreviewMock = vi.fn();
 
-vi.mock("../ledger/ledger-preview", () => ({
+vi.mock("../ledgers/ledger-preview", () => ({
   GENERAL_LEDGER_NAME: "general-ledger",
   getLedgerPreview: (name: string) => getLedgerPreviewMock(name),
 }));

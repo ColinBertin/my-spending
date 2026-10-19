@@ -4,10 +4,6 @@ import AccountSwitcher from "@/components/AccountSwitcher";
 import AccountHeader from "./[id]/account-header";
 import { getAccountsMonthlySummary } from "./data";
 
-export const metadata = {
-  title: "Accounts",
-};
-
 export default async function AccountsLayout({
   children,
 }: {

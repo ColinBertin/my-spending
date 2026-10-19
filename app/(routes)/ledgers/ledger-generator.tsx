@@ -157,7 +157,7 @@ export default function LedgerGenerator({
                   asChild
                   className="h-9 rounded-[9px] px-[14px] text-[12px]"
                 >
-                  <Link href={`/ledger/${GENERAL_LEDGER_NAME}`}>Preview</Link>
+                  <Link href={`/ledgers/${GENERAL_LEDGER_NAME}`}>Preview</Link>
                 </Button>
               ) : (
                 <Button

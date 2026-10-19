@@ -12,7 +12,7 @@ import {
 } from "./data";
 
 export const metadata = {
-  title: "Ledger Generator",
+  title: "Ledgers",
 };
 
 export default async function LedgerGeneratorPage() {
