@@ -109,11 +109,11 @@ npm run type-check
 
 ### Ledger Generator
 
-![Ledger generator screenshot](./docs/images/ledger-generator.png)
+![Ledger generator screenshot](./docs/images/general-ledger.png)
 
 ### Ledger Preview
 
-![Ledger preview screenshot](./docs/images/ledger-preview.png)
+![Ledger preview screenshot](./docs/images/ledgers.png)
 
 ## Tech Stack
 
