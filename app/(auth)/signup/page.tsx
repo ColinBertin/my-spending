@@ -1,9 +1,10 @@
+import AuthPageShell from "../auth-page-shell";
 import Signup from "./signup";
 
 export default function SignupPage() {
   return (
-    <div className="flex w-screen h-screen justify-center items-center">
+    <AuthPageShell>
       <Signup />
-    </div>
+    </AuthPageShell>
   );
 }
