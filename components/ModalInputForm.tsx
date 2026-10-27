@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { Category, TransactionType } from "@/types";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import Spinner from "./Spinner";
 
 type ModalInputValues = {

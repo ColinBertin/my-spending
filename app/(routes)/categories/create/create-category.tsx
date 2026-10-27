@@ -13,7 +13,7 @@ import {
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
 import PageLayout from "@/components/layout/PageLayout";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { darkenHex, resolveCategoryHex } from "../category-cards";
 import CategoryTile, { getCategoryIcon } from "../category-tile";
 

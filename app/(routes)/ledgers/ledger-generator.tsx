@@ -1,7 +1,7 @@
 import Link from "next/link";
 import LedgerGeneratorCard from "@/components/LedgerGeneratorCard";
 import LedgerSourceRow from "@/components/LedgerSourceRow";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import PageLayout from "@/components/layout/PageLayout";
 import { formatCurrencyIntoYen, sumIncomeAndSpending } from "@/helpers";
 import { Category, TransactionsByCategory } from "@/types";

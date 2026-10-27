@@ -1,5 +1,5 @@
 import DetailRow from "./DetailRow";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import Spinner from "./Spinner";
 
 type ModalDetailsContentProps = {

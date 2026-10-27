@@ -11,6 +11,7 @@ import {
   useErrorNotification,
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
+import { Button } from "@/components/ui/Button";
 
 const CURRENCIES: { code: Currency; symbol: string }[] = [
   { code: "JPY", symbol: "¥" },
@@ -343,22 +344,35 @@ export default function CreateTransaction({
             />
           </div>
 
-          <div className="mt-[22px] flex flex-col gap-[9px] sm:flex-row">
-            <button
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row-reverse sm:justify-start">
+            <Button
               type="submit"
+              size="lg"
               disabled={isMutating}
-              className="h-[46px] flex-1 cursor-pointer rounded-[10px] bg-[#B04124] px-4 text-[14px] font-medium text-white transition-colors hover:bg-[#8A331B] disabled:cursor-progress disabled:opacity-[0.72]"
+              className="sm:min-w-[200px]"
             >
               {isMutating ? "Saving…" : "Save transaction"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              size="lg"
+              variant="outline"
               value={ADD_ANOTHER}
               disabled={isMutating}
-              className="h-[46px] flex-1 cursor-pointer rounded-[10px] border border-[#E3DFD7] bg-white px-4 text-[14px] font-medium text-[#3B3934] transition-colors hover:bg-[#FBFAF7] disabled:cursor-progress disabled:text-[#5C5952]"
+              className="sm:min-w-[200px]"
             >
-              Save &amp; add another
-            </button>
+              {isMutating ? "Saving…" : "Save & add another"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => router.back()}
+              disabled={isMutating}
+              className="sm:min-w-[160px]"
+            >
+              Cancel
+            </Button>
           </div>
         </div>
       </form>

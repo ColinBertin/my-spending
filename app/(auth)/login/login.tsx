@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { signInWithPassword } from "@/utils/authClient";
 import { emailRegex } from "@/helpers";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import {
   useErrorNotification,
   useSuccessNotification,

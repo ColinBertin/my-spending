@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Category } from "@/types";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import ModalInputForm from "./ModalInputForm";
 
 function findAll(
