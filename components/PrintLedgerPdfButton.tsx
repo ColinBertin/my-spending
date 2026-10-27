@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 // The browser uses document.title as the default PDF file name, so swap it in
 // for the print and restore it afterwards.

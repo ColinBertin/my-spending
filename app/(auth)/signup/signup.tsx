@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 // import { FcGoogle } from "react-icons/fc";
 
 import { emailRegex } from "@/helpers";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { signUpWithPassword } from "@/utils/authClient";
 import {
   useErrorNotification,

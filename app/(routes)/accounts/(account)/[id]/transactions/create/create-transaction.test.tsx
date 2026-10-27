@@ -127,6 +127,25 @@ describe("CreateTransaction", () => {
     expect(html).toContain("€");
   });
 
+  it("renders the action buttons with the right submit behaviour", () => {
+    const html = renderToStaticMarkup(
+      <CreateTransaction accountId="acc-1" categories={categories} />,
+    );
+    const buttons = [...html.matchAll(/<button([^>]*)>([^<]*)<\/button>/g)];
+    const findButton = (label: string) =>
+      buttons.find(([, , text]) => text === label)?.[1];
+
+    const save = findButton("Save transaction");
+    const addAnother = findButton("Save &amp; add another");
+    const cancel = findButton("Cancel");
+
+    expect(save).toContain('type="submit"');
+    expect(save).not.toContain("value=");
+    expect(addAnother).toContain('type="submit"');
+    expect(addAnother).toContain('value="add-another"');
+    expect(cancel).toContain('type="button"');
+  });
+
   it("prompts to create a category when there are none", () => {
     const html = renderToStaticMarkup(
       <CreateTransaction accountId="acc-1" categories={[]} />,

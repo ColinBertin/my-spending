@@ -11,7 +11,7 @@ import {
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
 import PageLayout from "@/components/layout/PageLayout";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 const ACCOUNT_TYPES: {
   id: Account["type"];

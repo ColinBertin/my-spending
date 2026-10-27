@@ -11,7 +11,7 @@ import {
   useErrorNotification,
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 const CURRENCIES: { code: Currency; symbol: string }[] = [
   { code: "JPY", symbol: "¥" },
