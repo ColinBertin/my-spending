@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
 import { requireUser } from "@/utils/supabase/requireUser";
 import { CategoryTotal, TransactionType } from "@/types";
 
@@ -84,9 +83,8 @@ export async function GET(req: Request) {
     monthRange = maybeRange;
   }
 
-  const admin = createAdminClient();
   if (summary) {
-    let query = admin
+    let query = supabase
       .from("transactions")
       .select(
         "type,category_name,amount,category_icon,category_icon_pack,category_color",
@@ -173,7 +171,7 @@ export async function GET(req: Request) {
     );
   }
 
-  let query = admin
+  let query = supabase
     .from("transactions")
     .select(
       "id,account_id,created_by,title,type,category_name,category_icon,category_icon_pack,category_color,amount,currency,date,note,created_at",
@@ -398,11 +396,9 @@ export async function POST(req: Request) {
     }
   }
 
-  const admin = createAdminClient();
-
   const transactionId = crypto.randomUUID();
 
-  const { error } = await admin
+  const { error } = await supabase
     .from("transactions")
     .insert({
       id: transactionId,
