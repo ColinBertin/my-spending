@@ -13,7 +13,7 @@
     "format-all": "prettier --ignore-unknown --write .",
     "format-files": "prettier --ignore-unknown --write",
     "lint-files": "eslint",
-    "type-check": "tsc --noEmit"
+    "type-check": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
