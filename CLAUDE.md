@@ -26,15 +26,22 @@ CI (`.github/workflows/test.yml`) runs `npm test` on every push to any branch.
 
 ## Architecture
 
-### Auth & data access — no RLS, manual authorization in each route
+### Auth & data access — RLS plus explicit checks in each route
 
-Supabase RLS is **not** the authorization mechanism here. The pattern used throughout `app/api/**/route.ts`:
+Supabase RLS is enabled on every `public` table and is the authorization backstop. There is no service-role/admin client; all reads and writes (pages and `app/api/**/route.ts`) go through the user-scoped SSR client — `createClient()` from `utils/supabase/server.ts`, or the `supabase` returned by `requireUser()` in `utils/supabase/requireUser.ts`.
 
-1. `createClient()` from `utils/supabase/server.ts` — SSR client bound to cookies, used only to call `supabase.auth.getUser()` (and sometimes read-only ownership checks).
-2. `createAdminClient()` from `utils/supabase/admin.ts` — service-role client that bypasses RLS, used for the actual reads/writes.
-3. Every route manually verifies the requesting user owns/has access to the resource (typically via the `account_members` join table, or `created_by`/`user_id` equality) _before_ using the admin client to mutate data.
+Policies (see `supabase/migrations/`):
 
-When adding or touching an API route, follow this same explicit-check pattern rather than assuming RLS enforces anything.
+- `account_members` — users read only their own rows; no client writes. The `add_account_creator_as_member` trigger (`security definer`) adds the creator when an account is inserted; memberships are removed by the `accounts(id)` cascade.
+- `accounts` — members can read/delete; any authenticated user can insert; no update policy.
+- `categories` — owner (`user_id`) can read/insert; no update/delete policies.
+- `transactions` — any account member can read every transaction in the account; only the creator (`created_by`), while still a member, can insert/update/delete, and `category_id` must be one of their own categories.
+
+RLS is deny-by-default: an operation without a policy is blocked (writes silently match 0 rows). Add a policy in a migration only when a feature needs that operation.
+
+Routes still verify membership/ownership explicitly before reading or writing — that's what produces the meaningful status codes below, since RLS alone just returns empty results. Keep doing both when adding or touching a route.
+
+Because RLS filters writes, order dependent operations carefully: e.g. deleting your own `account_members` row first would revoke access to the account you're about to delete (see `app/api/accounts/[id]/route.ts`, which relies on cascades instead).
 
 Authorization-failure status codes matter here: return **404** (not 403) when a user lacks access to a resource that could otherwise reveal existence via ID enumeration (see `getAuthorizedAccount` in `app/api/accounts/[id]/route.ts`); 403 is used only where enumeration isn't a concern (e.g. `app/api/transactions/route.ts` membership checks). Match existing behavior per-route rather than picking one convention globally.
 

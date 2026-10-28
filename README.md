@@ -32,7 +32,6 @@ Create a `.env.local` file at the project root:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=****
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=****
-SUPABASE_SERVICE_ROLE_KEY=****
 ```
 
 ### 4) Run the app
