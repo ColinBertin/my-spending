@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
 import { requireUser } from "@/utils/supabase/requireUser";
 
 const ACCOUNT_TYPES = new Set(["single", "shared", "professional"]);
@@ -10,7 +9,7 @@ export async function POST(req: Request) {
   if (!auth.ok) {
     return auth.response;
   }
-  const { user } = auth;
+  const { supabase } = auth;
 
   let body: unknown;
   try {
@@ -52,11 +51,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const admin = createAdminClient();
-
   const accountId = crypto.randomUUID();
 
-  const { error: accErr } = await admin.from("accounts").insert({
+  // The add_account_creator_as_member trigger adds the caller to account_members.
+  const { error: accErr } = await supabase.from("accounts").insert({
     id: accountId,
     name: name.trim(),
     type,
@@ -64,15 +62,6 @@ export async function POST(req: Request) {
   });
   if (accErr) {
     return NextResponse.json({ error: accErr.message }, { status: 400 });
-  }
-
-  const { error: memErr } = await admin.from("account_members").insert({
-    account_id: accountId,
-    user_id: user.id,
-  });
-
-  if (memErr) {
-    return NextResponse.json({ error: memErr.message }, { status: 400 });
   }
 
   return NextResponse.json({ id: accountId }, { status: 201 });
