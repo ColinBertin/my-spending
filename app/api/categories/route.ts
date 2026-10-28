@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
 import { requireUser } from "@/utils/supabase/requireUser";
 
 export async function POST(req: Request) {
@@ -7,7 +6,7 @@ export async function POST(req: Request) {
   if (!auth.ok) {
     return auth.response;
   }
-  const { user } = auth;
+  const { user, supabase } = auth;
 
   let body: unknown;
   try {
@@ -67,11 +66,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const admin = createAdminClient();
-
   const categoryId = crypto.randomUUID();
 
-  const { error: accErr } = await admin.from("categories").insert({
+  const { error: accErr } = await supabase.from("categories").insert({
     id: categoryId,
     name: name.trim(),
     color: typeof color === "string" ? color.trim() : null,
