@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
 import { requireUser } from "@/utils/supabase/requireUser";
 
 const TRANSACTION_TYPES = new Set(["income", "expense"]);
@@ -20,9 +19,8 @@ type CategoryRecord = {
 
 async function getAuthorizedTransaction(transactionId: string, userId: string) {
   const supabase = await createClient();
-  const admin = createAdminClient();
 
-  const { data: transaction, error: transactionError } = await admin
+  const { data: transaction, error: transactionError } = await supabase
     .from("transactions")
     .select("id,title,account_id,created_by")
     .eq("id", transactionId)
@@ -72,7 +70,7 @@ async function getAuthorizedTransaction(transactionId: string, userId: string) {
     };
   }
 
-  return { admin, transaction };
+  return { supabase, transaction };
 }
 
 async function getCategoryForUser(categoryId: string, userId: string) {
@@ -190,10 +188,10 @@ export async function PATCH(req: Request, context: RouteContext) {
     return categoryResult.error;
   }
 
-  const { admin } = authorized;
+  const { supabase } = authorized;
   const { category } = categoryResult;
 
-  const { error } = await admin
+  const { error } = await supabase
     .from("transactions")
     .update({
       title: title.trim(),
@@ -251,7 +249,7 @@ export async function DELETE(req: Request, context: RouteContext) {
     return authorized.error;
   }
 
-  const { admin, transaction } = authorized;
+  const { supabase, transaction } = authorized;
 
   if (transaction.title !== confirmTitle.trim()) {
     return NextResponse.json(
@@ -260,7 +258,7 @@ export async function DELETE(req: Request, context: RouteContext) {
     );
   }
 
-  const { error } = await admin
+  const { error } = await supabase
     .from("transactions")
     .delete()
     .eq("id", id)

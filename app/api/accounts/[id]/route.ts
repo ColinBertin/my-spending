@@ -1,15 +1,17 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
 import { requireUser } from "@/utils/supabase/requireUser";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-async function getAuthorizedAccount(accountId: string, userId: string) {
-  const admin = createAdminClient();
-
-  const { data: membership, error: membershipError } = await admin
+async function getAuthorizedAccount(
+  supabase: SupabaseClient,
+  accountId: string,
+  userId: string,
+) {
+  const { data: membership, error: membershipError } = await supabase
     .from("account_members")
     .select("account_id")
     .eq("account_id", accountId)
@@ -31,7 +33,7 @@ async function getAuthorizedAccount(accountId: string, userId: string) {
     };
   }
 
-  const { data: account, error: accountError } = await admin
+  const { data: account, error: accountError } = await supabase
     .from("accounts")
     .select("id,name")
     .eq("id", accountId)
@@ -52,7 +54,7 @@ async function getAuthorizedAccount(accountId: string, userId: string) {
     };
   }
 
-  return { account, admin };
+  return { account };
 }
 
 export async function DELETE(req: Request, context: RouteContext) {
@@ -60,7 +62,7 @@ export async function DELETE(req: Request, context: RouteContext) {
   if (!auth.ok) {
     return auth.response;
   }
-  const { user } = auth;
+  const { user, supabase } = auth;
 
   const { id } = await context.params;
 
@@ -83,12 +85,12 @@ export async function DELETE(req: Request, context: RouteContext) {
     );
   }
 
-  const authorized = await getAuthorizedAccount(id, user.id);
+  const authorized = await getAuthorizedAccount(supabase, id, user.id);
   if ("error" in authorized) {
     return authorized.error;
   }
 
-  const { account, admin } = authorized;
+  const { account } = authorized;
 
   if (account.name !== confirmName.trim()) {
     return NextResponse.json(
@@ -97,31 +99,9 @@ export async function DELETE(req: Request, context: RouteContext) {
     );
   }
 
-  const { error: transactionError } = await admin
-    .from("transactions")
-    .delete()
-    .eq("account_id", id);
-
-  if (transactionError) {
-    return NextResponse.json(
-      { error: transactionError.message },
-      { status: 400 },
-    );
-  }
-
-  const { error: membershipError } = await admin
-    .from("account_members")
-    .delete()
-    .eq("account_id", id);
-
-  if (membershipError) {
-    return NextResponse.json(
-      { error: membershipError.message },
-      { status: 400 },
-    );
-  }
-
-  const { error: accountError } = await admin
+  // Transactions and memberships are removed by the on delete cascade FKs.
+  // Deleting the membership first would revoke the caller's access to the account under RLS.
+  const { error: accountError } = await supabase
     .from("accounts")
     .delete()
     .eq("id", id);
