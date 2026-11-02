@@ -65,6 +65,20 @@ npm run lint
 npm run type-check
 ```
 
+## Deployment
+
+After a merge to `main`, once CI passes, the CD workflow (`.github/workflows/cd.yml`) pushes Supabase migrations to production and then deploys the app to Vercel production. Vercel's Git auto-deploy for `main` is disabled in `vercel.json`, so migrations always land before the code that depends on them.
+
+The CD workflow triggers on the workflow named `CI`, so it depends on the CI workflow keeping that name.
+
+Required GitHub Actions secrets:
+
+- `SUPABASE_ACCESS_TOKEN` — Supabase dashboard → Account → Access Tokens
+- `SUPABASE_DB_PASSWORD` — production database password
+- `SUPABASE_PROJECT_REF` — production project ref
+- `VERCEL_TOKEN` — Vercel → Account Settings → Tokens
+- `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` — from `.vercel/project.json` after running `vercel link`
+
 ## What This App Does
 
 - Provides authenticated personal/business finance tracking.

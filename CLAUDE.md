@@ -24,6 +24,8 @@ Pre-commit (via husky + lint-staged) auto-formats staged files, then runs `type-
 
 CI (`.github/workflows/test.yml`) runs `npm test` on every push to any branch.
 
+CD (`.github/workflows/cd.yml`) runs after a successful CI run on `main` (it triggers on the workflow named `CI`, so it depends on the CI workflow having that name): it first applies migrations to the production Supabase project via `supabase db push`, then, only if that succeeds, deploys the same commit to Vercel production. Vercel's Git auto-deploy for `main` is disabled in `vercel.json` so the workflow controls this order (preview deploys for other branches stay on). Because migrations go live just before the new code, they must stay backward-compatible with the previous app version.
+
 ## Architecture
 
 ### Auth & data access — RLS plus explicit checks in each route
