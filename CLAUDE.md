@@ -22,7 +22,7 @@ Run a single test file: `npx vitest run path/to/file.test.ts`. Run tests matchin
 
 Pre-commit (via husky + lint-staged) auto-formats staged files, then runs `type-check` and `eslint` on changed TS/TSX files — expect these to run on every commit.
 
-CI (`.github/workflows/test.yml`) runs `npm test` on every push to any branch.
+CI (`.github/workflows/ci.yml`) runs on every push to any branch: lint, type-check, tests and a production build (Supabase URL and publishable key come from GitHub repository variables `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Migrations aren't checked in CI. There is no CD — `supabase db push` and the app deploy are manual, and migrations must be pushed before the code that depends on them is deployed.
 
 CD (`.github/workflows/cd.yml`) runs after a successful CI run on `main` (it triggers on the workflow named `CI`, so it depends on the CI workflow having that name): it first applies migrations to the production Supabase project via `supabase db push`, then, only if that succeeds, deploys the same commit to Vercel production. Vercel's Git auto-deploy for `main` is disabled in `vercel.json` so the workflow controls this order (preview deploys for other branches stay on). Because migrations go live just before the new code, they must stay backward-compatible with the previous app version.
 
