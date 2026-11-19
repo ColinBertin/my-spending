@@ -22,12 +22,14 @@ let submitHandler: ((values: Record<string, unknown>) => Promise<void>) | null =
   null;
 let watchedValues: Record<string, string | undefined> = {};
 let iconFieldOnChange = vi.fn();
+let pathname = "/categories/create";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: pushMock,
     back: backMock,
   }),
+  usePathname: () => pathname,
 }));
 
 vi.mock("@/components/ui/NotificationProvider", () => ({
@@ -86,6 +88,7 @@ describe("CreateUpdateCategory", () => {
 
   beforeEach(() => {
     submitHandler = null;
+    pathname = "/categories/create";
     watchedValues = {};
     iconFieldOnChange = vi.fn();
     pushMock.mockReset();
