@@ -67,7 +67,7 @@ export default function CreateUpdateCategory({
     setIsFetching(false);
 
     if (!res.ok) {
-      showErrorNotification("Failed to create category");
+      showErrorNotification(`Failed to ${formType} category`);
       console.error(json.error);
       return;
     }
@@ -75,7 +75,9 @@ export default function CreateUpdateCategory({
     startTransition(() => {
       router.push("/categories");
     });
-    showSuccessNotification("Category created !");
+    showSuccessNotification(
+      `Category ${formType === "create" ? "created" : "updated"} !`,
+    );
   };
 
   return (
