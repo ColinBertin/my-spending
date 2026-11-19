@@ -22,7 +22,6 @@ let submitHandler: ((values: Record<string, unknown>) => Promise<void>) | null =
   null;
 let watchedValues: Record<string, string | undefined> = {};
 let iconFieldOnChange = vi.fn();
-let pathname = "/categories/create";
 let useFormOptions: { defaultValues?: unknown } | undefined;
 
 vi.mock("next/navigation", () => ({
@@ -30,7 +29,6 @@ vi.mock("next/navigation", () => ({
     push: pushMock,
     back: backMock,
   }),
-  usePathname: () => pathname,
 }));
 
 vi.mock("@/components/ui/NotificationProvider", () => ({
@@ -103,7 +101,6 @@ describe("CreateUpdateCategory", () => {
 
   beforeEach(() => {
     submitHandler = null;
-    pathname = "/categories/create";
     useFormOptions = undefined;
     watchedValues = {};
     iconFieldOnChange = vi.fn();
@@ -123,7 +120,7 @@ describe("CreateUpdateCategory", () => {
 
   it("renders the form fields, buttons and phone back link", () => {
     const html = renderToStaticMarkup(
-      <CreateUpdateCategory category={newCategory} />,
+      <CreateUpdateCategory mode="create" category={newCategory} />,
     );
 
     expect(html).toContain("New category");
@@ -139,7 +136,7 @@ describe("CreateUpdateCategory", () => {
 
   it("offers both scopes, every colour code and finance icons as radios", () => {
     const html = renderToStaticMarkup(
-      <CreateUpdateCategory category={newCategory} />,
+      <CreateUpdateCategory mode="create" category={newCategory} />,
     );
 
     for (const value of ["normal", "professional"]) {
@@ -163,7 +160,7 @@ describe("CreateUpdateCategory", () => {
       icon_pack: "hi",
     };
     const html = renderToStaticMarkup(
-      <CreateUpdateCategory category={newCategory} />,
+      <CreateUpdateCategory mode="create" category={newCategory} />,
     );
 
     expect(html).toContain("Groceries");
@@ -174,14 +171,16 @@ describe("CreateUpdateCategory", () => {
 
   it("falls back to a placeholder preview name", () => {
     const html = renderToStaticMarkup(
-      <CreateUpdateCategory category={newCategory} />,
+      <CreateUpdateCategory mode="create" category={newCategory} />,
     );
 
     expect(html).toContain("Category name");
   });
 
   it("submits category and redirects to the categories list", async () => {
-    renderToStaticMarkup(<CreateUpdateCategory category={newCategory} />);
+    renderToStaticMarkup(
+      <CreateUpdateCategory mode="create" category={newCategory} />,
+    );
     expect(submitHandler).not.toBeNull();
 
     await submitHandler?.({
@@ -218,7 +217,9 @@ describe("CreateUpdateCategory", () => {
     fetchMock.mockResolvedValueOnce(
       makeFetchResponse(false, { error: "boom" }),
     );
-    renderToStaticMarkup(<CreateUpdateCategory category={newCategory} />);
+    renderToStaticMarkup(
+      <CreateUpdateCategory mode="create" category={newCategory} />,
+    );
 
     await submitHandler?.({
       name: "Food",
@@ -235,22 +236,39 @@ describe("CreateUpdateCategory", () => {
   });
 
   describe("update mode", () => {
-    beforeEach(() => {
-      pathname = "/categories/cat-123/update";
-    });
-
     it("shows the update heading instead of the create one", () => {
       const html = renderToStaticMarkup(
-        <CreateUpdateCategory category={existingCategory} />,
+        <CreateUpdateCategory mode="update" category={existingCategory} />,
       );
 
       expect(html).toContain("Update category");
       expect(html).not.toContain("New category");
     });
 
+    it("locks the name of a professional category", () => {
+      const html = renderToStaticMarkup(
+        <CreateUpdateCategory mode="update" category={existingCategory} />,
+      );
+
+      expect(html).toMatch(/<input[^>]*id="category-name"[^>]*readOnly=""/);
+      expect(html).toContain("can&#x27;t be renamed");
+    });
+
+    it("keeps the name editable for a normal category", () => {
+      const html = renderToStaticMarkup(
+        <CreateUpdateCategory
+          mode="update"
+          category={{ ...existingCategory, type: "normal" }}
+        />,
+      );
+
+      expect(html).not.toMatch(/readOnly=""/);
+      expect(html).not.toContain("be renamed");
+    });
+
     it("prefills the form with the existing category", () => {
       renderToStaticMarkup(
-        <CreateUpdateCategory category={existingCategory} />,
+        <CreateUpdateCategory mode="update" category={existingCategory} />,
       );
 
       expect(useFormOptions?.defaultValues).toEqual(existingCategory);
@@ -261,7 +279,7 @@ describe("CreateUpdateCategory", () => {
       watchedValues = { name: "Misc" };
 
       const html = renderToStaticMarkup(
-        <CreateUpdateCategory category={bare} />,
+        <CreateUpdateCategory mode="update" category={bare} />,
       );
 
       expect(html).toContain("Misc");
@@ -270,7 +288,7 @@ describe("CreateUpdateCategory", () => {
 
     it("sends a PUT with the category id and redirects", async () => {
       renderToStaticMarkup(
-        <CreateUpdateCategory category={existingCategory} />,
+        <CreateUpdateCategory mode="update" category={existingCategory} />,
       );
 
       await submitHandler?.({ ...existingCategory, name: "Food" });
@@ -289,9 +307,30 @@ describe("CreateUpdateCategory", () => {
       expect(pushMock).toHaveBeenCalledWith("/categories");
     });
 
+    it("leaves empty fields out of the payload", async () => {
+      renderToStaticMarkup(
+        <CreateUpdateCategory
+          mode="update"
+          category={{ id: "cat-456", name: "Misc", type: "normal" }}
+        />,
+      );
+
+      await submitHandler?.({
+        id: "cat-456",
+        name: "Misc",
+        type: "normal",
+        color: null,
+        icon: undefined,
+        icon_pack: "",
+      });
+
+      const payload = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+      expect(payload).toEqual({ id: "cat-456", name: "Misc", type: "normal" });
+    });
+
     it("never POSTs in update mode", async () => {
       renderToStaticMarkup(
-        <CreateUpdateCategory category={existingCategory} />,
+        <CreateUpdateCategory mode="update" category={existingCategory} />,
       );
 
       await submitHandler?.(
@@ -306,7 +345,7 @@ describe("CreateUpdateCategory", () => {
         makeFetchResponse(false, { error: "Category not found" }),
       );
       renderToStaticMarkup(
-        <CreateUpdateCategory category={existingCategory} />,
+        <CreateUpdateCategory mode="update" category={existingCategory} />,
       );
 
       await submitHandler?.(
@@ -325,7 +364,7 @@ describe("CreateUpdateCategory", () => {
         json: vi.fn().mockRejectedValue(new SyntaxError("Unexpected token")),
       });
       renderToStaticMarkup(
-        <CreateUpdateCategory category={existingCategory} />,
+        <CreateUpdateCategory mode="update" category={existingCategory} />,
       );
 
       await expect(

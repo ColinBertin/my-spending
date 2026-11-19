@@ -15,15 +15,17 @@ function Harness({
   defaultValues,
   onSubmit,
   error,
+  disabled,
 }: {
   defaultValues?: Partial<Category>;
   onSubmit: (values: Category) => void;
   error?: string;
+  disabled?: boolean;
 }) {
   const { register, handleSubmit } = useForm<Category>({ defaultValues });
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <ScopeToggle register={register} error={error} />
+      <ScopeToggle register={register} error={error} disabled={disabled} />
       <button type="submit">submit</button>
     </form>
   );
@@ -61,6 +63,37 @@ describe("ScopeToggle", () => {
     render(<Harness defaultValues={{ type: "normal" }} onSubmit={onSubmit} />);
 
     fireEvent.click(radio("Professional"));
+    fireEvent.click(screen.getByRole("button", { name: "submit" }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ type: "professional" });
+  });
+
+  it("locks both scopes and explains why when disabled", () => {
+    render(
+      <Harness
+        defaultValues={{ type: "professional" }}
+        onSubmit={vi.fn()}
+        disabled
+      />,
+    );
+
+    expect(radio("Normal").matches(":disabled")).toBe(true);
+    expect(radio("Professional").matches(":disabled")).toBe(true);
+    expect(radio("Professional").checked).toBe(true);
+    expect(screen.getByText(/can't be changed/)).toBeTruthy();
+  });
+
+  it("still submits the existing scope when disabled", async () => {
+    const onSubmit = vi.fn();
+    render(
+      <Harness
+        defaultValues={{ type: "professional" }}
+        onSubmit={onSubmit}
+        disabled
+      />,
+    );
+
     fireEvent.click(screen.getByRole("button", { name: "submit" }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { Category } from "@/types";
@@ -20,11 +20,15 @@ import ColorPicker from "./_components/color-picker";
 import IconPicker from "./_components/icon-picker";
 import ScopeToggle from "./_components/scope-toggle";
 
-type CreateCategoryProps = { category: Category };
+type CreateUpdateCategoryProps = {
+  mode: "create" | "update";
+  category: Category;
+};
 
 export default function CreateUpdateCategory({
+  mode,
   category,
-}: CreateCategoryProps) {
+}: CreateUpdateCategoryProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isFetching, setIsFetching] = useState(false);
@@ -32,10 +36,9 @@ export default function CreateUpdateCategory({
   const showErrorNotification = useErrorNotification();
   const showSuccessNotification = useSuccessNotification();
 
-  const pathname = usePathname();
-  const formType = pathname.endsWith("create") ? "create" : "update";
-
   const isMutating = isPending || isFetching;
+  // TODO: lift once ledgers match transactions by category_id.
+  const isNameLocked = mode === "update" && category.type === "professional";
 
   const {
     register,
@@ -57,17 +60,23 @@ export default function CreateUpdateCategory({
 
   const onSubmit = async (values: Category) => {
     setIsFetching(true);
+
+    const filledEntries = Object.entries(values).filter(
+      ([, value]) => value !== null && value !== undefined && value !== "",
+    );
+    const payload = Object.fromEntries(filledEntries);
+
     const res = await fetch("/api/categories", {
-      method: formType === "create" ? "POST" : "PUT",
+      method: mode === "create" ? "POST" : "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      body: JSON.stringify(payload),
     });
     const json = await res.json().catch(() => ({}));
 
     setIsFetching(false);
 
     if (!res.ok) {
-      showErrorNotification(`Failed to ${formType} category`);
+      showErrorNotification(`Failed to ${mode} category`);
       console.error(json.error);
       return;
     }
@@ -76,7 +85,7 @@ export default function CreateUpdateCategory({
       router.push("/categories");
     });
     showSuccessNotification(
-      `Category ${formType === "create" ? "created" : "updated"} !`,
+      `Category ${mode === "create" ? "created" : "updated"} !`,
     );
   };
 
@@ -90,7 +99,7 @@ export default function CreateUpdateCategory({
           ← Categories
         </Link>
         <h1 className="mt-2 text-2xl leading-tight font-semibold tracking-tight md:mt-0 md:text-3xl">
-          {formType === "create" ? "New" : "Update"} category
+          {mode === "create" ? "New" : "Update"} category
         </h1>
         <p className="mt-1.75 max-w-md text-sm leading-relaxed text-ink-subtle">
           Colour and icon are what make the charts and the ledger readable later
@@ -115,17 +124,32 @@ export default function CreateUpdateCategory({
           <Input
             id="category-name"
             aria-invalid={Boolean(errors.name)}
+            readOnly={isNameLocked}
+            aria-describedby={isNameLocked ? "category-name-hint" : undefined}
+            className={
+              isNameLocked ? "cursor-not-allowed opacity-60" : undefined
+            }
             {...register("name", {
               required: "Name is required",
               validate: (value) =>
                 value.trim().length > 0 || "Name is required",
             })}
           />
+          {isNameLocked && (
+            <p
+              id="category-name-hint"
+              className="mt-2 text-xs leading-normal text-ink-subtle"
+            >
+              Professional categories can&apos;t be renamed — ledgers match
+              transactions by category name.
+            </p>
+          )}
           <FieldError message={errors.name?.message} />
 
           <ScopeToggle
             register={register}
             error={errors.type?.message}
+            disabled={mode === "update"}
             className="mt-8"
           />
           <ColorPicker
