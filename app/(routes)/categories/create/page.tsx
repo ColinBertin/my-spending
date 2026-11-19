@@ -6,6 +6,9 @@ export const metadata = {
 
 export default async function CreateCategoryPage() {
   return (
-    <CreateUpdateCategory category={{ id: "", name: "", type: "normal" }} />
+    <CreateUpdateCategory
+      mode="create"
+      category={{ id: "", name: "", type: "normal" }}
+    />
   );
 }

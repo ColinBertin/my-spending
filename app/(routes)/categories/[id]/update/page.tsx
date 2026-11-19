@@ -1,33 +1,25 @@
 import { Category } from "@/types";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { cache } from "react";
 import CreateUpdateCategory from "../../create-update-category";
+import { requirePageUser } from "@/utils/supabase/requireUser";
 
 export const metadata = {
   title: "Update Category",
 };
 
 export const getCategory = cache(async (id: string): Promise<Category> => {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, supabase } = await requirePageUser();
 
   const { data, error } = await supabase
     .from("categories")
     .select("id,name,color,icon,icon_pack,type")
     .eq("id", id)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (error) {
-    throw error;
+  if (error || !data) {
+    notFound();
   }
 
   return data;
@@ -41,5 +33,5 @@ export default async function UpdateCategoryPage({
   const { id } = await params;
   const category = await getCategory(id);
 
-  return <CreateUpdateCategory category={category} />;
+  return <CreateUpdateCategory mode="update" category={category} />;
 }
