@@ -1,7 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import CreateCategory from "./create-category";
+import CreateUpdateCategory from "./create-update-category";
+import type { Category } from "@/types";
 
 vi.mock("react", async () => {
   const actual = await vi.importActual<typeof import("react")>("react");
@@ -70,6 +71,8 @@ vi.mock("react-hook-form", () => ({
     }),
 }));
 
+const newCategory: Category = { id: "", name: "", type: "normal" };
+
 function makeFetchResponse(ok: boolean, jsonValue: unknown) {
   return {
     ok,
@@ -77,7 +80,7 @@ function makeFetchResponse(ok: boolean, jsonValue: unknown) {
   };
 }
 
-describe("CreateCategory", () => {
+describe("CreateUpdateCategory", () => {
   const fetchMock = vi.fn();
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
@@ -97,7 +100,9 @@ describe("CreateCategory", () => {
   });
 
   it("renders the form fields, buttons and phone back link", () => {
-    const html = renderToStaticMarkup(<CreateCategory />);
+    const html = renderToStaticMarkup(
+      <CreateUpdateCategory category={newCategory} />,
+    );
 
     expect(html).toContain("New category");
     expect(html).toContain("Name");
@@ -111,7 +116,9 @@ describe("CreateCategory", () => {
   });
 
   it("offers both scopes, every colour code and finance icons as radios", () => {
-    const html = renderToStaticMarkup(<CreateCategory />);
+    const html = renderToStaticMarkup(
+      <CreateUpdateCategory category={newCategory} />,
+    );
 
     for (const value of ["normal", "professional"]) {
       expect(html).toContain(`type="radio" class="sr-only" value="${value}"`);
@@ -129,7 +136,9 @@ describe("CreateCategory", () => {
       icon: "HiShoppingBag",
       icon_pack: "hi",
     };
-    const html = renderToStaticMarkup(<CreateCategory />);
+    const html = renderToStaticMarkup(
+      <CreateUpdateCategory category={newCategory} />,
+    );
 
     expect(html).toContain("Groceries");
     expect(html).toContain("GROCERIES");
@@ -138,13 +147,15 @@ describe("CreateCategory", () => {
   });
 
   it("falls back to a placeholder preview name", () => {
-    const html = renderToStaticMarkup(<CreateCategory />);
+    const html = renderToStaticMarkup(
+      <CreateUpdateCategory category={newCategory} />,
+    );
 
     expect(html).toContain("Category name");
   });
 
   it("submits category and redirects to the categories list", async () => {
-    renderToStaticMarkup(<CreateCategory />);
+    renderToStaticMarkup(<CreateUpdateCategory category={newCategory} />);
     expect(submitHandler).not.toBeNull();
 
     await submitHandler?.({
@@ -181,7 +192,7 @@ describe("CreateCategory", () => {
     fetchMock.mockResolvedValueOnce(
       makeFetchResponse(false, { error: "boom" }),
     );
-    renderToStaticMarkup(<CreateCategory />);
+    renderToStaticMarkup(<CreateUpdateCategory category={newCategory} />);
 
     await submitHandler?.({
       name: "Food",

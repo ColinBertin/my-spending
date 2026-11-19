@@ -7,6 +7,7 @@ import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { CategoryCard, CategoryScope } from "./category-cards";
 import CategoryTile from "./category-tile";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 type CategoriesListProps = {
   cards: CategoryCard[];
@@ -80,27 +81,32 @@ export default function CategoriesList({ cards, meta }: CategoriesListProps) {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
           {visibleCards.map((card) => (
             <article
               key={card.id}
               className="flex min-w-0 flex-col gap-3 rounded-[12px] border border-[#E3DFD7] bg-white px-[15px] py-[14px]"
             >
-              <div className="flex min-w-0 items-center gap-[10px]">
-                <CategoryTile
-                  hex={card.hex}
-                  icon={card.icon}
-                  iconPack={card.iconPack}
-                  name={card.name}
-                />
-                <div className="min-w-0">
-                  <h2 className="truncate text-[13px] leading-[1.2] font-medium">
-                    {card.name}
-                  </h2>
-                  <p className="mt-1 truncate font-mono text-[10px] leading-[1.2] text-[#5C5952]">
-                    {card.usageLabel}
-                  </p>
+              <div className="flex min-w-0 justify-between">
+                <div className="flex gap-2">
+                  <CategoryTile
+                    hex={card.hex}
+                    icon={card.icon}
+                    iconPack={card.iconPack}
+                    name={card.name}
+                  />
+                  <div className="min-w-0">
+                    <h2 className="truncate text-[13px] leading-[1.2] font-medium">
+                      {card.name}
+                    </h2>
+                    <p className="mt-1 truncate font-mono text-[10px] leading-[1.2] text-[#5C5952]">
+                      {card.usageLabel}
+                    </p>
+                  </div>
                 </div>
+                <Link href={`/categories/${card.id}/update`}>
+                  <PencilSquareIcon className="h-[18px] w-[18px]" />
+                </Link>
               </div>
               <p
                 className={clsx(

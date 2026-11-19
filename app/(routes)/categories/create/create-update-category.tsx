@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { Category } from "@/types";
@@ -48,7 +48,11 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-export default function CreateCategory() {
+type CreateCategoryProps = { category: Category };
+
+export default function CreateUpdateCategory({
+  category,
+}: CreateCategoryProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isFetching, setIsFetching] = useState(false);
@@ -56,6 +60,8 @@ export default function CreateCategory() {
   const showErrorNotification = useErrorNotification();
   const showSuccessNotification = useSuccessNotification();
 
+  const pathname = usePathname();
+  const formType = pathname.endsWith("create") ? "create" : "update";
   const isMutating = isPending || isFetching;
 
   const {
@@ -66,7 +72,7 @@ export default function CreateCategory() {
     formState: { errors },
   } = useForm<Category>({
     mode: "onChange",
-    defaultValues: { type: "normal" },
+    defaultValues: category,
   });
 
   const name = useWatch({ control, name: "name" });
@@ -80,7 +86,7 @@ export default function CreateCategory() {
   const onSubmit = async (values: Category) => {
     setIsFetching(true);
     const res = await fetch("/api/categories", {
-      method: "POST",
+      method: formType === "create" ? "POST" : "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
     });
@@ -110,7 +116,7 @@ export default function CreateCategory() {
           ← Categories
         </Link>
         <h1 className="mt-2 text-[22px] leading-[1.2] font-semibold tracking-[-0.02em] md:mt-0 md:text-[27px]">
-          New category
+          {formType === "create" ? "New" : "Update"} category
         </h1>
         <p className="mt-[7px] max-w-[52ch] text-[13px] leading-[1.6] text-[#6B6760]">
           Colour and icon are what make the charts and the ledger readable later
