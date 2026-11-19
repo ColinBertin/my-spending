@@ -1,4 +1,4 @@
-import CreateUpdateCategory from "./create-update-category";
+import CreateUpdateCategory from "../create-update-category";
 
 export const metadata = {
   title: "Add Category",

@@ -2,7 +2,7 @@ import { Category } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import CreateUpdateCategory from "../../create/create-update-category";
+import CreateUpdateCategory from "../../create-update-category";
 
 export const metadata = {
   title: "Update Category",

@@ -23,6 +23,7 @@ let submitHandler: ((values: Record<string, unknown>) => Promise<void>) | null =
 let watchedValues: Record<string, string | undefined> = {};
 let iconFieldOnChange = vi.fn();
 let pathname = "/categories/create";
+let useFormOptions: { defaultValues?: unknown } | undefined;
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -38,16 +39,21 @@ vi.mock("@/components/ui/NotificationProvider", () => ({
 }));
 
 vi.mock("react-hook-form", () => ({
-  useForm: () => ({
-    register: () => ({}),
-    handleSubmit: (cb: (values: Record<string, unknown>) => Promise<void>) => {
-      submitHandler = cb;
-      return () => undefined;
-    },
-    setValue: setValueMock,
-    control: {},
-    formState: { errors: {} },
-  }),
+  useForm: (options: { defaultValues?: unknown }) => {
+    useFormOptions = options;
+    return {
+      register: () => ({}),
+      handleSubmit: (
+        cb: (values: Record<string, unknown>) => Promise<void>,
+      ) => {
+        submitHandler = cb;
+        return () => undefined;
+      },
+      setValue: setValueMock,
+      control: {},
+      formState: { errors: {} },
+    };
+  },
   useWatch: ({ name }: { name: string }) => watchedValues[name],
   Controller: ({
     name,
@@ -75,6 +81,15 @@ vi.mock("react-hook-form", () => ({
 
 const newCategory: Category = { id: "", name: "", type: "normal" };
 
+const existingCategory: Category = {
+  id: "cat-123",
+  name: "Groceries",
+  type: "professional",
+  color: "rose",
+  icon: "HiShoppingBag",
+  icon_pack: "hi",
+};
+
 function makeFetchResponse(ok: boolean, jsonValue: unknown) {
   return {
     ok,
@@ -89,9 +104,13 @@ describe("CreateUpdateCategory", () => {
   beforeEach(() => {
     submitHandler = null;
     pathname = "/categories/create";
+    useFormOptions = undefined;
     watchedValues = {};
     iconFieldOnChange = vi.fn();
     pushMock.mockReset();
+    fetchMock.mockReset();
+    showSuccessNotificationMock.mockReset();
+    showErrorNotificationMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockResolvedValue(makeFetchResponse(true, {}));
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -124,7 +143,11 @@ describe("CreateUpdateCategory", () => {
     );
 
     for (const value of ["normal", "professional"]) {
-      expect(html).toContain(`type="radio" class="sr-only" value="${value}"`);
+      expect(html).toMatch(
+        new RegExp(
+          `<input type="radio"[^>]*class="sr-only"[^>]*value="${value}"`,
+        ),
+      );
     }
     for (const value of ["rose", "coral", "mint"]) {
       expect(html).toContain(`aria-label="${value}"`);
@@ -209,5 +232,108 @@ describe("CreateUpdateCategory", () => {
       "Failed to create category",
     );
     expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  describe("update mode", () => {
+    beforeEach(() => {
+      pathname = "/categories/cat-123/update";
+    });
+
+    it("shows the update heading instead of the create one", () => {
+      const html = renderToStaticMarkup(
+        <CreateUpdateCategory category={existingCategory} />,
+      );
+
+      expect(html).toContain("Update category");
+      expect(html).not.toContain("New category");
+    });
+
+    it("prefills the form with the existing category", () => {
+      renderToStaticMarkup(
+        <CreateUpdateCategory category={existingCategory} />,
+      );
+
+      expect(useFormOptions?.defaultValues).toEqual(existingCategory);
+    });
+
+    it("renders an existing category that has no colour or icon", () => {
+      const bare: Category = { id: "cat-456", name: "Misc", type: "normal" };
+      watchedValues = { name: "Misc" };
+
+      const html = renderToStaticMarkup(
+        <CreateUpdateCategory category={bare} />,
+      );
+
+      expect(html).toContain("Misc");
+      expect(html).not.toMatch(/name="icon" checked=""/);
+    });
+
+    it("sends a PUT with the category id and redirects", async () => {
+      renderToStaticMarkup(
+        <CreateUpdateCategory category={existingCategory} />,
+      );
+
+      await submitHandler?.({ ...existingCategory, name: "Food" });
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/categories",
+        expect.objectContaining({
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+      const payload = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+      expect(payload).toMatchObject({ id: "cat-123", name: "Food" });
+      expect(showSuccessNotificationMock).toHaveBeenCalledTimes(1);
+      expect(pushMock).toHaveBeenCalledWith("/categories");
+    });
+
+    it("never POSTs in update mode", async () => {
+      renderToStaticMarkup(
+        <CreateUpdateCategory category={existingCategory} />,
+      );
+
+      await submitHandler?.(
+        existingCategory as unknown as Record<string, unknown>,
+      );
+
+      expect(fetchMock.mock.calls[0][1].method).not.toBe("POST");
+    });
+
+    it("shows an error and stays on the page when the update is rejected (e.g. 404)", async () => {
+      fetchMock.mockResolvedValueOnce(
+        makeFetchResponse(false, { error: "Category not found" }),
+      );
+      renderToStaticMarkup(
+        <CreateUpdateCategory category={existingCategory} />,
+      );
+
+      await submitHandler?.(
+        existingCategory as unknown as Record<string, unknown>,
+      );
+
+      expect(showErrorNotificationMock).toHaveBeenCalledTimes(1);
+      expect(showSuccessNotificationMock).not.toHaveBeenCalled();
+      expect(pushMock).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Category not found");
+    });
+
+    it("handles a failed update whose body is not JSON", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        json: vi.fn().mockRejectedValue(new SyntaxError("Unexpected token")),
+      });
+      renderToStaticMarkup(
+        <CreateUpdateCategory category={existingCategory} />,
+      );
+
+      await expect(
+        submitHandler?.(existingCategory as unknown as Record<string, unknown>),
+      ).resolves.toBeUndefined();
+
+      expect(showErrorNotificationMock).toHaveBeenCalledTimes(1);
+      expect(pushMock).not.toHaveBeenCalled();
+    });
   });
 });

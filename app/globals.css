@@ -13,6 +13,7 @@
   --color-ink: #17161a;
   --color-ink-body: #3b3934;
   --color-ink-muted: #5c5952; /* smallest legal text tone */
+  --color-ink-subtle: #6b6760; /* labels, hints, placeholders */
   --color-hairline: #e3dfd7;
   --color-rule: #d9d4c9;
   --color-graphic-grey: #c9c3b7; /* never text */
