@@ -104,8 +104,15 @@ export default function CategoriesList({ cards, meta }: CategoriesListProps) {
                     </p>
                   </div>
                 </div>
-                <Link href={`/categories/${card.id}/update`}>
-                  <PencilSquareIcon className="h-[18px] w-[18px]" />
+                <Link
+                  href={`/categories/${card.id}/update`}
+                  aria-label={`Edit ${card.name}`}
+                  className="shrink-0 self-start rounded-control text-[#6B6760] transition-colors hover:text-ink focus-visible:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                >
+                  <PencilSquareIcon
+                    aria-hidden="true"
+                    className="h-[18px] w-[18px]"
+                  />
                 </Link>
               </div>
               <p
