@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/utils/supabase/requireUser";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function POST(req: Request) {
   const auth = await requireUser();
   if (!auth.ok) {
@@ -114,6 +117,10 @@ export async function PUT(req: Request) {
     type?: unknown;
   };
 
+  if (typeof id !== "string" || !UUID_RE.test(id)) {
+    return NextResponse.json({ error: "Invalid category id" }, { status: 400 });
+  }
+
   if (typeof name !== "string" || !name.trim()) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
@@ -150,22 +157,54 @@ export async function PUT(req: Request) {
     );
   }
 
-  const { error: accErr } = await supabase
+  const { data: existing, error: lookupErr } = await supabase
+    .from("categories")
+    .select("id,name,type")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (lookupErr) {
+    return NextResponse.json({ error: lookupErr.message }, { status: 500 });
+  }
+  if (!existing) {
+    return NextResponse.json({ error: "Category not found" }, { status: 404 });
+  }
+
+  if (type !== undefined && type !== existing.type) {
+    return NextResponse.json(
+      { error: "Category type cannot be changed" },
+      { status: 400 },
+    );
+  }
+
+  // TODO: lift once ledgers match by category_id.
+  if (existing.type === "professional" && name.trim() !== existing.name) {
+    return NextResponse.json(
+      { error: "Professional categories cannot be renamed" },
+      { status: 400 },
+    );
+  }
+
+  const { data: updated, error: accErr } = await supabase
     .from("categories")
     .update({
       name: name.trim(),
-      color: typeof color === "string" ? color.trim() : null,
-      icon: typeof icon === "string" ? icon.trim() : null,
-      icon_pack: typeof icon_pack === "string" ? icon_pack.trim() : null,
-      type,
+      ...(typeof color === "string" && { color: color.trim() }),
+      ...(typeof icon === "string" && { icon: icon.trim() }),
+      ...(typeof icon_pack === "string" && { icon_pack: icon_pack.trim() }),
     })
     .eq("id", id)
     .eq("user_id", user.id)
-    .select();
+    .select("id");
 
   if (accErr) {
     return NextResponse.json({ error: accErr.message }, { status: 400 });
   }
 
-  return NextResponse.json({ id }, { status: 201 });
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ error: "Category not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ id }, { status: 200 });
 }
