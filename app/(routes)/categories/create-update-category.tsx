@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { useState, useTransition } from "react";
@@ -19,6 +18,7 @@ import CategoryPreview from "./_components/category-preview";
 import ColorPicker from "./_components/color-picker";
 import IconPicker from "./_components/icon-picker";
 import ScopeToggle from "./_components/scope-toggle";
+import PageHeader from "@/components/ui/PageHeader";
 
 type CreateUpdateCategoryProps = {
   mode: "create" | "update";
@@ -92,20 +92,13 @@ export default function CreateUpdateCategory({
   return (
     <PageLayout>
       <>
-        <Link
+        <PageHeader
           href="/categories"
-          className="text-xs leading-none font-medium text-ink-muted hover:text-ink md:hidden"
-        >
-          ← Categories
-        </Link>
-        <h1 className="mt-2 text-2xl leading-tight font-semibold tracking-tight md:mt-0 md:text-3xl">
-          {mode === "create" ? "New" : "Update"} category
-        </h1>
-        <p className="mt-1.75 max-w-md text-sm leading-relaxed text-ink-subtle">
-          Colour and icon are what make the charts and the ledger readable later
-          — pick them now, not after fifty entries.
-        </p>
-
+          linkText="Categories"
+          title={`${mode === "create" ? "New" : "Update"} category`}
+          subTitle="Colour and icon are what make the charts and the ledger readable later
+          — pick them now, not after fifty entries."
+        />
         <form
           className="mt-4.5 rounded-card border border-hairline bg-white px-5 pt-5.5 pb-6"
           onSubmit={handleSubmit(onSubmit)}

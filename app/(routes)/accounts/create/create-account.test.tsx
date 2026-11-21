@@ -68,20 +68,24 @@ describe("CreateAccount", () => {
     const html = renderToStaticMarkup(<CreateAccount />);
 
     expect(html).toContain("New account");
-    expect(html).toContain("Account name");
+    expect(html).toContain("Name");
     expect(html).toContain("Cancel");
     expect(html).toContain("Create account");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/accounts"');
   });
 
   it("offers every account type and currency as a choice", () => {
     const html = renderToStaticMarkup(<CreateAccount />);
 
     for (const value of ["single", "shared", "professional"]) {
-      expect(html).toContain(`type="radio" class="sr-only" value="${value}"`);
+      expect(html).toContain(
+        `type="radio" data-slot="radio" class="sr-only" value="${value}"`,
+      );
     }
     for (const value of ["JPY", "EUR", "USD"]) {
-      expect(html).toContain(`type="radio" class="sr-only" value="${value}"`);
+      expect(html).toContain(
+        `type="radio" data-slot="radio" class="sr-only" value="${value}"`,
+      );
     }
   });
 
