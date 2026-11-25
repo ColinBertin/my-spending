@@ -112,15 +112,15 @@ export default function CreateUpdateCategory({
           <Input
             id="category-name"
             title="Name"
+            containerClassName="mt-8"
             aria-invalid={Boolean(errors.name)}
             readOnly={isNameLocked}
-            aria-describedby={isNameLocked ? "category-name-hint" : undefined}
             className={
               isNameLocked ? "cursor-not-allowed opacity-60" : undefined
             }
             subText={
               isNameLocked
-                ? "Professional categories can&apos;t be renamed — ledgers match transactions by category name."
+                ? "Professional categories can't be renamed — ledgers match transactions by category name."
                 : undefined
             }
             errorMessage={errors.name?.message}

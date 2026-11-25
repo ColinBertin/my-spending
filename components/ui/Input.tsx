@@ -7,21 +7,26 @@ import { FieldError } from "./Field";
 type InputProps = {
   errorMessage?: string;
   subText?: string;
+  containerClassName?: string;
 } & ComponentProps<"input">;
 
 export default function Input({
   className,
+  containerClassName,
   title,
   errorMessage,
   subText,
   type = "text",
+  "aria-describedby": ariaDescribedBy,
   ...props
 }: InputProps) {
+  const hintId = subText && props.id ? `${props.id}-hint` : undefined;
+  const describedBy =
+    [ariaDescribedBy, hintId].filter(Boolean).join(" ") || undefined;
+
   return (
-    <div>
-      <Label htmlFor={props.id} className="mt-8">
-        {title}
-      </Label>
+    <div className={containerClassName}>
+      {title && <Label htmlFor={props.id}>{title}</Label>}
       <input
         type={type}
         data-slot="input"
@@ -31,13 +36,11 @@ export default function Input({
           "aria-invalid:border-2 aria-invalid:border-negative aria-invalid:bg-white",
           className,
         )}
+        aria-describedby={describedBy}
         {...props}
       />
       {subText && (
-        <p
-          id="category-name-hint"
-          className="mt-2 text-xs leading-normal text-ink-subtle"
-        >
+        <p id={hintId} className="mt-2 text-xs leading-normal text-ink-subtle">
           {subText}
         </p>
       )}
