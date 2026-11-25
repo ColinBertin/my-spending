@@ -1,12 +1,11 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
 import {
   AccountMonthlySummary,
   CategoryTotal,
   MonthlyTransactionSummary,
 } from "@/types";
+import { requirePageUser } from "@/utils/supabase/requireUser";
 
 type TransactionAmountRow = {
   type: "income" | "expense" | null;
@@ -50,15 +49,7 @@ export async function getMonthlySummary(
 ): Promise<MonthlyTransactionSummary> {
   assertValidMonthYear(month, year);
 
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, supabase } = await requirePageUser();
 
   const { data: accountMembers, error: accountMembersError } = await supabase
     .from("account_members")
@@ -154,15 +145,7 @@ export async function getAccountsSummary(
 ): Promise<AccountMonthlySummary[]> {
   assertValidMonthYear(month, year);
 
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, supabase } = await requirePageUser();
 
   // Accounts this user is a member of, with the details each card needs
   const { data: accountMembers, error: accountMembersError } = await supabase

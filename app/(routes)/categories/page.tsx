@@ -1,8 +1,7 @@
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 import { Category } from "@/types";
 import CategoriesList from "./categories-list";
 import { buildCategoriesOverview, CategoryUsageRow } from "./category-cards";
+import { requirePageUser } from "@/utils/supabase/requireUser";
 
 export const metadata = {
   title: "Categories",
@@ -16,15 +15,7 @@ type AccountMemberRow = {
 };
 
 export default async function CategoriesPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, supabase } = await requirePageUser();
 
   const [categoriesResult, membershipsResult] = await Promise.all([
     supabase

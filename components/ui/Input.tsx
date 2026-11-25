@@ -6,18 +6,20 @@ import { FieldError } from "./Field";
 
 type InputProps = {
   errorMessage?: string;
+  subText?: string;
 } & ComponentProps<"input">;
 
 export default function Input({
   className,
   title,
   errorMessage,
+  subText,
   type = "text",
   ...props
 }: InputProps) {
   return (
     <div>
-      <Label htmlFor="account-name" className="mt-8">
+      <Label htmlFor={props.id} className="mt-8">
         {title}
       </Label>
       <input
@@ -31,6 +33,14 @@ export default function Input({
         )}
         {...props}
       />
+      {subText && (
+        <p
+          id="category-name-hint"
+          className="mt-2 text-xs leading-normal text-ink-subtle"
+        >
+          {subText}
+        </p>
+      )}
       <FieldError message={errorMessage} />
     </div>
   );

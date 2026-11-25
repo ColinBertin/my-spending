@@ -1,8 +1,7 @@
 import { cache } from "react";
-import { redirect } from "next/navigation";
 import { Account, AccountMemberRow, TransactionFlowRow } from "@/types";
-import { createClient } from "@/utils/supabase/server";
 import type { AccountSummary } from "./[id]/account-header";
+import { requirePageUser } from "@/utils/supabase/requireUser";
 
 function summarizeAccounts(
   accounts: Account[],
@@ -42,7 +41,6 @@ function summarizeAccounts(
 
 export const getAccountsMonthlySummary = cache(
   async (): Promise<AccountSummary[]> => {
-    const supabase = await createClient();
     const now = new Date();
     const currentYear = now.getUTCFullYear();
     const currentMonthIndex = now.getUTCMonth();
@@ -53,13 +51,7 @@ export const getAccountsMonthlySummary = cache(
       Date.UTC(currentYear, currentMonthIndex + 1, 1),
     );
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      redirect("/login");
-    }
+    const { user, supabase } = await requirePageUser();
 
     const { data, error } = await supabase
       .from("account_members")
