@@ -116,7 +116,7 @@ describe("CreateAccount", () => {
     expect(showSuccessNotificationMock).toHaveBeenCalledWith(
       "New Account created !",
     );
-    expect(pushMock).toHaveBeenCalledWith("/");
+    expect(pushMock).toHaveBeenCalledWith(`/accounts/${payload.id}/details`);
   });
 
   it("shows an error notification on failure", async () => {
