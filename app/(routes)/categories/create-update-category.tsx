@@ -16,7 +16,7 @@ import ColorPicker from "./_components/color-picker";
 import IconPicker from "./_components/icon-picker";
 import ScopeToggle from "./_components/scope-toggle";
 import PageHeader from "@/components/ui/PageHeader";
-import FormFooter from "@/components/ui/FormFooter";
+import FormFooter, { type ActionButton } from "@/components/ui/FormFooter";
 
 type CreateUpdateCategoryProps = {
   mode: "create" | "update";
@@ -35,6 +35,24 @@ export default function CreateUpdateCategory({
   const showSuccessNotification = useSuccessNotification();
 
   const isMutating = isPending || isFetching;
+
+  const actionButtons: ActionButton[] = [
+    {
+      text: isMutating ? "Saving…" : "Save category",
+      type: "submit",
+      size: "lg",
+      isMutating,
+    },
+    {
+      text: "Cancel",
+      type: "button",
+      size: "lg",
+      variant: "outline",
+      isMutating,
+      handleClick: () => router.back(),
+      className: "sm:min-w-40",
+    },
+  ];
   // TODO: lift once ledgers match transactions by category_id.
   const isNameLocked = mode === "update" && category.type === "professional";
 
@@ -150,11 +168,7 @@ export default function CreateUpdateCategory({
             className="mt-8"
           />
 
-          <FormFooter
-            actionText="Save category"
-            isMutating={isMutating}
-            mutationText="Saving..."
-          />
+          <FormFooter actionButtons={actionButtons} />
         </form>
       </>
     </PageLayout>

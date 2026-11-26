@@ -13,7 +13,7 @@ import Input from "@/components/ui/Input";
 import PageHeader from "@/components/ui/PageHeader";
 import AccountTypePicker from "../_components/account-type-picker";
 import CurrencyPicker from "../_components/currency-picker";
-import FormFooter from "@/components/ui/FormFooter";
+import FormFooter, { type ActionButton } from "@/components/ui/FormFooter";
 
 export default function CreateAccount() {
   const router = useRouter();
@@ -24,6 +24,24 @@ export default function CreateAccount() {
   const showSuccessNotification = useSuccessNotification();
 
   const isMutating = isPending || isFetching;
+
+  const actionButtons: ActionButton[] = [
+    {
+      text: isMutating ? "Creating…" : "Create account",
+      type: "submit",
+      size: "lg",
+      isMutating,
+    },
+    {
+      text: "Cancel",
+      type: "button",
+      size: "lg",
+      variant: "outline",
+      isMutating,
+      handleClick: () => router.back(),
+      className: "sm:min-w-40",
+    },
+  ];
 
   const {
     register,
@@ -52,7 +70,7 @@ export default function CreateAccount() {
     }
 
     startTransition(() => {
-      router.push("/");
+      router.push(`/accounts/${json.id}/details`);
     });
     showSuccessNotification("New Account created !");
   };
@@ -96,11 +114,7 @@ export default function CreateAccount() {
             className="mt-8"
           />
 
-          <FormFooter
-            actionText="Create account"
-            isMutating={isMutating}
-            mutationText="Creating…"
-          />
+          <FormFooter actionButtons={actionButtons} />
         </form>
       </>
     </PageLayout>
