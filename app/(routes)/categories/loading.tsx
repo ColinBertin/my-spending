@@ -1,5 +1,7 @@
 import PageLayout from "@/components/layout/PageLayout";
 
+const BLOCK = "rounded-sm bg-surface-rail";
+
 const SKELETON_CARDS = [
   ["58%", "44%", "52%", "82%"],
   ["66%", "38%", "46%", "64%"],
@@ -14,50 +16,53 @@ export default function Loading() {
   return (
     <PageLayout>
       <div aria-busy aria-label="Loading categories">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-[14px]">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3.5">
           <div>
             <h1 className="mt-2 text-[22px] leading-[1.2] font-semibold tracking-[-0.02em] md:mt-0 md:text-[27px]">
               Categories
             </h1>
             <div
               aria-hidden
-              className="mt-[10px] h-[11px] w-[220px] animate-pulse rounded-[4px] bg-[#F1EEE8]"
+              className={`mt-2.5 h-2.75 w-55 animate-pulse ${BLOCK}`}
             />
           </div>
           <div className="flex animate-pulse gap-2" aria-hidden>
-            <span className="h-[42px] w-[186px] rounded-[9px] bg-[#F1EEE8] md:h-[38px]" />
-            <span className="h-[42px] w-[118px] rounded-[9px] bg-[#F1EEE8] md:h-[38px]" />
+            <span className="h-control-mobile w-46.5 rounded-control bg-surface-rail md:h-control" />
+            <span className="h-control-mobile w-29.5 rounded-control bg-surface-rail md:h-control" />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
           {SKELETON_CARDS.map(
             ([nameWidth, usageWidth, totalWidth, bar], index) => (
               <div
                 key={index}
                 aria-hidden
-                className="flex min-w-0 animate-pulse flex-col gap-3 rounded-[12px] border border-[#E3DFD7] bg-white px-[15px] py-[14px]"
+                className="flex min-w-0 animate-pulse flex-col gap-3 rounded-card border border-hairline bg-white px-3.75 py-3.5"
               >
-                <div className="flex items-center gap-[10px]">
-                  <span className="h-8 w-8 flex-none rounded-[9px] bg-[#F1EEE8]" />
-                  <span className="flex min-w-0 flex-1 flex-col gap-[6px]">
-                    <span
-                      className="h-[11px] rounded-[4px] bg-[#F1EEE8]"
-                      style={{ width: nameWidth }}
-                    />
-                    <span
-                      className="h-[9px] rounded-[4px] bg-[#F1EEE8]"
-                      style={{ width: usageWidth }}
-                    />
-                  </span>
+                <div className="flex min-w-0 justify-between gap-2">
+                  <div className="flex min-w-0 flex-1 gap-2">
+                    <span className="size-8 flex-none rounded-control bg-surface-rail" />
+                    <span className="flex min-w-0 flex-1 flex-col gap-1.5 pt-0.5">
+                      <span
+                        className={`h-2.75 ${BLOCK}`}
+                        style={{ width: nameWidth }}
+                      />
+                      <span
+                        className={`h-2.25 ${BLOCK}`}
+                        style={{ width: usageWidth }}
+                      />
+                    </span>
+                  </div>
+                  <span className="size-4.5 flex-none rounded-sm bg-surface-rail" />
                 </div>
                 <span
-                  className="h-[15px] rounded-[4px] bg-[#F1EEE8]"
+                  className={`h-3.75 ${BLOCK}`}
                   style={{ width: totalWidth }}
                 />
-                <span className="h-1 overflow-hidden rounded-[2px] bg-[#F1EEE8]">
+                <span className="h-1 overflow-hidden rounded-xs bg-surface-rail">
                   <span
-                    className="block h-full rounded-[2px] bg-[#E3DFD7]"
+                    className="block h-full rounded-xs bg-hairline"
                     style={{ width: bar }}
                   />
                 </span>
@@ -65,7 +70,7 @@ export default function Loading() {
             ),
           )}
           <div
-            className="min-h-[112px] rounded-[12px] border-[1.5px] border-dashed border-[#C9C3B7] bg-[#FBFAF7]"
+            className="min-h-28 rounded-card border-[1.5px] border-dashed border-graphic-grey bg-surface-field"
             aria-hidden
           />
         </div>

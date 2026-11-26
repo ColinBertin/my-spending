@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { useState, useTransition } from "react";
@@ -10,15 +9,14 @@ import {
   useSuccessNotification,
 } from "@/components/ui/NotificationProvider";
 import PageLayout from "@/components/layout/PageLayout";
-import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import { FieldError } from "@/components/ui/Field";
-import Label from "@/components/ui/Label";
 import { resolveCategoryHex } from "./category-cards";
 import CategoryPreview from "./_components/category-preview";
 import ColorPicker from "./_components/color-picker";
 import IconPicker from "./_components/icon-picker";
 import ScopeToggle from "./_components/scope-toggle";
+import PageHeader from "@/components/ui/PageHeader";
+import FormFooter, { type ActionButton } from "@/components/ui/FormFooter";
 
 type CreateUpdateCategoryProps = {
   mode: "create" | "update";
@@ -37,6 +35,24 @@ export default function CreateUpdateCategory({
   const showSuccessNotification = useSuccessNotification();
 
   const isMutating = isPending || isFetching;
+
+  const actionButtons: ActionButton[] = [
+    {
+      text: isMutating ? "Saving…" : "Save category",
+      type: "submit",
+      size: "lg",
+      isMutating,
+    },
+    {
+      text: "Cancel",
+      type: "button",
+      size: "lg",
+      variant: "outline",
+      isMutating,
+      handleClick: () => router.back(),
+      className: "sm:min-w-40",
+    },
+  ];
   // TODO: lift once ledgers match transactions by category_id.
   const isNameLocked = mode === "update" && category.type === "professional";
 
@@ -92,20 +108,13 @@ export default function CreateUpdateCategory({
   return (
     <PageLayout>
       <>
-        <Link
+        <PageHeader
           href="/categories"
-          className="text-xs leading-none font-medium text-ink-muted hover:text-ink md:hidden"
-        >
-          ← Categories
-        </Link>
-        <h1 className="mt-2 text-2xl leading-tight font-semibold tracking-tight md:mt-0 md:text-3xl">
-          {mode === "create" ? "New" : "Update"} category
-        </h1>
-        <p className="mt-1.75 max-w-md text-sm leading-relaxed text-ink-subtle">
-          Colour and icon are what make the charts and the ledger readable later
-          — pick them now, not after fifty entries.
-        </p>
-
+          linkText="Categories"
+          title={`${mode === "create" ? "New" : "Update"} category`}
+          subTitle="Colour and icon are what make the charts and the ledger readable later
+          — pick them now, not after fifty entries."
+        />
         <form
           className="mt-4.5 rounded-card border border-hairline bg-white px-5 pt-5.5 pb-6"
           onSubmit={handleSubmit(onSubmit)}
@@ -118,33 +127,27 @@ export default function CreateUpdateCategory({
             iconPack={iconPack}
           />
 
-          <Label htmlFor="category-name" className="mt-8">
-            Name
-          </Label>
           <Input
             id="category-name"
+            title="Name"
+            containerClassName="mt-8"
             aria-invalid={Boolean(errors.name)}
             readOnly={isNameLocked}
-            aria-describedby={isNameLocked ? "category-name-hint" : undefined}
             className={
               isNameLocked ? "cursor-not-allowed opacity-60" : undefined
             }
+            subText={
+              isNameLocked
+                ? "Professional categories can't be renamed — ledgers match transactions by category name."
+                : undefined
+            }
+            errorMessage={errors.name?.message}
             {...register("name", {
               required: "Name is required",
               validate: (value) =>
                 value.trim().length > 0 || "Name is required",
             })}
           />
-          {isNameLocked && (
-            <p
-              id="category-name-hint"
-              className="mt-2 text-xs leading-normal text-ink-subtle"
-            >
-              Professional categories can&apos;t be renamed — ledgers match
-              transactions by category name.
-            </p>
-          )}
-          <FieldError message={errors.name?.message} />
 
           <ScopeToggle
             register={register}
@@ -165,26 +168,7 @@ export default function CreateUpdateCategory({
             className="mt-8"
           />
 
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row-reverse sm:justify-start">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isMutating}
-              className="sm:min-w-50"
-            >
-              {isMutating ? "Saving…" : "Save category"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              onClick={() => router.back()}
-              disabled={isMutating}
-              className="sm:min-w-40"
-            >
-              Cancel
-            </Button>
-          </div>
+          <FormFooter actionButtons={actionButtons} />
         </form>
       </>
     </PageLayout>
